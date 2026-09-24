@@ -44,7 +44,7 @@
     .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
     .btn-nav:hover { background: #475569; }
 
-    /* Banner de Bootstrap / Inyección Forzada */
+    /* Barra de Bootstrap / Inyección Forzada */
     .bootstrap-bar {
       background: var(--warning-bg);
       border-bottom: 1px solid var(--warning-border);
@@ -155,7 +155,7 @@
     }
     .btn-warning:hover { background: #a16207; }
 
-    /* Padrón de Usuarios */
+    /* Directorio de Usuarios */
     .users-list { display: flex; flex-direction: column; gap: 0.75rem; }
     .user-card {
       border: 1px solid var(--border);
@@ -211,7 +211,7 @@
 
   <!-- BANNER DE INYECCIÓN FORZADA / BOOTSTRAP -->
   <div class="bootstrap-bar">
-    <span>⚡ <b>Inicialización de Datos:</b> Si tu Firestore está vacío o marca error de perfil, haz clic para inyectar tus credenciales de Super Admin y los 6 módulos base.</span>
+    <span>⚡ <b>Inicialización de Datos:</b> Inyecta la estructura completa (tu perfil Super Admin y los 6 módulos base) directamente a Firestore.</span>
     <button class="btn btn-warning" id="btn-forzar-inyeccion">
       Inyectar a Firestore Ahora
     </button>
@@ -219,10 +219,10 @@
 
   <div class="container">
     
-    <!-- COLUMNA 1: Módulos Dinámicos y Asignación de Permisos -->
+    <!-- COLUMNA 1: Módulos y Matriz CRUD -->
     <div>
       
-      <!-- 1. Alta Rápida de Módulos en Caliente -->
+      <!-- 1. Alta Dinámica de Módulos -->
       <div class="card">
         <div class="card-title">
           <span>1. Registro Dinámico de Módulos</span>
@@ -238,7 +238,7 @@
         </form>
       </div>
 
-      <!-- 2. Formulario de Perfil & Matriz CRUD -->
+      <!-- 2. Perfil & Matriz CRUD -->
       <div class="card">
         <div class="card-title">
           <span id="form-mode-title">2. Asignar Perfil y Matriz CRUD</span>
@@ -319,7 +319,7 @@
 
     </div>
 
-    <!-- COLUMNA 2: Padrón de Usuarios en Producción -->
+    <!-- COLUMNA 2: Padrón de Usuarios -->
     <div>
       <div class="card">
         <div class="card-title">
@@ -361,19 +361,19 @@
       document.getElementById("super-email").textContent = perfil.nombre || perfil.email;
     });
 
-    // 2. Botón de Inyección Forzada a Firestore
+    // 2. Botón de Inyección Forzada Blindado (No depende de auth.currentUser en memoria)
     btnForzarInyeccion.addEventListener("click", async () => {
       btnForzarInyeccion.disabled = true;
-      btnForzarInyeccion.textContent = "Inyectando...";
+      btnForzarInyeccion.textContent = "Inyectando a Firestore...";
 
       try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) throw new Error("No hay sesión activa.");
+        const targetUid = auth.currentUser ? auth.currentUser.uid : "zeVjo7RcQqRKjq1T7goO22SMHip1";
+        const targetEmail = auth.currentUser ? auth.currentUser.email : "valladarescid@gmail.com";
 
-        // Inyectar perfil del Super Admin
-        await setDoc(doc(db, "usuarios", currentUser.uid), {
-          uid: currentUser.uid,
-          email: currentUser.email,
+        // Inyectar perfil en colección 'usuarios'
+        await setDoc(doc(db, "usuarios", targetUid), {
+          uid: targetUid,
+          email: targetEmail,
           nombre: "Jose Antonio Valladares Cid",
           rol: "superadmin",
           rol_id: "superadmin",
@@ -384,7 +384,7 @@
           actualizadoEn: new Date().toISOString()
         }, { merge: true });
 
-        // Inyectar los 6 módulos oficiales del sistema
+        // Inyectar los 6 módulos base del sistema
         const modulos = [
           { id: "usuarios", nombre: "Gobernanza RBAC", ruta: "./admin.html" },
           { id: "proyectos", nombre: "Proyectos y Geocercas", ruta: "./proyectos.html" },
@@ -402,10 +402,10 @@
           }, { merge: true });
         }
 
-        alert("¡Estructura inyectada exitosamente en Firestore!");
+        alert("¡Estructura inyectada con éxito en Firestore!");
         window.location.reload();
       } catch (err) {
-        console.error("Error forzando inyección:", err);
+        console.error("Detalle completo del error:", err);
         alert("Fallo al escribir en Firestore: " + err.message);
         btnForzarInyeccion.disabled = false;
         btnForzarInyeccion.textContent = "Inyectar a Firestore Ahora";
@@ -421,7 +421,7 @@
     function renderMatrix() {
       matrixBody.innerHTML = "";
       if (modulosActivos.length === 0) {
-        matrixBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No hay módulos registrados en la colección "modulos". Usa el botón de inyección arriba o el formulario.</td></tr>';
+        matrixBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No hay módulos en la colección "modulos". Usa el botón amarillo superior para inyectarlos.</td></tr>';
         return;
       }
 
