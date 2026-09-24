@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alta de Usuarios - Conglomerado Empresarial</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --radius: 10px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+    .btn-nav:hover { background: #475569; }
+
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    input, select {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 650px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* Checkbox Super Admin */
+    .superadmin-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .superadmin-box label {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #991b1b;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+      z-index: 999;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+      <span>Alta Directa de Usuarios</span>
+    </div>
+    <div class="header-actions">
+      <span id="admin-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
+      <a href="./admin.html" class="btn-nav">Gobernanza RBAC</a>
+      <a href="./control_obra.html" class="btn-nav">Menú</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-title">Crear Nuevo Colaborador en Firebase</div>
+      <div class="card-subtitle">
+        Crea automáticamente la cuenta en Firebase Authentication y genera su perfil en Firestore sin salir de tu sesión de administrador.
+      </div>
+
+      <form id="form-crear-usuario">
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="new-nombre">Nombre Completo</label>
+            <input type="text" id="new-nombre" placeholder="Ej. Juan Pérez López" required>
+          </div>
+          <div class="form-group">
+            <label for="new-email">Correo Electrónico (Acceso)</label>
+            <input type="email" id="new-email" placeholder="usuario@conglomerado.com" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="new-password">Contraseña Temporal</label>
+            <input type="password" id="new-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+          </div>
+          <div class="form-group">
+            <label for="new-rol">Puesto / Denominación</label>
+            <input type="text" id="new-rol" placeholder="Ej. Cabo de Obra / Residente" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="new-alcance">Alcance Geográfico (Scope)</label>
+            <select id="new-alcance">
+              <option value="asignado">Obras Asignadas Específicas</option>
+              <option value="global">Global (Todas las Obras)</option>
+            </select>
+          </div>
+          <div class="form-group" id="container-proyectos">
+            <label for="new-proyectos">Obras Autorizadas (mantén Ctrl para seleccionar varias)</label>
+            <select id="new-proyectos" multiple style="height: 80px;"></select>
+          </div>
+        </div>
+
+        <div class="superadmin-box">
+          <label>
+            <input type="checkbox" id="new-superadmin" style="width: 17px; height: 17px;">
+            <span><strong>Otorgar Privilegios de Super Administrador</strong> (Acceso total al sistema)</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-submit">
+          Registrar e Inyectar Usuario en Firebase
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { db, doc, setDoc, onSnapshot, collection } from "./js/firebase-config.js";
+    import { protegerVista } from "./js/rbac.js";
+
+    const form = document.getElementById("form-crear-usuario");
+    const btnSubmit = document.getElementById("btn-submit");
+    const selectAlcance = document.getElementById("new-alcance");
+    const selectProyectos = document.getElementById("new-proyectos");
+    const containerProyectos = document.getElementById("container-proyectos");
+    const checkSuperAdmin = document.getElementById("new-superadmin");
+    const toast = document.getElementById("toast");
+
+    // Configuración idéntica para la instancia secundaria de Auth
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevrofFk",
+      authDomain: "conglomerado-empresarial.firebaseapp.com",
+      projectId: "conglomerado-empresarial",
+      storageBucket: "conglomerado-empresarial.firebasestorage.app",
+      messagingSenderId: "36848994870",
+      appId: "1:36848994870:web:2fa267a5e1d35ce1baa697"
+    };
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3500);
+    }
+
+    // 1. Validar que quien entra sea Super Administrador
+    protegerVista("usuarios", "c").then(({ perfil }) => {
+      document.getElementById("admin-display").textContent = perfil.nombre || perfil.email;
+      cargarProyectos();
+    });
+
+    // 2. Cargar Proyectos para Asignación
+    function cargarProyectos() {
+      onSnapshot(collection(db, "proyectos"), (snap) => {
+        selectProyectos.innerHTML = "";
+        snap.forEach((d) => {
+          const p = d.data();
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
+          selectProyectos.appendChild(opt);
+        });
+      });
+    }
+
+    selectAlcance.addEventListener("change", () => {
+      containerProyectos.style.display = selectAlcance.value === "global" ? "none" : "block";
+    });
+
+    // 3. Crear Usuario sin desconectar al Super Admin
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nombre = document.getElementById("new-nombre").value.trim();
+      const email = document.getElementById("new-email").value.trim();
+      const password = document.getElementById("new-password").value;
+      const rol = document.getElementById("new-rol").value.trim();
+      const isSuper = checkSuperAdmin.checked;
+      const alcance = selectAlcance.value;
+
+      const proyectos = isSuper || alcance === "global"
+        ? ["*"]
+        : Array.from(selectProyectos.selectedOptions).map(opt => opt.value);
+
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "Procesando en Firebase...";
+
+      // Se inicializa una app secundaria en memoria con un nombre único
+      const secondaryAppName = "SecondaryApp-" + Date.now();
+      const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
+      const secondaryAuth = getAuth(secondaryApp);
+
+      try {
+        // A) Crear en Firebase Auth
+        const credencial = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+        const nuevoUid = credencial.user.uid;
+
+        // B) Inyectar documento en colección 'usuarios' de Firestore
+        const nuevoUsuarioDoc = {
+          uid: nuevoUid,
+          nombre: nombre,
+          email: email,
+          rol: rol,
+          rol_id: isSuper ? "superadmin" : "personalizado",
+          is_superadmin: isSuper,
+          alcance: isSuper ? "global" : alcance,
+          proyectos_asignados: proyectos,
+          matriz_efectiva: {
+            usuarios: { c: isSuper, r: isSuper, u: isSuper, d: isSuper },
+            proyectos: { c: isSuper, r: isSuper, u: isSuper, d: isSuper },
+            checador: { c: true, r: true, u: false, d: false },
+            bitacora: { c: true, r: true, u: false, d: false },
+            prenomina: { c: false, r: isSuper, u: false, d: false },
+            estimaciones: { c: false, r: isSuper, u: false, d: false }
+          },
+          activo: true,
+          creadoEn: new Date().toISOString()
+        };
+
+        await setDoc(doc(db, "usuarios", nuevoUid), nuevoUsuarioDoc);
+
+        // C) Cerrar sesión secundaria para limpiar memoria
+        await signOut(secondaryAuth);
+
+        showToast(`¡Usuario ${nombre} dado de alta con éxito!`);
+        form.reset();
+        selectAlcance.value = "asignado";
+        containerProyectos.style.display = "block";
+      } catch (err) {
+        console.error("Error al dar de alta:", err);
+        alert("Error de Firebase: " + err.message);
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Registrar e Inyectar Usuario en Firebase";
+      }
+    });
+  </script>
+</body>
+</html>
