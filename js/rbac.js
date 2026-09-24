@@ -1,109 +1,113 @@
 // js/rbac.js
-import { auth, db, doc, getDoc, collection, onSnapshot, onAuthStateChanged } from "./firebase-config.js";
+import { auth, db, doc, getDoc, onAuthStateChanged, collection, onSnapshot } from "./firebase-config.js";
 
-// Correo raíz intocable
-export const ROOT_ADMIN = "valladarescid@gmail.com";
-
-// Escucha reactiva de módulos en Firestore
-export function escucharModulosSistema(callback) {
-  return onSnapshot(collection(db, "modulos"), (snap) => {
-    const lista = [];
-    snap.forEach((d) => lista.push({ id: d.id, ...d.data() }));
-    callback(lista);
-  }, (err) => {
-    console.warn("Aviso en modulos:", err.message);
-    callback([]);
-  });
-}
-
-// Obtener perfil
-export async function obtenerPerfilUsuario(uid, userEmail = "") {
-  // BYPASS MAESTRO: Si es tu correo, genera el perfil en memoria sin esperar a Firestore
-  if (userEmail && userEmail.toLowerCase() === ROOT_ADMIN.toLowerCase()) {
-    return {
-      uid: uid,
-      email: userEmail,
-      nombre: "Jose Antonio Valladares Cid",
-      rol: "superadmin",
-      rol_id: "superadmin",
-      is_superadmin: true,
-      alcance: "global",
-      proyectos_asignados: ["*"],
-      activo: true
-    };
-  }
-
-  try {
-    const snap = await getDoc(doc(db, "usuarios", uid));
-    return snap.exists() ? snap.data() : null;
-  } catch (err) {
-    console.warn("Error RBAC al consultar Firestore:", err.message);
-    return null;
-  }
-}
-
-// Validación de permisos
-export function tienePermiso(perfil, moduloId, accion = "r", proyectoId = null) {
+/**
+ * Evalúa si un perfil tiene permiso para una acción específica en un módulo.
+ * @param {Object} perfil - Objeto del usuario en Firestore.
+ * @param {string} moduloId - Identificador del módulo (ej. 'checador', 'bitacora').
+ * @param {string} accion - Acción CRUD ('c', 'r', 'u', 'd').
+ * @returns {boolean}
+ */
+export function tienePermiso(perfil, moduloId, accion = "r") {
   if (!perfil) return false;
-  if (perfil.email?.toLowerCase() === ROOT_ADMIN.toLowerCase()) return true;
-  if (!perfil.activo) return false;
-  if (perfil.is_superadmin === true || perfil.rol === "superadmin") return true;
-
-  if (proyectoId && perfil.alcance === "asignado") {
-    if (!perfil.proyectos_asignados?.includes(proyectoId)) return false;
+  
+  // Super Admin tiene bypass total
+  if (perfil.is_superadmin === true || perfil.rol_id === "superadmin" || perfil.email === "valladarescid@gmail.com") {
+    return true;
   }
 
-  return !!perfil.matriz_efectiva?.[moduloId]?.[accion];
+  // Comprobar matriz efectiva guardada en el usuario
+  const permisosModulo = perfil.matriz_efectiva?.[moduloId];
+  if (!permisosModulo) return false;
+
+  return !!permisosModulo[accion.toLowerCase()];
 }
 
-// Guardia de seguridad
-export function protegerVista(moduloId, accion = "r") {
-  return new Promise((resolve) => {
+/**
+ * Resuelve la sesión activa y devuelve el usuario y su documento de perfil.
+ * Si no hay sesión o el perfil no existe, redirige a index.html.
+ */
+export function obtenerPerfilActual() {
+  return new Promise((resolve, reject) => {
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "./index.html";
-        return;
+        return reject("Sin sesión activa");
       }
 
-      // Si es el correo maestro, se salta cualquier bloqueo de BD
-      if (user.email.toLowerCase() === ROOT_ADMIN.toLowerCase()) {
-        const superPerfil = await obtenerPerfilUsuario(user.uid, user.email);
-        resolve({ user, perfil: superPerfil });
-        return;
-      }
+      try {
+        const userDocRef = doc(db, "usuarios", user.uid);
+        const userSnap = await getDoc(userDocRef);
 
-      const perfil = await obtenerPerfilUsuario(user.uid, user.email);
-      if (!perfil || !perfil.activo) {
-        alert("Usuario inactivo o sin perfil.");
-        window.location.href = "./index.html";
-        return;
-      }
+        let perfil = null;
+        if (userSnap.exists()) {
+          perfil = userSnap.data();
+        } else if (user.email === "valladarescid@gmail.com") {
+          // Perfil de emergencia para el Super Admin si no se ha sembrado
+          perfil = {
+            uid: user.uid,
+            email: user.email,
+            nombre: "Jose Antonio Valladares Cid",
+            rol: "Super Administrador",
+            rol_id: "superadmin",
+            is_superadmin: true,
+            alcance: "global",
+            proyectos_asignados: ["*"],
+            activo: true
+          };
+        } else {
+          alert("Tu usuario no tiene un perfil configurado en la base de datos.");
+          window.location.href = "./index.html";
+          return reject("Usuario sin perfil en Firestore");
+        }
 
-      if (perfil.is_superadmin === true || perfil.rol === "superadmin") {
+        if (perfil.activo === false) {
+          alert("Tu cuenta ha sido desactivada temporalmente por el administrador.");
+          window.location.href = "./index.html";
+          return reject("Usuario inactivo");
+        }
+
         resolve({ user, perfil });
-        return;
+      } catch (err) {
+        console.error("Error al obtener perfil RBAC:", err);
+        reject(err);
       }
-
-      if (!tienePermiso(perfil, moduloId, accion)) {
-        alert(`Sin privilegios para el módulo: [${moduloId}]`);
-        window.location.href = "./control_obra.html";
-        return;
-      }
-
-      resolve({ user, perfil });
     });
   });
 }
 
-export function aplicarSeguridadUI(perfil, moduloActual) {
-  if (!perfil) return;
-  if (perfil.email?.toLowerCase() === ROOT_ADMIN.toLowerCase()) return;
-  if (perfil.is_superadmin === true || perfil.rol === "superadmin") return;
+/**
+ * Protege una vista asegurando que el usuario tenga el permiso necesario.
+ * @param {string} moduloId - Identificador del módulo a validar.
+ * @param {string} accion - Acción requerida ('c', 'r', 'u', 'd').
+ */
+export async function protegerVista(moduloId, accion = "r") {
+  const { user, perfil } = await obtenerPerfilActual();
 
-  document.querySelectorAll("[data-rbac]").forEach((el) => {
-    const accion = el.getAttribute("data-rbac");
-    if (!tienePermiso(perfil, moduloActual, accion)) {
-      el.style.display = "none";
-    }
-  });
+  // Si se solicita validación general, solo basta con tener sesión válida
+  if (moduloId === "general") {
+    return { user, perfil };
+  }
+
+  if (!tienePermiso(perfil, moduloId, accion)) {
+    alert(`Acceso denegado: No cuentas con privilegios de lectura/escritura en el módulo "${moduloId}".`);
+    window.location.href = "./control_obra.html";
+    throw new Error(`Permiso insuficiente para ${moduloId}:${accion}`);
+  }
+
+  return { user, perfil };
+}
+
+/**
+ * Escucha en tiempo real el catálogo de módulos activos en Firestore.
+ * @param {Function} callback - Función que recibe la lista de módulos.
+ */
+export function escucharModulosSistema(callback) {
+  return onSnapshot(collection(db, "modulos"), (snap) => {
+    const modulos = [];
+    snap.forEach((d) => {
+      modulos.push({ id: d.id, ...d.data() });
+    });
+    callback(modulos);
+  }, (err) => console.warn("Error al escuchar módulos:", err));
 }
