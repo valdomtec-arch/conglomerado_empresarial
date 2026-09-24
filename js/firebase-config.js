@@ -5,8 +5,8 @@ import {
   enableIndexedDbPersistence 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// Credenciales de tu app "Empresas y Proyectos"
 const firebaseConfig = {
   apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevroffk",
   authDomain: "conglomerado-empresarial.firebaseapp.com",
@@ -16,12 +16,11 @@ const firebaseConfig = {
   appId: "1:36848994870:web:2fa267a5e1d35ce1baa697"
 };
 
-// Inicialización de la app
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
-// Soporte offline automático con IndexedDB
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code === 'failed-precondition') {
     console.warn('Persistencia: múltiples pestañas abiertas.');
@@ -30,4 +29,4 @@ enableIndexedDbPersistence(db).catch((err) => {
   }
 });
 
-export { db, auth };
+export { db, auth, storage };
