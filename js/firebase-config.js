@@ -7,7 +7,7 @@ import {
   setDoc, 
   addDoc, 
   deleteDoc, 
-  getDoc,
+  getDoc, 
   onSnapshot, 
   query, 
   where 
@@ -30,12 +30,9 @@ const firebaseConfig = {
   measurementId: "G-1LPLVQJ8G0"
 };
 
-// Inicialización de la app
 const app = initializeApp(firebaseConfig);
-
-// APUNTAR AL ID EXACTO DE TU BASE DE DATOS
-const db = getFirestore(app, "conglomerado-empresarial");
-
+// Conexión por defecto a tu base (default)
+const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
