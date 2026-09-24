@@ -16,6 +16,9 @@
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
+      --warning-bg: #fef08a;
+      --warning-border: #facc15;
+      --warning-text: #854d0e;
       --radius: 10px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
@@ -40,6 +43,20 @@
     .header-actions { display: flex; align-items: center; gap: 10px; }
     .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
     .btn-nav:hover { background: #475569; }
+
+    /* Banner de Bootstrap / Inyección Forzada */
+    .bootstrap-bar {
+      background: var(--warning-bg);
+      border-bottom: 1px solid var(--warning-border);
+      padding: 10px 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--warning-text);
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
 
     .container {
       max-width: 1400px;
@@ -129,6 +146,14 @@
     .btn-danger { background: #fee2e2; color: #b91c1c; }
     .btn-danger:hover { background: #fca5a5; }
     .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
+    
+    .btn-warning {
+      background: #ca8a04;
+      color: #ffffff;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+    }
+    .btn-warning:hover { background: #a16207; }
 
     /* Padrón de Usuarios */
     .users-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -184,9 +209,17 @@
     </div>
   </header>
 
+  <!-- BANNER DE INYECCIÓN FORZADA / BOOTSTRAP -->
+  <div class="bootstrap-bar">
+    <span>⚡ <b>Inicialización de Datos:</b> Si tu Firestore está vacío o marca error de perfil, haz clic para inyectar tus credenciales de Super Admin y los 6 módulos base.</span>
+    <button class="btn btn-warning" id="btn-forzar-inyeccion">
+      Inyectar a Firestore Ahora
+    </button>
+  </div>
+
   <div class="container">
     
-    <!-- COLUMNA 1: Catálogo de Módulos y Diseñador de Permisos -->
+    <!-- COLUMNA 1: Módulos Dinámicos y Asignación de Permisos -->
     <div>
       
       <!-- 1. Alta Rápida de Módulos en Caliente -->
@@ -286,7 +319,7 @@
 
     </div>
 
-    <!-- COLUMNA 2: Directorio de Usuarios Activos -->
+    <!-- COLUMNA 2: Padrón de Usuarios en Producción -->
     <div>
       <div class="card">
         <div class="card-title">
@@ -313,6 +346,7 @@
     const checkSuperAdmin = document.getElementById("user-is-superadmin");
     const containerMatrix = document.getElementById("container-matrix");
     const toast = document.getElementById("toast");
+    const btnForzarInyeccion = document.getElementById("btn-forzar-inyeccion");
 
     let modulosActivos = [];
 
@@ -322,12 +356,63 @@
       setTimeout(() => toast.style.display = "none", 3200);
     }
 
-    // 1. Proteger Consola Administrativa (Solo Superadmins)
+    // 1. Proteger Vista (RBAC)
     protegerVista("usuarios", "u").then(({ perfil }) => {
       document.getElementById("super-email").textContent = perfil.nombre || perfil.email;
     });
 
-    // 2. Auto-descubrimiento de Módulos en Tiempo Real
+    // 2. Botón de Inyección Forzada a Firestore
+    btnForzarInyeccion.addEventListener("click", async () => {
+      btnForzarInyeccion.disabled = true;
+      btnForzarInyeccion.textContent = "Inyectando...";
+
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) throw new Error("No hay sesión activa.");
+
+        // Inyectar perfil del Super Admin
+        await setDoc(doc(db, "usuarios", currentUser.uid), {
+          uid: currentUser.uid,
+          email: currentUser.email,
+          nombre: "Jose Antonio Valladares Cid",
+          rol: "superadmin",
+          rol_id: "superadmin",
+          is_superadmin: true,
+          alcance: "global",
+          proyectos_asignados: ["*"],
+          activo: true,
+          actualizadoEn: new Date().toISOString()
+        }, { merge: true });
+
+        // Inyectar los 6 módulos oficiales del sistema
+        const modulos = [
+          { id: "usuarios", nombre: "Gobernanza RBAC", ruta: "./admin.html" },
+          { id: "proyectos", nombre: "Proyectos y Geocercas", ruta: "./proyectos.html" },
+          { id: "checador", nombre: "Checador PWA", ruta: "./checador.html" },
+          { id: "bitacora", nombre: "Bitácora de Avance", ruta: "./bitacora.html" },
+          { id: "prenomina", nombre: "Prenómina M.O.", ruta: "./prenomina.html" },
+          { id: "estimaciones", nombre: "Estimaciones de Cobro", ruta: "./estimaciones.html" }
+        ];
+
+        for (const m of modulos) {
+          await setDoc(doc(db, "modulos", m.id), {
+            nombre: m.nombre,
+            ruta: m.ruta,
+            activo: true
+          }, { merge: true });
+        }
+
+        alert("¡Estructura inyectada exitosamente en Firestore!");
+        window.location.reload();
+      } catch (err) {
+        console.error("Error forzando inyección:", err);
+        alert("Fallo al escribir en Firestore: " + err.message);
+        btnForzarInyeccion.disabled = false;
+        btnForzarInyeccion.textContent = "Inyectar a Firestore Ahora";
+      }
+    });
+
+    // 3. Auto-descubrimiento de Módulos
     escucharModulosSistema((modulos) => {
       modulosActivos = modulos;
       renderMatrix();
@@ -336,7 +421,7 @@
     function renderMatrix() {
       matrixBody.innerHTML = "";
       if (modulosActivos.length === 0) {
-        matrixBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No hay módulos registrados en la colección "modulos".</td></tr>';
+        matrixBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No hay módulos registrados en la colección "modulos". Usa el botón de inyección arriba o el formulario.</td></tr>';
         return;
       }
 
@@ -353,7 +438,7 @@
       });
     }
 
-    // 3. Cargar Proyectos para el Selector de Alcance
+    // 4. Proyectos en vivo para el Selector de Alcance
     onSnapshot(collection(db, "proyectos"), (snap) => {
       selectProyectos.innerHTML = "";
       snap.forEach((d) => {
@@ -363,9 +448,8 @@
         opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
         selectProyectos.appendChild(opt);
       });
-    });
+    }, (err) => console.warn("Error leyendo proyectos:", err.message));
 
-    // Control de Eventos de Interfaz
     alcanceSelect.addEventListener("change", () => {
       containerProyectos.style.display = alcanceSelect.value === "asignado" ? "block" : "none";
     });
@@ -382,7 +466,7 @@
       checkboxes.forEach(b => b.checked = !allChecked);
     });
 
-    // 4. Registro de Nuevos Módulos en Caliente
+    // 5. Alta Manual de Nuevos Módulos
     document.getElementById("form-nuevo-modulo").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("mod-id").value.trim().toLowerCase();
@@ -399,7 +483,7 @@
       }
     });
 
-    // 5. Inyección del Perfil RBAC a Firestore
+    // 6. Inyección de Perfiles Granulares
     document.getElementById("form-user-rbac").addEventListener("submit", async (e) => {
       e.preventDefault();
       const uid = document.getElementById("user-uid").value.trim();
@@ -456,7 +540,7 @@
 
     document.getElementById("btn-reset-form").addEventListener("click", resetForm);
 
-    // 6. Directorio en Tiempo Real
+    // 7. Directorio de Usuarios en Tiempo Real
     onSnapshot(collection(db, "usuarios"), (snap) => {
       const container = document.getElementById("users-container");
       if (snap.empty) {
@@ -489,9 +573,9 @@
         `;
         container.appendChild(item);
       });
-    });
+    }, (err) => console.warn("Error leyendo directorio:", err.message));
 
-    // Cargar perfil seleccionado al formulario para editar
+    // Cargar perfil seleccionado al formulario
     window.cargarUsuario = (uid) => {
       onSnapshot(doc(db, "usuarios", uid), (d) => {
         if (!d.exists()) return;
