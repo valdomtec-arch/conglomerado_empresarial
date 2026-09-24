@@ -3,641 +3,630 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Proyectos, Geocercas y Catálogos</title>
+  <title>Gestión de Proyectos y Geocercas - Conglomerado Empresarial</title>
   
-  <!-- Tailwind CSS para estilos limpios y responsivos -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Leaflet para visualización de mapa y geocercas -->
+  <!-- Leaflet CSS para Mapas -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+  
   <style>
-    #mapa { height: 260px; border-radius: 0.5rem; z-index: 10; }
-    .toast-transition {
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --accent: #0284c7;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 10px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .brand { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .status-badge {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+    .container {
+      max-width: 1300px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 1024px) {
+      .container { grid-template-columns: 480px 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.65rem 1.25rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+    .btn-primary { background: var(--primary); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-danger:hover { background: #fca5a5; }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.8rem; }
+
+    #map {
+      height: 250px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-top: 0.5rem;
+      z-index: 1;
+    }
+
+    .project-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .project-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .project-item.active { border-color: var(--accent); background: #f0f9ff; }
+    .project-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+    .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1rem; gap: 1rem; }
+    .tab-btn {
+      padding: 0.5rem 0.75rem;
+      background: none;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -2px; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .table-container { overflow-x: auto; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+    th { background: #f1f5f9; padding: 0.65rem; border-bottom: 1px solid var(--border); color: #475569; }
+    td { padding: 0.65rem; border-bottom: 1px solid var(--border); }
+
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      padding: 12px 18px;
+      background: #1e293b;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
+<body>
 
-  <!-- Navegación Superior -->
-  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <span class="text-xl font-bold tracking-tight text-amber-400">CONGLOMERADO</span>
-        <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded border border-slate-700">Módulo Proyectos</span>
-      </div>
-      <nav class="flex items-center space-x-2 text-sm">
-        <a href="index.html" class="hover:text-amber-400 px-2 py-1 rounded">Inicio</a>
-        <a href="checador.html" class="hover:text-amber-400 px-2 py-1 rounded">Checador</a>
-        <a href="bitacora.html" class="hover:text-amber-400 px-2 py-1 rounded">Bitácora</a>
-      </nav>
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <span>Conglomerado Empresarial</span>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span>Firestore Activo (default)</span>
     </div>
   </header>
 
-  <!-- Contenedor Principal -->
-  <main class="max-w-7xl mx-auto p-4 sm:p-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-    <!-- Columna Izquierda: Formulario de Alta y Configuración (5 cols) -->
-    <section class="lg:col-span-5 bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col space-y-4">
-      <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
-        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-          </svg>
-          Registrar / Editar Proyecto
-        </h2>
-        <button id="btn-limpiar" type="button" class="text-xs text-slate-400 hover:text-slate-600 underline">Limpiar</button>
+  <div class="container">
+    
+    <!-- COLUMNA 1: Formulario de Proyecto & Geocerca -->
+    <div class="card">
+      <div class="card-title">
+        <span>Alta / Edición de Proyecto</span>
       </div>
 
-      <form id="form-proyecto" class="space-y-4">
-        <input type="hidden" id="proyecto-id">
+      <form id="project-form">
+        <input type="hidden" id="project-id">
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre del Proyecto / Frente</label>
-          <input type="text" id="nombre" required placeholder="Ej. Nave Industrial Fase 1" 
-                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+        <div class="form-group">
+          <label>Nombre del Proyecto / Frente de Trabajo</label>
+          <input type="text" id="project-name" required placeholder="Ej. Construcción Nave Industrial">
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Código / Folio</label>
-            <input type="text" id="codigo" required placeholder="PRJ-001" 
-                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Código / Clave</label>
+            <input type="text" id="project-code" required placeholder="PRY-001">
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tipo de Sitio</label>
-            <select id="tipo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
-              <option value="Obra">Obra Principal</option>
-              <option value="Campamento">Campamento / Patio</option>
-              <option value="Oficina">Oficina Central</option>
-            </select>
+          <div class="form-group">
+            <label>Cliente / Razón Social</label>
+            <input type="text" id="project-client" required placeholder="Ej. Grupo Industrial del Norte">
           </div>
         </div>
 
-        <!-- Parámetros de Geocerca -->
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">Geocerca de Marcaje</span>
-            <button type="button" id="btn-gps" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded flex items-center gap-1 transition">
-              <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
-              Tomar Mi GPS
-            </button>
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="margin: 0;">Coordenadas de Sitio (Geocerca)</label>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-gps">📍 Tomar mi GPS</button>
           </div>
-
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <label class="text-slate-500">Latitud</label>
-              <input type="number" step="any" id="lat" required placeholder="23.2494" 
-                     class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-amber-500">
-            </div>
-            <div>
-              <label class="text-slate-500">Longitud</label>
-              <input type="number" step="any" id="lng" required placeholder="-106.4111" 
-                     class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-amber-500">
-            </div>
+          <div class="grid-2">
+            <input type="number" step="any" id="project-lat" placeholder="Latitud" required>
+            <input type="number" step="any" id="project-lng" placeholder="Longitud" required>
           </div>
-
-          <div>
-            <div class="flex justify-between text-xs mb-1">
-              <span class="text-slate-500">Radio de Tolerancia:</span>
-              <span id="radio-display" class="font-bold text-slate-800">100 m</span>
-            </div>
-            <input type="range" id="radio_metros" min="20" max="1000" step="10" value="100" class="w-full accent-amber-500">
-          </div>
-
-          <!-- Mapa Interactivo de Geocerca -->
-          <div id="mapa"></div>
-          <p class="text-[11px] text-slate-400 italic">Haz clic en el mapa para posicionar el centro de la obra.</p>
         </div>
 
-        <button type="submit" id="btn-guardar" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-lg shadow-sm transition">
-          Guardar Proyecto
-        </button>
+        <div class="form-group">
+          <label>Radio de Tolerancia: <b id="radius-val">150</b> metros</label>
+          <input type="range" id="project-radius" min="20" max="1500" step="10" value="150">
+        </div>
+
+        <div id="map"></div>
+
+        <div style="margin-top: 1.25rem; display: flex; gap: 0.5rem;">
+          <button type="submit" class="btn btn-primary" id="btn-save-project">Guardar Proyecto</button>
+          <button type="button" class="btn btn-secondary" id="btn-cancel-edit" style="display: none;">Cancelar</button>
+        </div>
       </form>
-    </section>
+    </div>
 
-    <!-- Columna Derecha: Listado de Proyectos y Detalle de Catálogos (7 cols) -->
-    <section class="lg:col-span-7 flex flex-col space-y-4">
-      
-      <!-- Listado Activo -->
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-        <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+    <!-- COLUMNA 2: Lista de Proyectos y Catálogos -->
+    <div>
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-title">
           <span>Proyectos Registrados</span>
-          <span id="contador-proyectos" class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-normal">0</span>
-        </h3>
-        
-        <div id="lista-proyectos" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
-          <div class="p-4 border border-dashed border-slate-300 rounded-lg text-center text-sm text-slate-400">
-            Cargando proyectos desde Firestore...
-          </div>
         </div>
+        <div id="projects-list">Cargando proyectos desde Firestore...</div>
       </div>
 
-      <!-- Pestañas de Catálogos Secundarios (Personal & Partidas del Proyecto Seleccionado) -->
-      <div id="panel-catalogos" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-1 hidden">
-        <div class="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
-          <div>
-            <h4 id="proyecto-seleccionado-nombre" class="font-bold text-slate-900 text-base leading-tight">Proyecto</h4>
-            <p id="proyecto-seleccionado-codigo" class="text-xs text-slate-400">Seleccione una acción</p>
-          </div>
-          <div class="flex space-x-2">
-            <button id="tab-btn-empleados" class="tab-btn px-3 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800">
-              Personal Asignado
-            </button>
-            <button id="tab-btn-partidas" class="tab-btn px-3 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-600 hover:bg-slate-200">
-              Catálogo de Partidas
-            </button>
-          </div>
+      <div class="card" id="catalog-card" style="display: none;">
+        <div class="card-title">
+          <span id="selected-project-title">Catálogos Asignados</span>
         </div>
 
-        <!-- Vista 1: Catálogo de Personal -->
-        <div id="tab-empleados" class="space-y-4">
-          <form id="form-empleado" class="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
-            <input type="text" id="emp-nombre" placeholder="Nombre completo del operario" required class="sm:col-span-5 px-2.5 py-1.5 border border-slate-300 rounded">
-            <input type="text" id="emp-puesto" placeholder="Puesto / Categoría" required class="sm:col-span-4 px-2.5 py-1.5 border border-slate-300 rounded">
-            <input type="number" id="emp-cuota" placeholder="Tarifa/Día" step="any" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
-            <button type="submit" class="sm:col-span-1 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold flex items-center justify-center py-1.5">
-              +
-            </button>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="tab-personal">Cuadrilla / Personal</button>
+          <button class="tab-btn" data-tab="tab-partidas">Partidas Contractuales</button>
+        </div>
+
+        <!-- Pestaña 1: Personal -->
+        <div id="tab-personal" class="tab-content active">
+          <form id="employee-form" class="grid-2" style="margin-bottom: 1rem;">
+            <input type="text" id="emp-name" placeholder="Nombre completo del operario" required>
+            <input type="text" id="emp-role" placeholder="Puesto / Categoría" required>
+            <input type="number" step="0.01" id="emp-rate" placeholder="Cuota x Hora ($)" required>
+            <button type="submit" class="btn btn-secondary">Agregar Empleado</button>
           </form>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border border-slate-200 rounded-lg overflow-hidden">
-              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+          <div class="table-container">
+            <table>
+              <thead>
                 <tr>
-                  <th class="p-2.5">Nombre</th>
-                  <th class="p-2.5">Puesto</th>
-                  <th class="p-2.5">Tarifa</th>
-                  <th class="p-2.5 text-right">Acción</th>
+                  <th>Nombre</th>
+                  <th>Puesto</th>
+                  <th>Cuota/Hr</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
-              <tbody id="lista-empleados" class="divide-y divide-slate-100">
-                <tr><td colspan="4" class="p-3 text-center text-slate-400">Sin empleados dados de alta en este frente.</td></tr>
+              <tbody id="employees-table">
+                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin empleados asignados.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Vista 2: Catálogo de Partidas y Volúmenes de Contrato -->
-        <div id="tab-partidas" class="space-y-4 hidden">
-          <form id="form-partida" class="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
-            <input type="text" id="part-clave" placeholder="Clave (ej. PRE-01)" required class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
-            <input type="text" id="part-concepto" placeholder="Descripción del concepto" required class="sm:col-span-5 px-2.5 py-1.5 border border-slate-300 rounded">
-            <input type="text" id="part-unidad" placeholder="Unidad (m3, m2, pza)" required class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
-            <input type="number" id="part-volumen" placeholder="Volumen" step="any" required class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
-            <button type="submit" class="sm:col-span-1 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold flex items-center justify-center py-1.5">
-              +
-            </button>
+        <!-- Pestaña 2: Partidas -->
+        <div id="tab-partidas" class="tab-content">
+          <form id="item-form" style="margin-bottom: 1rem;">
+            <div class="grid-2" style="margin-bottom: 0.5rem;">
+              <input type="text" id="item-code" placeholder="Clave Partida (ej. CIV-01)" required>
+              <input type="text" id="item-unit" placeholder="Unidad (m3, m2, pza, kg)" required>
+            </div>
+            <div class="form-group">
+              <input type="text" id="item-concept" placeholder="Descripción de concepto de obra" required>
+            </div>
+            <div class="grid-2">
+              <input type="number" step="0.01" id="item-vol" placeholder="Volumen Contratado" required>
+              <input type="number" step="0.01" id="item-price" placeholder="P.U. Contratado ($)" required>
+            </div>
+            <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">Agregar Partida</button>
           </form>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border border-slate-200 rounded-lg overflow-hidden">
-              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+          <div class="table-container">
+            <table>
+              <thead>
                 <tr>
-                  <th class="p-2.5">Clave</th>
-                  <th class="p-2.5">Concepto</th>
-                  <th class="p-2.5">Unidad</th>
-                  <th class="p-2.5">Vol. Total</th>
-                  <th class="p-2.5 text-right">Acción</th>
+                  <th>Clave</th>
+                  <th>Concepto</th>
+                  <th>Unidad</th>
+                  <th>Volumen</th>
+                  <th>P.U.</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
-              <tbody id="lista-partidas" class="divide-y divide-slate-100">
-                <tr><td colspan="5" class="p-3 text-center text-slate-400">Sin partidas cargadas.</td></tr>
+              <tbody id="items-table">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin partidas registradas.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- Contenedor de Alertas Tipo Toast -->
-  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
-  <!-- Modal Genérico de Confirmación -->
-  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4 transform transition-all">
-      <h3 id="modal-confirm-title" class="font-bold text-slate-900 text-base">Confirmación</h3>
-      <p id="modal-confirm-msg" class="text-sm text-slate-600">¿Estás seguro de continuar con esta acción?</p>
-      <div class="flex justify-end space-x-2 pt-2">
-        <button id="modal-confirm-cancel" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Cancelar</button>
-        <button id="modal-confirm-accept" class="px-3 py-1.5 text-xs font-semibold rounded bg-rose-600 text-white hover:bg-rose-700 transition">Confirmar</button>
       </div>
     </div>
+
   </div>
 
+  <div id="toast-container"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Lógica Principal consumiendo la arquitectura modular -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { db } from "./js/firebase-config.js";
     import { 
-      getFirestore, 
-      enableIndexedDbPersistence,
       collection, 
-      addDoc, 
-      setDoc, 
       doc, 
+      setDoc, 
+      addDoc, 
       deleteDoc, 
       onSnapshot, 
       query, 
-      where, 
-      serverTimestamp 
+      where 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Inicialización directa y unificada de Firebase (evita fallos de módulos relativos)
-    const firebaseConfig = {
-      apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevroffk",
-      authDomain: "conglomerado-empresarial.firebaseapp.com",
-      projectId: "conglomerado-empresarial",
-      storageBucket: "conglomerado-empresarial.appspot.com",
-      messagingSenderId: "36848994870",
-      appId: "1:36848994870:web:2fa267a5e1d35ce1baa697"
-    };
+    let currentProjectId = null;
+    let map, marker, circle;
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    function notify(msg) {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
 
-    // Persistencia local offline
-    enableIndexedDbPersistence(db).catch((err) => {
-      if (err.code === 'failed-precondition') {
-        console.warn('Persistencia: pestañas múltiples abiertas.');
-      } else if (err.code === 'unimplemented') {
-        console.warn('Persistencia: el navegador actual no soporta IndexedDB.');
-      }
+    function initMap() {
+      const defaultLat = 19.4326;
+      const defaultLng = -99.1332;
+      
+      map = L.map('map').setView([defaultLat, defaultLng], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+      circle = L.circle([defaultLat, defaultLng], { radius: 150, color: '#0284c7' }).addTo(map);
+
+      marker.on('dragend', () => {
+        const { lat, lng } = marker.getLatLng();
+        document.getElementById('project-lat').value = lat.toFixed(6);
+        document.getElementById('project-lng').value = lng.toFixed(6);
+        circle.setLatLng([lat, lng]);
+      });
+
+      map.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        marker.setLatLng([lat, lng]);
+        circle.setLatLng([lat, lng]);
+        document.getElementById('project-lat').value = lat.toFixed(6);
+        document.getElementById('project-lng').value = lng.toFixed(6);
+      });
+    }
+
+    function updateMap(lat, lng, radius) {
+      if (!map) return;
+      marker.setLatLng([lat, lng]);
+      circle.setLatLng([lat, lng]);
+      circle.setRadius(radius);
+      map.setView([lat, lng], 15);
+    }
+
+    document.getElementById('project-radius').addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      document.getElementById('radius-val').textContent = val;
+      circle.setRadius(val);
     });
 
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      const bgColors = {
-        success: 'bg-emerald-600 text-white',
-        error: 'bg-rose-600 text-white',
-        warning: 'bg-amber-500 text-slate-900',
-        info: 'bg-slate-800 text-white'
-      };
-      toast.className = `toast-transition pointer-events-auto px-4 py-2.5 rounded-lg shadow-lg text-xs font-semibold flex items-center gap-2 ${bgColors[type] || bgColors.info}`;
-      toast.textContent = message;
-      container.appendChild(toast);
-
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        setTimeout(() => toast.remove(), 300);
-      }, 3500);
-    }
-
-    function customConfirm(title, message) {
-      return new Promise((resolve) => {
-        const modal = document.getElementById('modal-confirm');
-        const titleEl = document.getElementById('modal-confirm-title');
-        const msgEl = document.getElementById('modal-confirm-msg');
-        const btnCancel = document.getElementById('modal-confirm-cancel');
-        const btnAccept = document.getElementById('modal-confirm-accept');
-
-        titleEl.textContent = title;
-        msgEl.textContent = message;
-        modal.classList.remove('hidden');
-
-        const cleanup = (result) => {
-          modal.classList.add('hidden');
-          btnCancel.onclick = null;
-          btnAccept.onclick = null;
-          resolve(result);
-        };
-
-        btnCancel.onclick = () => cleanup(false);
-        btnAccept.onclick = () => cleanup(true);
+    ['project-lat', 'project-lng'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        const lat = Number(document.getElementById('project-lat').value);
+        const lng = Number(document.getElementById('project-lng').value);
+        if (lat && lng) updateMap(lat, lng, Number(document.getElementById('project-radius').value));
       });
-    }
-
-    let proyectoActivoId = null;
-    let mapa, marcador, circuloGeocerca;
-    const defaultCoords = [23.2494, -106.4111]; // Mazatlán
-
-    function inicializarMapa() {
-      mapa = L.map('mapa').setView(defaultCoords, 14);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-      }).addTo(mapa);
-
-      marcador = L.marker(defaultCoords, { draggable: true }).addTo(mapa);
-      circuloGeocerca = L.circle(defaultCoords, {
-        color: '#f59e0b',
-        fillColor: '#fbbf24',
-        fillOpacity: 0.25,
-        radius: 100
-      }).addTo(mapa);
-
-      // Evento clic en mapa para posicionar marcador
-      mapa.on('click', (e) => {
-        actualizarCoordenadasEnMapa(e.latlng.lat, e.latlng.lng);
-      });
-
-      // Evento arrastrar marcador
-      marcador.on('dragend', (e) => {
-        const { lat, lng } = e.target.getLatLng();
-        actualizarCoordenadasEnMapa(lat, lng);
-      });
-    }
-
-    function actualizarCoordenadasEnMapa(lat, lng, zoom = false) {
-      document.getElementById('lat').value = lat.toFixed(6);
-      document.getElementById('lng').value = lng.toFixed(6);
-      marcador.setLatLng([lat, lng]);
-      circuloGeocerca.setLatLng([lat, lng]);
-      if (zoom) mapa.setView([lat, lng], 16);
-    }
-
-    const radioSlider = document.getElementById('radio_metros');
-    const radioDisplay = document.getElementById('radio-display');
-    radioSlider.addEventListener('input', (e) => {
-      const metros = Number(e.target.value);
-      radioDisplay.textContent = `${metros} m`;
-      if (circuloGeocerca) circuloGeocerca.setRadius(metros);
     });
 
     document.getElementById('btn-gps').addEventListener('click', () => {
-      if (!navigator.geolocation) {
-        showToast("Tu navegador no soporta geolocalización.", "warning");
-        return;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            document.getElementById('project-lat').value = lat.toFixed(6);
+            document.getElementById('project-lng').value = lng.toFixed(6);
+            updateMap(lat, lng, Number(document.getElementById('project-radius').value));
+            notify("Ubicación GPS obtenida");
+          },
+          () => notify("No se pudo obtener la ubicación GPS.")
+        );
       }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          actualizarCoordenadasEnMapa(pos.coords.latitude, pos.coords.longitude, true);
-          showToast("Ubicación GPS obtenida con éxito.", "success");
-        },
-        (err) => showToast("Error al obtener GPS: " + err.message, "error"),
-        { enableHighAccuracy: true }
-      );
     });
 
-    ['lat', 'lng'].forEach(id => {
-      document.getElementById(id).addEventListener('change', () => {
-        const lat = parseFloat(document.getElementById('lat').value);
-        const lng = parseFloat(document.getElementById('lng').value);
-        if (!isNaN(lat) && !isNaN(lng)) {
-          actualizarCoordenadasEnMapa(lat, lng, true);
-        }
-      });
-    });
-
-    document.getElementById('form-proyecto').addEventListener('submit', async (e) => {
+    // Guardar o Editar Proyecto
+    document.getElementById('project-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const id = document.getElementById('proyecto-id').value;
+      const pId = document.getElementById('project-id').value;
       const data = {
-        nombre: document.getElementById('nombre').value.trim(),
-        codigo: document.getElementById('codigo').value.trim(),
-        tipo: document.getElementById('tipo').value,
-        lat: parseFloat(document.getElementById('lat').value),
-        lng: parseFloat(document.getElementById('lng').value),
-        radio_metros: Number(document.getElementById('radio_metros').value),
-        actualizadoEn: serverTimestamp()
+        nombre: document.getElementById('project-name').value.trim(),
+        codigo: document.getElementById('project-code').value.trim(),
+        cliente: document.getElementById('project-client').value.trim(),
+        lat: parseFloat(document.getElementById('project-lat').value),
+        lng: parseFloat(document.getElementById('project-lng').value),
+        radio_metros: parseFloat(document.getElementById('project-radius').value),
+        activo: true,
+        actualizadoEn: new Date().toISOString()
       };
 
       try {
-        if (id) {
-          await setDoc(doc(db, "proyectos", id), data, { merge: true });
-          showToast("Proyecto actualizado correctamente.", "success");
+        if (pId) {
+          await setDoc(doc(db, "proyectos", pId), data, { merge: true });
+          notify("Proyecto actualizado exitosamente");
         } else {
-          data.creadoEn = serverTimestamp();
-          data.activo = true;
           await addDoc(collection(db, "proyectos"), data);
-          showToast("Proyecto registrado exitosamente.", "success");
+          notify("Proyecto creado exitosamente");
         }
-        resetFormulario();
+        resetProjectForm();
       } catch (err) {
-        console.error("Error al guardar proyecto:", err);
-        showToast("Error al guardar: " + err.message, "error");
+        console.error(err);
+        notify("Error al guardar en Firestore: " + err.message);
       }
     });
 
-    function resetFormulario() {
-      document.getElementById('form-proyecto').reset();
-      document.getElementById('proyecto-id').value = '';
-      document.getElementById('btn-guardar').textContent = 'Guardar Proyecto';
-      radioDisplay.textContent = '100 m';
-      if (circuloGeocerca) circuloGeocerca.setRadius(100);
-      actualizarCoordenadasEnMapa(defaultCoords[0], defaultCoords[1], false);
+    function resetProjectForm() {
+      document.getElementById('project-form').reset();
+      document.getElementById('project-id').value = '';
+      document.getElementById('radius-val').textContent = '150';
+      document.getElementById('btn-save-project').textContent = 'Guardar Proyecto';
+      document.getElementById('btn-cancel-edit').style.display = 'none';
     }
 
-    document.getElementById('btn-limpiar').addEventListener('click', resetFormulario);
+    document.getElementById('btn-cancel-edit').addEventListener('click', resetProjectForm);
 
+    // Escuchar Proyectos en Tiempo Real
     onSnapshot(collection(db, "proyectos"), (snapshot) => {
-      const container = document.getElementById('lista-proyectos');
-      document.getElementById('contador-proyectos').textContent = snapshot.size;
-      container.innerHTML = '';
-
+      const container = document.getElementById('projects-list');
       if (snapshot.empty) {
-        container.innerHTML = `<div class="col-span-2 text-center text-xs text-slate-400 py-4">No hay proyectos dados de alta.</div>`;
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">No hay proyectos registrados en Firestore. Crea el primero arriba.</div>';
         return;
       }
 
-      snapshot.forEach(docSnap => {
+      container.innerHTML = '';
+      snapshot.forEach((docSnap) => {
         const p = docSnap.data();
-        const card = document.createElement('div');
-        const isActive = docSnap.id === proyectoActivoId;
-        card.className = `p-3 rounded-lg border text-xs cursor-pointer transition ${
-          isActive ? 'border-amber-500 bg-amber-50/50 ring-1 ring-amber-500' : 'border-slate-200 hover:border-slate-300 bg-slate-50'
-        }`;
-
-        card.innerHTML = `
-          <div class="flex justify-between items-start mb-1">
-            <span class="font-bold text-slate-900">${p.nombre}</span>
-            <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono">${p.codigo}</span>
+        const id = docSnap.id;
+        const item = document.createElement('div');
+        item.className = `project-item ${currentProjectId === id ? 'active' : ''}`;
+        item.innerHTML = `
+          <div>
+            <strong>${p.nombre}</strong> <span style="font-size:0.8rem; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${p.codigo}</span>
+            <div class="project-meta">Cliente: ${p.cliente} | Geocerca: Radio ${p.radio_metros}m</div>
           </div>
-          <div class="text-slate-500 space-y-0.5 text-[11px] mb-2">
-            <div>Tipo: <strong class="text-slate-700">${p.tipo}</strong></div>
-            <div>Geocerca: <strong class="text-slate-700">${p.radio_metros} m</strong> tolerados</div>
-          </div>
-          <div class="flex justify-end space-x-2 pt-2 border-t border-slate-200/60">
-            <button data-action="manage" class="text-blue-600 hover:underline font-semibold">Configurar Catálogos</button>
-            <button data-action="edit" class="text-slate-600 hover:underline">Editar</button>
+          <div style="display:flex; gap: 4px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.selectProject('${id}', '${p.nombre.replace(/'/g, "\\'")}')">Catálogos</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.editProject('${id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="window.deleteProject('${id}')">🗑️</button>
           </div>
         `;
-
-        card.querySelector('[data-action="manage"]').addEventListener('click', (e) => {
-          e.stopPropagation();
-          seleccionarProyecto(docSnap.id, p);
-        });
-
-        card.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
-          e.stopPropagation();
-          cargarProyectoEnFormulario(docSnap.id, p);
-        });
-
-        container.appendChild(card);
+        container.appendChild(item);
       });
+    }, (err) => {
+      console.error(err);
+      notify("Error de consulta Firestore: " + err.message);
     });
 
-    function cargarProyectoEnFormulario(id, p) {
-      document.getElementById('proyecto-id').value = id;
-      document.getElementById('nombre').value = p.nombre;
-      document.getElementById('codigo').value = p.codigo;
-      document.getElementById('tipo').value = p.tipo;
-      document.getElementById('radio_metros').value = p.radio_metros;
-      radioDisplay.textContent = `${p.radio_metros} m`;
-      actualizarCoordenadasEnMapa(p.lat, p.lng, true);
-      document.getElementById('btn-guardar').textContent = 'Actualizar Proyecto';
-    }
+    window.selectProject = (id, nombre) => {
+      currentProjectId = id;
+      document.getElementById('selected-project-title').textContent = `Catálogos: ${nombre}`;
+      document.getElementById('catalog-card').style.display = 'block';
+      listenCatalogs(id);
+    };
 
-    function seleccionarProyecto(id, p) {
-      proyectoActivoId = id;
-      document.getElementById('panel-catalogos').classList.remove('hidden');
-      document.getElementById('proyecto-seleccionado-nombre').textContent = p.nombre;
-      document.getElementById('proyecto-seleccionado-codigo').textContent = `Código: ${p.codigo} | Geocerca: ${p.radio_metros}m`;
-      
-      escucharEmpleados(id);
-      escucharPartidas(id);
-    }
+    window.editProject = (id) => {
+      const ref = doc(db, "proyectos", id);
+      onSnapshot(ref, (d) => {
+        if (!d.exists()) return;
+        const p = d.data();
+        document.getElementById('project-id').value = id;
+        document.getElementById('project-name').value = p.nombre;
+        document.getElementById('project-code').value = p.codigo;
+        document.getElementById('project-client').value = p.cliente;
+        document.getElementById('project-lat').value = p.lat;
+        document.getElementById('project-lng').value = p.lng;
+        document.getElementById('project-radius').value = p.radio_metros;
+        document.getElementById('radius-val').textContent = p.radio_metros;
+        updateMap(p.lat, p.lng, p.radio_metros);
+        document.getElementById('btn-save-project').textContent = 'Actualizar Proyecto';
+        document.getElementById('btn-cancel-edit').style.display = 'inline-flex';
+      });
+    };
 
-    const tabBtnEmp = document.getElementById('tab-btn-empleados');
-    const tabBtnPart = document.getElementById('tab-btn-partidas');
-    const tabEmp = document.getElementById('tab-empleados');
-    const tabPart = document.getElementById('tab-partidas');
-
-    tabBtnEmp.addEventListener('click', () => {
-      tabBtnEmp.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800";
-      tabBtnPart.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-600 hover:bg-slate-200";
-      tabEmp.classList.remove('hidden');
-      tabPart.classList.add('hidden');
-    });
-
-    tabBtnPart.addEventListener('click', () => {
-      tabBtnPart.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800";
-      tabBtnEmp.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-600 hover:bg-slate-200";
-      tabPart.classList.remove('hidden');
-      tabEmp.classList.add('hidden');
-    });
-
-    document.getElementById('form-empleado').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!proyectoActivoId) return;
-
-      const nuevoEmpleado = {
-        proyecto_id: proyectoActivoId,
-        nombre: document.getElementById('emp-nombre').value.trim(),
-        puesto: document.getElementById('emp-puesto').value.trim(),
-        cuota_dia: Number(document.getElementById('emp-cuota').value) || 0,
-        activo: true,
-        creadoEn: serverTimestamp()
-      };
-
-      try {
-        await addDoc(collection(db, "empleados"), nuevoEmpleado);
-        document.getElementById('form-empleado').reset();
-        showToast("Empleado asignado correctamente.", "success");
-      } catch (err) {
-        showToast("Error al registrar empleado: " + err.message, "error");
+    window.deleteProject = async (id) => {
+      if (confirm("¿Deseas eliminar este proyecto? Sus catálogos quedarán huérfanos.")) {
+        await deleteDoc(doc(db, "proyectos", id));
+        if (currentProjectId === id) {
+          document.getElementById('catalog-card').style.display = 'none';
+          currentProjectId = null;
+        }
+        notify("Proyecto eliminado");
       }
-    });
+    };
 
-    let unsubscribeEmpleados = null;
-    function escucharEmpleados(proyId) {
-      if (unsubscribeEmpleados) unsubscribeEmpleados();
-      const q = query(collection(db, "empleados"), where("proyecto_id", "==", proyId));
-      
-      unsubscribeEmpleados = onSnapshot(q, (snapshot) => {
-        const tbody = document.getElementById('lista-empleados');
-        tbody.innerHTML = '';
-        if (snapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">Sin empleados registrados en este frente.</td></tr>';
+    let unsubEmployees = null;
+    let unsubItems = null;
+
+    function listenCatalogs(pId) {
+      if (unsubEmployees) unsubEmployees();
+      if (unsubItems) unsubItems();
+
+      // Cuadrilla / Empleados
+      const empQ = query(collection(db, "empleados"), where("proyecto_id", "==", pId));
+      unsubEmployees = onSnapshot(empQ, (snap) => {
+        const tbody = document.getElementById('employees-table');
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sin empleados en este proyecto.</td></tr>';
           return;
         }
-
-        snapshot.forEach(docSnap => {
-          const emp = docSnap.data();
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-slate-50";
-          tr.innerHTML = `
-            <td class="p-2.5 font-medium text-slate-900">${emp.nombre}</td>
-            <td class="p-2.5 text-slate-600">${emp.puesto}</td>
-            <td class="p-2.5 font-mono">$${(emp.cuota_dia || 0).toFixed(2)}</td>
-            <td class="p-2.5 text-right">
-              <button data-del="${docSnap.id}" class="text-rose-500 hover:text-rose-700 font-bold px-2 py-1">✕</button>
-            </td>
+        tbody.innerHTML = '';
+        snap.forEach(d => {
+          const emp = d.data();
+          tbody.innerHTML += `
+            <tr>
+              <td>${emp.nombre}</td>
+              <td>${emp.puesto}</td>
+              <td>$${Number(emp.cuota_hora).toFixed(2)}</td>
+              <td><button class="btn btn-danger btn-sm" onclick="window.deleteCatalogItem('empleados', '${d.id}')">✕</button></td>
+            </tr>
           `;
-          tr.querySelector(`[data-del="${docSnap.id}"]`).addEventListener('click', async () => {
-            const confirmed = await customConfirm('Eliminar Empleado', `¿Deseas dar de baja a ${emp.nombre}?`);
-            if (confirmed) {
-              await deleteDoc(doc(db, "empleados", docSnap.id));
-              showToast("Empleado eliminado.", "info");
-            }
-          });
-          tbody.appendChild(tr);
         });
       });
-    }
 
-    document.getElementById('form-partida').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!proyectoActivoId) return;
-
-      const nuevaPartida = {
-        proyecto_id: proyectoActivoId,
-        clave: document.getElementById('part-clave').value.trim().toUpperCase(),
-        concepto: document.getElementById('part-concepto').value.trim(),
-        unidad: document.getElementById('part-unidad').value.trim().toLowerCase(),
-        volumen_total: Number(document.getElementById('part-volumen').value) || 0,
-        creadoEn: serverTimestamp()
-      };
-
-      try {
-        await addDoc(collection(db, "partidas"), nuevaPartida);
-        document.getElementById('form-partida').reset();
-        showToast("Partida agregada al catálogo.", "success");
-      } catch (err) {
-        showToast("Error al registrar partida: " + err.message, "error");
-      }
-    });
-
-    let unsubscribePartidas = null;
-    function escucharPartidas(proyId) {
-      if (unsubscribePartidas) unsubscribePartidas();
-      const q = query(collection(db, "partidas"), where("proyecto_id", "==", proyId));
-
-      unsubscribePartidas = onSnapshot(q, (snapshot) => {
-        const tbody = document.getElementById('lista-partidas');
-        tbody.innerHTML = '';
-        if (snapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Sin partidas cargadas.</td></tr>';
+      // Partidas Contractuales
+      const itemQ = query(collection(db, "partidas"), where("proyecto_id", "==", pId));
+      unsubItems = onSnapshot(itemQ, (snap) => {
+        const tbody = document.getElementById('items-table');
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin partidas en este proyecto.</td></tr>';
           return;
         }
-
-        snapshot.forEach(docSnap => {
-          const part = docSnap.data();
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-slate-50";
-          tr.innerHTML = `
-            <td class="p-2.5 font-mono font-semibold text-slate-800">${part.clave}</td>
-            <td class="p-2.5 text-slate-600">${part.concepto}</td>
-            <td class="p-2.5 uppercase text-slate-500">${part.unidad}</td>
-            <td class="p-2.5 font-mono font-bold text-slate-800">${part.volumen_total}</td>
-            <td class="p-2.5 text-right">
-              <button data-del="${docSnap.id}" class="text-rose-500 hover:text-rose-700 font-bold px-2 py-1">✕</button>
-            </td>
+        tbody.innerHTML = '';
+        snap.forEach(d => {
+          const itm = d.data();
+          tbody.innerHTML += `
+            <tr>
+              <td><b>${itm.clave}</b></td>
+              <td>${itm.concepto}</td>
+              <td>${itm.unidad}</td>
+              <td>${Number(itm.volumen_total).toLocaleString()}</td>
+              <td>$${Number(itm.precio_unitario).toFixed(2)}</td>
+              <td><button class="btn btn-danger btn-sm" onclick="window.deleteCatalogItem('partidas', '${d.id}')">✕</button></td>
+            </tr>
           `;
-          tr.querySelector(`[data-del="${docSnap.id}"]`).addEventListener('click', async () => {
-            const confirmed = await customConfirm('Eliminar Partida', `¿Deseas eliminar la partida ${part.clave}?`);
-            if (confirmed) {
-              await deleteDoc(doc(db, "partidas", docSnap.id));
-              showToast("Partida eliminada.", "info");
-            }
-          });
-          tbody.appendChild(tr);
         });
       });
     }
 
-    window.addEventListener('DOMContentLoaded', inicializarMapa);
+    document.getElementById('employee-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentProjectId) return;
+      await addDoc(collection(db, "empleados"), {
+        proyecto_id: currentProjectId,
+        nombre: document.getElementById('emp-name').value.trim(),
+        puesto: document.getElementById('emp-role').value.trim(),
+        cuota_hora: parseFloat(document.getElementById('emp-rate').value),
+        activo: true
+      });
+      document.getElementById('employee-form').reset();
+      notify("Empleado registrado");
+    });
+
+    document.getElementById('item-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentProjectId) return;
+      await addDoc(collection(db, "partidas"), {
+        proyecto_id: currentProjectId,
+        clave: document.getElementById('item-code').value.trim(),
+        unidad: document.getElementById('item-unit').value.trim(),
+        concepto: document.getElementById('item-concept').value.trim(),
+        volumen_total: parseFloat(document.getElementById('item-vol').value),
+        precio_unitario: parseFloat(document.getElementById('item-price').value)
+      });
+      document.getElementById('item-form').reset();
+      notify("Partida agregada");
+    });
+
+    window.deleteCatalogItem = async (col, id) => {
+      await deleteDoc(doc(db, col, id));
+      notify("Elemento eliminado");
+    };
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    window.addEventListener('load', initMap);
   </script>
 </body>
 </html>
