@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estimaciones de Cobro - Conglomerado Empresarial</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius: 10px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+    .btn-nav:hover { background: #475569; }
+
+    .container {
+      max-width: 1400px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 1.5rem;
+    }
+    @media (max-width: 1100px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group { margin-bottom: 0.9rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .grid-4 { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1.2fr; gap: 0.75rem; }
+    @media (max-width: 768px) {
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Tabla de Conceptos Generadores */
+    .table-container { overflow-x: auto; margin: 1rem 0; }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .items-table th {
+      background: #f1f5f9;
+      padding: 0.6rem;
+      text-align: left;
+      border: 1px solid var(--border);
+      color: #475569;
+    }
+    .items-table td {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .items-table input {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-danger:hover { background: #fca5a5; }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+
+    /* Resumen Financiero */
+    .financial-summary {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      margin-bottom: 0.45rem;
+    }
+    .summary-row.total {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+      border-top: 2px solid var(--border);
+      padding-top: 0.6rem;
+      margin-top: 0.6rem;
+    }
+
+    /* Listado Histórico */
+    .hist-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      margin-bottom: 0.75rem;
+      background: #fff;
+    }
+    .badge-status {
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .badge-draft { background: #e2e8f0; color: #475569; }
+    .badge-review { background: #fef3c7; color: #b45309; }
+    .badge-approved { background: #dcfce7; color: #15803d; }
+    .badge-paid { background: #dbeafe; color: #1e40af; }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+      z-index: 999;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+      <span>Estimaciones de Cobro y Generadores</span>
+    </div>
+    <div class="header-actions">
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Cargando usuario...</span>
+      <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
+      <a href="./bitacora.html" class="btn-nav">Bitácora</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- COLUMNA 1: Formulario y Generador de Partidas -->
+    <div>
+      <div class="card" id="card-estimacion">
+        <div class="card-title">
+          <span>Generar Nueva Estimación</span>
+        </div>
+
+        <form id="form-estimacion">
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="select-proyecto">Obra / Frente</label>
+              <select id="select-proyecto" required>
+                <option value="">Cargando proyectos autorizados...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="input-numero-est">N° de Estimación</label>
+              <input type="text" id="input-numero-est" placeholder="Ej. EST-01" required>
+            </div>
+          </div>
+
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="input-fecha-corte">Fecha de Corte</label>
+              <input type="date" id="input-fecha-corte" required>
+            </div>
+            <div class="form-group">
+              <label for="input-amortizacion">Amort. Anticipo (%)</label>
+              <input type="number" id="input-amortizacion" value="0" min="0" max="100" step="0.1">
+            </div>
+            <div class="form-group">
+              <label for="input-garantia">Fondo Garantía (%)</label>
+              <input type="number" id="input-garantia" value="5" min="0" max="100" step="0.1">
+            </div>
+            <div class="form-group">
+              <label for="select-tasa-iva">Tasa de I.V.A.</label>
+              <select id="select-tasa-iva">
+                <option value="16">16% - Régimen General</option>
+                <option value="8">8% - Estímulo Fronterizo</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Matriz de Conceptos / Partidas -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+            <label style="font-size: 0.9rem; font-weight: 700; margin: 0;">Partidas y Números Generadores</label>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-row">+ Agregar Concepto</button>
+          </div>
+
+          <div class="table-container">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width: 120px;">Clave</th>
+                  <th>Descripción del Concepto</th>
+                  <th style="width: 70px;">Unidad</th>
+                  <th style="width: 100px;">P.U. ($)</th>
+                  <th style="width: 90px;">Vol. Ejec.</th>
+                  <th style="width: 110px;">Importe ($)</th>
+                  <th style="width: 40px;"></th>
+                </tr>
+              </thead>
+              <tbody id="items-body">
+                <!-- Renglones dinámicos -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Resumen Numérico -->
+          <div class="financial-summary">
+            <div class="summary-row">
+              <span>Subtotal Conceptos:</span>
+              <strong id="lbl-subtotal">$0.00</strong>
+            </div>
+            <div class="summary-row" style="color: #b91c1c;">
+              <span>(-) Amortización de Anticipo:</span>
+              <span id="lbl-amortizacion">-$0.00</span>
+            </div>
+            <div class="summary-row" style="color: #b45309;">
+              <span>(-) Retención Fondo de Garantía:</span>
+              <span id="lbl-garantia">-$0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Base Imponible:</span>
+              <span id="lbl-base">$0.00</span>
+            </div>
+            <div class="summary-row">
+              <span id="lbl-iva-header">(+) I.V.A. (16%):</span>
+              <span id="lbl-iva">$0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>LÍQUIDO A COBRAR:</span>
+              <span id="lbl-total">$0.00</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.25rem;">
+            <button type="submit" class="btn btn-primary" id="btn-guardar-est">Guardar e Inyectar Estimación</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- COLUMNA 2: Histórico de Estimaciones -->
+    <div>
+      <div class="card">
+        <div class="card-title">
+          <span>Historial de Estimaciones</span>
+        </div>
+        <div class="form-group">
+          <select id="filtro-proyecto-hist">
+            <option value="todos">Todas las obras autorizadas</option>
+          </select>
+        </div>
+        <div id="history-container">
+          <div style="text-align: center; color: var(--text-muted); padding: 1rem 0; font-size: 0.85rem;">
+            Cargando registros financieros...
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+  <script type="module">
+    import { db, collection, addDoc, onSnapshot, doc, updateDoc } from "./js/firebase-config.js";
+    import { protegerVista, tienePermiso } from "./js/rbac.js";
+
+    const selectProyecto = document.getElementById("select-proyecto");
+    const filtroProyectoHist = document.getElementById("filtro-proyecto-hist");
+    const inputFechaCorte = document.getElementById("input-fecha-corte");
+    const inputAmort = document.getElementById("input-amortizacion");
+    const inputGarantia = document.getElementById("input-garantia");
+    const selectTasaIva = document.getElementById("select-tasa-iva");
+    const itemsBody = document.getElementById("items-body");
+    const btnAddRow = document.getElementById("btn-add-row");
+    const formEstimacion = document.getElementById("form-estimacion");
+    const historyContainer = document.getElementById("history-container");
+    const toast = document.getElementById("toast");
+
+    // Etiquetas Resumen
+    const lblSubtotal = document.getElementById("lbl-subtotal");
+    const lblAmort = document.getElementById("lbl-amortizacion");
+    const lblGarantia = document.getElementById("lbl-garantia");
+    const lblBase = document.getElementById("lbl-base");
+    const lblIvaHeader = document.getElementById("lbl-iva-header");
+    const lblIva = document.getElementById("lbl-iva");
+    const lblTotal = document.getElementById("lbl-total");
+
+    let usuarioActual = null;
+    let perfilActual = null;
+    let proyectosDisponibles = [];
+    let unsubscribeHist = null;
+
+    inputFechaCorte.value = new Date().toISOString().split("T")[0];
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3000);
+    }
+
+    const formatoMoneda = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" });
+
+    // 1. Proteger Vista (RBAC)
+    protegerVista("estimaciones", "r").then(({ user, perfil }) => {
+      usuarioActual = user;
+      perfilActual = perfil;
+      document.getElementById("user-display").textContent = perfil.nombre || user.email;
+
+      if (!tienePermiso(perfil, "estimaciones", "c")) {
+        document.getElementById("card-estimacion").style.display = "none";
+      }
+
+      cargarProyectos();
+      agregarFilaConcepto(); // Inicializar con un renglón
+    });
+
+    // 2. Cargar Proyectos Autorizados
+    function cargarProyectos() {
+      onSnapshot(collection(db, "proyectos"), (snap) => {
+        selectProyecto.innerHTML = '<option value="">-- Selecciona una Obra --</option>';
+        filtroProyectoHist.innerHTML = '<option value="todos">Todas las obras autorizadas</option>';
+        proyectosDisponibles = [];
+
+        snap.forEach((d) => {
+          const p = { id: d.id, ...d.data() };
+          const tieneAcceso = perfilActual.is_superadmin || 
+                              perfilActual.alcance === "global" || 
+                              perfilActual.proyectos_asignados?.includes(d.id) || 
+                              perfilActual.proyectos_asignados?.includes("*");
+
+          if (tieneAcceso) {
+            proyectosDisponibles.push(p);
+
+            const opt1 = document.createElement("option");
+            opt1.value = p.id;
+            opt1.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            selectProyecto.appendChild(opt1);
+
+            const opt2 = document.createElement("option");
+            opt2.value = p.id;
+            opt2.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            filtroProyectoHist.appendChild(opt2);
+          }
+        });
+
+        if (proyectosDisponibles.length > 0) {
+          selectProyecto.selectedIndex = 1;
+        }
+
+        escucharHistorial();
+      });
+    }
+
+    // 3. Fila Dinámica de Conceptos Generadores
+    function agregarFilaConcepto(clave = "", desc = "", unidad = "m2", pu = 0, vol = 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input type="text" class="inp-clave" placeholder="C-01" value="${clave}" required></td>
+        <td><input type="text" class="inp-desc" placeholder="Concepto de obra..." value="${desc}" required></td>
+        <td><input type="text" class="inp-unidad" placeholder="Pza" value="${unidad}" style="text-align:center;" required></td>
+        <td><input type="number" class="inp-pu" step="0.01" min="0" value="${pu}" required></td>
+        <td><input type="number" class="inp-vol" step="0.01" min="0" value="${vol}" required></td>
+        <td style="font-weight: 600; text-align: right;" class="col-importe">$0.00</td>
+        <td style="text-align: center;"><button type="button" class="btn btn-danger btn-sm btn-del">✕</button></td>
+      `;
+
+      tr.querySelectorAll("input").forEach(inp => inp.addEventListener("input", recalcularTotales));
+      tr.querySelector(".btn-del").addEventListener("click", () => {
+        tr.remove();
+        recalcularTotales();
+      });
+
+      itemsBody.appendChild(tr);
+      recalcularTotales();
+    }
+
+    btnAddRow.addEventListener("click", () => agregarFilaConcepto());
+
+    // 4. Algoritmo de Cálculo Financiero con Soporte IVA 16% / 8%
+    function recalcularTotales() {
+      let subtotal = 0;
+      const rows = itemsBody.querySelectorAll("tr");
+
+      rows.forEach(tr => {
+        const pu = parseFloat(tr.querySelector(".inp-pu").value) || 0;
+        const vol = parseFloat(tr.querySelector(".inp-vol").value) || 0;
+        const imp = pu * vol;
+        subtotal += imp;
+        tr.querySelector(".col-importe").textContent = formatoMoneda.format(imp);
+      });
+
+      const pAmort = (parseFloat(inputAmort.value) || 0) / 100;
+      const pGarantia = (parseFloat(inputGarantia.value) || 0) / 100;
+      const tasaIvaNum = parseFloat(selectTasaIva.value) || 16;
+      const pIva = tasaIvaNum / 100;
+
+      const deduccionAmort = subtotal * pAmort;
+      const deduccionGarantia = subtotal * pGarantia;
+      const baseImponible = subtotal - deduccionAmort - deduccionGarantia;
+      const iva = baseImponible * pIva;
+      const totalLiquido = baseImponible + iva;
+
+      lblSubtotal.textContent = formatoMoneda.format(subtotal);
+      lblAmort.textContent = `-${formatoMoneda.format(deduccionAmort)}`;
+      lblGarantia.textContent = `-${formatoMoneda.format(deduccionGarantia)}`;
+      lblBase.textContent = formatoMoneda.format(baseImponible);
+      lblIvaHeader.textContent = `(+) I.V.A. (${tasaIvaNum}%):`;
+      lblIva.textContent = formatoMoneda.format(iva);
+      lblTotal.textContent = formatoMoneda.format(totalLiquido);
+
+      return { subtotal, deduccionAmort, deduccionGarantia, baseImponible, tasaIva: tasaIvaNum, iva, totalLiquido };
+    }
+
+    inputAmort.addEventListener("input", recalcularTotales);
+    inputGarantia.addEventListener("input", recalcularTotales);
+    selectTasaIva.addEventListener("change", recalcularTotales);
+
+    // 5. Inyección de la Estimación a Firestore
+    formEstimacion.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const pId = selectProyecto.value;
+      if (!pId) return alert("Selecciona un proyecto.");
+
+      const rows = itemsBody.querySelectorAll("tr");
+      if (rows.length === 0) return alert("Agrega al menos una partida a la estimación.");
+
+      const partidas = [];
+      rows.forEach(tr => {
+        const pu = parseFloat(tr.querySelector(".inp-pu").value) || 0;
+        const vol = parseFloat(tr.querySelector(".inp-vol").value) || 0;
+        partidas.push({
+          clave: tr.querySelector(".inp-clave").value.trim(),
+          descripcion: tr.querySelector(".inp-desc").value.trim(),
+          unidad: tr.querySelector(".inp-unidad").value.trim(),
+          precioUnitario: pu,
+          volumen: vol,
+          importe: pu * vol
+        });
+      });
+
+      const calculos = recalcularTotales();
+      const proyectoObj = proyectosDisponibles.find(p => p.id === pId);
+
+      const payload = {
+        proyectoId: pId,
+        proyectoNombre: proyectoObj ? proyectoObj.nombre : "Obra",
+        numeroEstimacion: document.getElementById("input-numero-est").value.trim().toUpperCase(),
+        fechaCorte: inputFechaCorte.value,
+        porcentajeAmortizacion: parseFloat(inputAmort.value) || 0,
+        porcentajeGarantia: parseFloat(inputGarantia.value) || 0,
+        tasaIva: calculos.tasaIva,
+        partidas: partidas,
+        resumenFinanciero: calculos,
+        estado: "revision", // revision, aprobada, pagada
+        creadoPorUid: usuarioActual.uid,
+        creadoPorNombre: perfilActual.nombre || usuarioActual.email,
+        creadoEn: new Date().toISOString()
+      };
+
+      try {
+        await addDoc(collection(db, "estimaciones"), payload);
+        showToast("¡Estimación inyectada a Firestore!");
+        formEstimacion.reset();
+        itemsBody.innerHTML = "";
+        inputFechaCorte.value = new Date().toISOString().split("T")[0];
+        selectTasaIva.value = "16";
+        agregarFilaConcepto();
+      } catch (err) {
+        console.error(err);
+        alert("Error al guardar estimación: " + err.message);
+      }
+    });
+
+    // 6. Historial de Estimaciones en Tiempo Real
+    function escucharHistorial() {
+      if (unsubscribeHist) unsubscribeHist();
+      const filtroId = filtroProyectoHist.value;
+
+      unsubscribeHist = onSnapshot(collection(db, "estimaciones"), (snap) => {
+        historyContainer.innerHTML = "";
+        if (snap.empty) {
+          historyContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">Sin estimaciones registradas.</div>';
+          return;
+        }
+
+        let lista = [];
+        snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+
+        const permitidos = proyectosDisponibles.map(p => p.id);
+        lista = lista.filter(item => permitidos.includes(item.proyectoId));
+
+        if (filtroId !== "todos") {
+          lista = lista.filter(item => item.proyectoId === filtroId);
+        }
+
+        lista.sort((a, b) => new Date(b.fechaCorte) - new Date(a.fechaCorte));
+
+        if (lista.length === 0) {
+          historyContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">No hay estimaciones para la obra seleccionada.</div>';
+          return;
+        }
+
+        lista.forEach(est => {
+          const item = document.createElement("div");
+          item.className = "hist-item";
+
+          let badgeClass = "badge-review";
+          let badgeText = "En Revisión";
+          if (est.estado === "aprobada") { badgeClass = "badge-approved"; badgeText = "Aprobada"; }
+          if (est.estado === "pagada") { badgeClass = "badge-paid"; badgeText = "Pagada"; }
+
+          const tasaAplicada = est.tasaIva || est.resumenFinanciero?.tasaIva || 16;
+
+          item.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.4rem;">
+              <div>
+                <strong>${est.numeroEstimacion}</strong> - <small style="color: var(--text-muted);">${est.proyectoNombre}</small>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Corte: ${est.fechaCorte} | IVA: ${tasaAplicada}%</div>
+              </div>
+              <span class="badge-status ${badgeClass}">${badgeText}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 0.5rem; border-top: 1px solid #f1f5f9; padding-top: 0.4rem;">
+              <span>Subtotal: ${formatoMoneda.format(est.resumenFinanciero?.subtotal || 0)}</span>
+              <strong style="color: var(--accent);">${formatoMoneda.format(est.resumenFinanciero?.totalLiquido || 0)}</strong>
+            </div>
+
+            ${perfilActual.is_superadmin ? `
+              <div style="display: flex; gap: 6px; margin-top: 0.6rem;">
+                <button class="btn btn-secondary btn-sm" onclick="window.cambiarEstadoEst('${est.id}', 'aprobada')">Aprobar</button>
+                <button class="btn btn-secondary btn-sm" onclick="window.cambiarEstadoEst('${est.id}', 'pagada')">Pagada</button>
+              </div>
+            ` : ''}
+          `;
+          historyContainer.appendChild(item);
+        });
+      });
+    }
+
+    filtroProyectoHist.addEventListener("change", escucharHistorial);
+
+    window.cambiarEstadoEst = async (id, nuevoEstado) => {
+      try {
+        await updateDoc(doc(db, "estimaciones", id), { estado: nuevoEstado });
+        showToast(`Estimación marcada como ${nuevoEstado}`);
+      } catch (err) {
+        alert("Error al actualizar estado: " + err.message);
+      }
+    };
+  </script>
+</body>
+</html>
