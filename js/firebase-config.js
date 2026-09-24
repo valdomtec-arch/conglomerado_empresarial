@@ -6,6 +6,7 @@ import {
   doc, 
   setDoc, 
   addDoc, 
+  updateDoc, 
   deleteDoc, 
   getDoc, 
   onSnapshot, 
@@ -31,10 +32,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
-// FORZAR EL NOMBRE LITERAL QUE SE VE EN TU CONSOLA
 const db = getFirestore(app, "default");
-
 const auth = getAuth(app);
 const storage = getStorage(app);
 
@@ -50,6 +48,7 @@ export {
   doc,
   setDoc,
   addDoc,
+  updateDoc,
   deleteDoc,
   getDoc,
   onSnapshot,
