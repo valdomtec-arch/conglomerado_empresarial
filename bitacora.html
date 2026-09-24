@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bitácora Digital de Obra - Conglomerado Empresarial</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --radius: 10px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+    .btn-nav:hover { background: #475569; }
+
+    .container {
+      max-width: 1300px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group { margin-bottom: 0.9rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    /* Contenedor de Fotografía */
+    .photo-preview-container {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .photo-thumb {
+      width: 70px;
+      height: 70px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 0.65rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* Feed de Entradas */
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .entry-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      background: #fff;
+      margin-bottom: 0.85rem;
+    }
+    .entry-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.65rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 600;
+      background: #eff6ff;
+      color: var(--accent);
+    }
+    .entry-section { margin-bottom: 0.5rem; font-size: 0.85rem; }
+    .entry-section strong { color: var(--primary); }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+      z-index: 999;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      <span>Bitácora Diaria de Obra</span>
+    </div>
+    <div class="header-actions">
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Cargando...</span>
+      <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
+      <a href="./checador.html" class="btn-nav">Checador</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- COLUMNA 1: Formulario de Nueva Entrada -->
+    <div>
+      <div class="card" id="card-formulario">
+        <div class="card-title">
+          <span>Nuevo Asiento de Bitácora</span>
+        </div>
+
+        <form id="form-bitacora">
+          <div class="form-group">
+            <label for="select-proyecto">Obra / Frente de Trabajo</label>
+            <select id="select-proyecto" required>
+              <option value="">Cargando proyectos...</option>
+            </select>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="input-fecha">Fecha de Reporte</label>
+              <input type="date" id="input-fecha" required>
+            </div>
+            <div class="form-group">
+              <label for="select-clima">Condición Climática</label>
+              <select id="select-clima">
+                <option value="Soleado / Despejado">☀️ Soleado / Despejado</option>
+                <option value="Nublado">⛅ Nublado</option>
+                <option value="Lluvia Ligera">🌦️ Lluvia Ligera</option>
+                <option value="Lluvia Intensa / Paro">🌧️ Lluvia Intensa (Paro)</option>
+                <option value="Viento Fuerte">💨 Viento Fuerte</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="input-personal">Personal en Sitio (M.O.)</label>
+              <input type="number" id="input-personal" placeholder="Ej. 18 personas" min="0">
+            </div>
+            <div class="form-group">
+              <label for="input-maquinaria">Equipo / Maquinaria Activa</label>
+              <input type="text" id="input-maquinaria" placeholder="Ej. 1 Retroexcavadora, 2 Camiones">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="text-actividades">Actividades Ejecutadas y Avances</label>
+            <textarea id="text-actividades" placeholder="Describe los frentes abordados, colados, excavaciones, armados..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="text-incidentes">Incidentes, Retrasos o Notas Relevantes</label>
+            <textarea id="text-incidentes" placeholder="Falta de suministro, interferencias, accidentes, visitas de supervisión..."></textarea>
+          </div>
+
+          <!-- Evidencia Fotográfica con compresión en Canvas -->
+          <div class="form-group">
+            <label for="input-foto">Fotografía de Evidencia (Opcional)</label>
+            <input type="file" id="input-foto" accept="image/*" capture="environment">
+            <div class="photo-preview-container" id="preview-container"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-guardar">Registrar en Bitácora</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- COLUMNA 2: Feed Histórico de Asientos -->
+    <div>
+      <div class="card">
+        <div class="feed-header">
+          <div class="card-title" style="margin: 0;">Historial de Reportes</div>
+          <div style="display: flex; gap: 8px;">
+            <select id="filtro-proyecto" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.85rem;">
+              <option value="todos">Todos los frentes</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="entries-feed">
+          <div style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.9rem;">
+            Cargando asientos de bitácora...
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <canvas id="hidden-canvas" style="display: none;"></canvas>
+  <div id="toast"></div>
+
+  <script type="module">
+    import { db, collection, addDoc, onSnapshot, query, where, doc } from "./js/firebase-config.js";
+    import { protegerVista, tienePermiso } from "./js/rbac.js";
+
+    const selectProyecto = document.getElementById("select-proyecto");
+    const filtroProyecto = document.getElementById("filtro-proyecto");
+    const inputFecha = document.getElementById("input-fecha");
+    const formBitacora = document.getElementById("form-bitacora");
+    const btnGuardar = document.getElementById("btn-guardar");
+    const inputFoto = document.getElementById("input-foto");
+    const previewContainer = document.getElementById("preview-container");
+    const canvas = document.getElementById("hidden-canvas");
+    const entriesFeed = document.getElementById("entries-feed");
+    const toast = document.getElementById("toast");
+
+    let usuarioActual = null;
+    let perfilActual = null;
+    let proyectosDisponibles = [];
+    let fotoBase64 = null;
+    let unsubscribeFeed = null;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3000);
+    }
+
+    // Inicializar fecha actual (YYYY-MM-DD)
+    inputFecha.value = new Date().toISOString().split("T")[0];
+
+    // 1. Proteger Vista (RBAC)
+    protegerVista("bitacora", "r").then(({ user, perfil }) => {
+      usuarioActual = user;
+      perfilActual = perfil;
+      document.getElementById("user-display").textContent = perfil.nombre || user.email;
+
+      // Si no tiene permiso de creación ('c'), ocultar formulario
+      if (!tienePermiso(perfil, "bitacora", "c")) {
+        document.getElementById("card-formulario").style.display = "none";
+      }
+
+      cargarProyectos();
+    });
+
+    // 2. Cargar Proyectos Autorizados
+    function cargarProyectos() {
+      onSnapshot(collection(db, "proyectos"), (snap) => {
+        selectProyecto.innerHTML = '<option value="">-- Selecciona una Obra --</option>';
+        filtroProyecto.innerHTML = '<option value="todos">Todos los proyectos autorizados</option>';
+        proyectosDisponibles = [];
+
+        snap.forEach((d) => {
+          const p = { id: d.id, ...d.data() };
+          const tieneAcceso = perfilActual.is_superadmin || 
+                              perfilActual.alcance === "global" || 
+                              perfilActual.proyectos_asignados?.includes(d.id) || 
+                              perfilActual.proyectos_asignados?.includes("*");
+
+          if (tieneAcceso) {
+            proyectosDisponibles.push(p);
+
+            const optForm = document.createElement("option");
+            optForm.value = p.id;
+            optForm.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            selectProyecto.appendChild(optForm);
+
+            const optFilter = document.createElement("option");
+            optFilter.value = p.id;
+            optFilter.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            filtroProyecto.appendChild(optFilter);
+          }
+        });
+
+        if (proyectosDisponibles.length > 0) {
+          selectProyecto.selectedIndex = 1;
+        }
+
+        escucharFeed();
+      });
+    }
+
+    // 3. Procesamiento y Compresión de Fotografía en el Navegador
+    inputFoto.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          // Escalar máximo a 1024px para mantener el documento en Firestore ligero
+          const maxDim = 1024;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          fotoBase64 = canvas.toDataURL("image/jpeg", 0.7);
+          previewContainer.innerHTML = `<img src="${fotoBase64}" class="photo-thumb" alt="Vista previa">`;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 4. Guardar Reporte en Firestore
+    formBitacora.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const pId = selectProyecto.value;
+      if (!pId) return alert("Selecciona un proyecto.");
+
+      btnGuardar.disabled = true;
+      btnGuardar.textContent = "Guardando...";
+
+      const proyectoObj = proyectosDisponibles.find(p => p.id === pId);
+
+      const payload = {
+        proyectoId: pId,
+        proyectoNombre: proyectoObj ? proyectoObj.nombre : "Obra",
+        fecha: inputFecha.value,
+        clima: document.getElementById("select-clima").value,
+        personalMO: Number(document.getElementById("input-personal").value) || 0,
+        maquinaria: document.getElementById("input-maquinaria").value.trim(),
+        actividades: document.getElementById("text-actividades").value.trim(),
+        incidentes: document.getElementById("text-incidentes").value.trim(),
+        foto: fotoBase64 || null,
+        creadoPorUid: usuarioActual.uid,
+        creadoPorNombre: perfilActual.nombre || usuarioActual.email,
+        creadoEn: new Date().toISOString()
+      };
+
+      try {
+        await addDoc(collection(db, "bitacora"), payload);
+        showToast("Asiento guardado con éxito.");
+        
+        // Reset parcial del formulario
+        document.getElementById("text-actividades").value = "";
+        document.getElementById("text-incidentes").value = "";
+        inputFoto.value = "";
+        previewContainer.innerHTML = "";
+        fotoBase64 = null;
+      } catch (err) {
+        console.error("Error al guardar en bitacora:", err);
+        alert("Fallo al guardar: " + err.message);
+      } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = "Registrar en Bitácora";
+      }
+    });
+
+    // 5. Escuchar Entradas en Tiempo Real
+    function escucharFeed() {
+      if (unsubscribeFeed) unsubscribeFeed();
+
+      const filtroId = filtroProyecto.value;
+      const ref = collection(db, "bitacora");
+
+      unsubscribeFeed = onSnapshot(ref, (snap) => {
+        entriesFeed.innerHTML = "";
+        if (snap.empty) {
+          entriesFeed.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.9rem;">Sin asientos de bitácora registrados.</div>';
+          return;
+        }
+
+        let lista = [];
+        snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+
+        // Filtrar por permisos de proyectos
+        const permitidos = proyectosDisponibles.map(p => p.id);
+        lista = lista.filter(item => permitidos.includes(item.proyectoId));
+
+        // Filtro por selección del dropdown
+        if (filtroId !== "todos") {
+          lista = lista.filter(item => item.proyectoId === filtroId);
+        }
+
+        // Ordenar desc por fecha
+        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        if (lista.length === 0) {
+          entriesFeed.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.9rem;">No hay reportes para la obra seleccionada.</div>';
+          return;
+        }
+
+        lista.forEach((entry) => {
+          const card = document.createElement("div");
+          card.className = "entry-card";
+          card.innerHTML = `
+            <div class="entry-meta">
+              <div>
+                <span class="badge">${entry.proyectoNombre}</span>
+                <span style="margin-left: 6px; font-weight: 600;">${entry.fecha}</span>
+              </div>
+              <div>Por: <b>${entry.creadoPorNombre}</b></div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 0.6rem; font-size: 0.8rem; color: var(--text-muted);">
+              <div>Clima: <b>${entry.clima}</b></div>
+              <div>Personal: <b>${entry.personalMO} pax</b> ${entry.maquinaria ? `| Eq: ${entry.maquinaria}` : ''}</div>
+            </div>
+
+            <div class="entry-section">
+              <strong>Actividades:</strong>
+              <p style="white-space: pre-line; margin-top: 3px;">${entry.actividades}</p>
+            </div>
+
+            ${entry.incidentes ? `
+              <div class="entry-section" style="color: #b91c1c;">
+                <strong>Incidentes / Notas:</strong>
+                <p style="white-space: pre-line; margin-top: 3px;">${entry.incidentes}</p>
+              </div>
+            ` : ''}
+
+            ${entry.foto ? `
+              <div style="margin-top: 0.65rem;">
+                <img src="${entry.foto}" style="max-height: 180px; border-radius: 6px; border: 1px solid var(--border);" alt="Evidencia">
+              </div>
+            ` : ''}
+          `;
+          entriesFeed.appendChild(card);
+        });
+      });
+    }
+
+    filtroProyecto.addEventListener("change", escucharFeed);
+  </script>
+</body>
+</html>
