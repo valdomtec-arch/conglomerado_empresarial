@@ -31,8 +31,10 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-// Conexión por defecto a tu base (default)
-const db = getFirestore(app);
+
+// FORZAR EL NOMBRE LITERAL QUE SE VE EN TU CONSOLA
+const db = getFirestore(app, "default");
+
 const auth = getAuth(app);
 const storage = getStorage(app);
 
