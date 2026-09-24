@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consola de Gobernanza RBAC - Conglomerado Empresarial</title>
+  <title>Torre de Control Corporativo - Conglomerado Empresarial</title>
   <style>
     :root {
       --primary: #0f172a;
@@ -16,11 +16,9 @@
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
-      --warning-bg: #fef08a;
-      --warning-border: #facc15;
-      --warning-text: #854d0e;
+      --warning: #f59e0b;
       --radius: 10px;
-      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -41,33 +39,54 @@
     .badge-super { background: #dc2626; color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
     
     .header-actions { display: flex; align-items: center; gap: 10px; }
-    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
+    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
     .btn-nav:hover { background: #475569; }
 
-    /* Barra de Bootstrap / Inyección Forzada */
-    .bootstrap-bar {
-      background: var(--warning-bg);
-      border-bottom: 1px solid var(--warning-border);
-      padding: 10px 1.5rem;
+    .tabs-nav {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
       display: flex;
-      justify-content: space-between;
+      gap: 1.5rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 1rem 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      display: flex;
       align-items: center;
-      color: var(--warning-text);
-      font-size: 0.85rem;
-      flex-wrap: wrap;
-      gap: 10px;
+      gap: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--accent); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
     }
 
     .container {
       max-width: 1400px;
       margin: 1.5rem auto;
       padding: 0 1rem;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-admin {
       display: grid;
-      grid-template-columns: 520px 1fr;
+      grid-template-columns: 460px 1fr;
       gap: 1.5rem;
     }
-    @media (max-width: 1100px) {
-      .container { grid-template-columns: 1fr; }
+    @media (max-width: 1024px) {
+      .grid-admin { grid-template-columns: 1fr; }
     }
 
     .card {
@@ -90,41 +109,35 @@
 
     .form-group { margin-bottom: 0.9rem; }
     label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 0.6rem 0.75rem;
       border: 1px solid var(--border);
       border-radius: 6px;
       font-size: 0.9rem;
       outline: none;
-      transition: border-color 0.2s;
+      background: #fff;
     }
-    input:focus, select:focus { border-color: var(--accent); }
-
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
-    /* Matriz Dinámica CRUD */
-    .matrix-table {
+    .data-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 0.5rem;
       font-size: 0.85rem;
     }
-    .matrix-table th {
+    .data-table th {
       background: #f1f5f9;
-      padding: 0.55rem;
-      text-align: center;
+      padding: 0.6rem;
+      text-align: left;
       border: 1px solid var(--border);
       color: #475569;
     }
-    .matrix-table th:first-child { text-align: left; }
-    .matrix-table td {
-      padding: 0.55rem;
-      text-align: center;
+    .data-table td {
+      padding: 0.6rem;
       border: 1px solid var(--border);
+      vertical-align: middle;
     }
-    .matrix-table td:first-child { text-align: left; font-weight: 600; }
-    .matrix-table input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; }
 
     .btn {
       padding: 0.6rem 1.2rem;
@@ -133,11 +146,11 @@
       cursor: pointer;
       border: none;
       font-size: 0.85rem;
-      transition: all 0.2s;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: background 0.2s;
     }
     .btn-primary { background: var(--accent); color: #fff; width: 100%; }
     .btn-primary:hover { background: var(--accent-hover); }
@@ -146,32 +159,10 @@
     .btn-danger { background: #fee2e2; color: #b91c1c; }
     .btn-danger:hover { background: #fca5a5; }
     .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
-    
-    .btn-warning {
-      background: #ca8a04;
-      color: #ffffff;
-      padding: 6px 14px;
-      font-size: 0.82rem;
-    }
-    .btn-warning:hover { background: #a16207; }
 
-    /* Directorio de Usuarios */
-    .users-list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .user-card {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.9rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-    }
-    .user-card:hover { border-color: var(--accent); }
-    .user-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
-    
     .badge-status {
       font-size: 0.75rem;
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 4px;
       font-weight: 600;
     }
@@ -199,319 +190,612 @@
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
       <span>Conglomerado Empresarial</span>
-      <span class="badge-super">Gobernanza RBAC</span>
+      <span class="badge-super">Torre de Control</span>
     </div>
     <div class="header-actions">
-      <span id="super-email" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
+      <span id="super-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
       <a href="./control_obra.html" class="btn-nav">Control de Obra</a>
-      <a href="./proyectos.html" class="btn-nav">Proyectos</a>
-      <button class="btn btn-secondary btn-sm" id="btn-logout">Cerrar Sesión</button>
+      <a href="./registro_usuarios.html" class="btn-nav">+ Alta Usuario</a>
+      <button class="btn btn-secondary btn-sm" id="btn-logout">Salir</button>
     </div>
   </header>
 
-  <!-- BANNER DE INYECCIÓN FORZADA / BOOTSTRAP -->
-  <div class="bootstrap-bar">
-    <span>⚡ <b>Inicialización de Datos:</b> Inyecta la estructura completa (tu perfil Super Admin y los 6 módulos base) directamente a Firestore.</span>
-    <button class="btn btn-warning" id="btn-forzar-inyeccion">
-      Inyectar a Firestore Ahora
-    </button>
-  </div>
+  <!-- Pestañas Maestras -->
+  <nav class="tabs-nav">
+    <button class="tab-btn active" data-tab="tab-modulos">🧩 Catálogo de Módulos</button>
+    <button class="tab-btn" data-tab="tab-empresas">🏢 Empresas</button>
+    <button class="tab-btn" data-tab="tab-roles">🛡️ Roles y Matrices RBAC</button>
+    <button class="tab-btn" data-tab="tab-usuarios">👥 Padrón de Colaboradores</button>
+    <button class="tab-btn" data-tab="tab-auditoria">📜 Auditoría</button>
+  </nav>
 
   <div class="container">
-    
-    <!-- COLUMNA 1: Módulos y Matriz CRUD -->
-    <div>
-      
-      <!-- 1. Alta Dinámica de Módulos -->
-      <div class="card">
-        <div class="card-title">
-          <span>1. Registro Dinámico de Módulos</span>
+
+    <!-- ==========================================
+         PESTAÑA 1: CATÁLOGO DINÁMICO DE MÓDULOS
+         ========================================== -->
+    <section id="tab-modulos" class="tab-content active">
+      <div class="grid-admin">
+        <div class="card">
+          <div class="card-title">Registrar Nuevo Módulo en Caliente</div>
+          <form id="form-modulo-dinamico">
+            <div class="form-group">
+              <label>ID Único del Módulo (ej. almacenes, maquinaria)</label>
+              <input type="text" id="mod-id" placeholder="almacen_obra" required>
+            </div>
+            <div class="form-group">
+              <label>Nombre del Módulo (visible en el dashboard)</label>
+              <input type="text" id="mod-nombre" placeholder="Almacén y Suministros" required>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Ruta URL / Archivo</label>
+                <input type="text" id="mod-ruta" placeholder="./almacen.html" required>
+              </div>
+              <div class="form-group">
+                <label>Emoji / Ícono representativo</label>
+                <input type="text" id="mod-icono" placeholder="📦" value="📦" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Descripción Operativa</label>
+              <textarea id="mod-desc" placeholder="Control de entradas, salidas y existencias en frente de obra..." rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Inyectar Módulo a Firestore</button>
+          </form>
         </div>
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-          Inyecta nuevos módulos al sistema sin alterar el código fuente. Se reflejarán de inmediato en la matriz inferior.
-        </p>
-        <form id="form-nuevo-modulo" class="grid-2" style="margin-bottom: 0.5rem;">
-          <input type="text" id="mod-id" placeholder="ID único (ej. checador)" required>
-          <input type="text" id="mod-nombre" placeholder="Nombre (ej. Checador PWA)" required>
-          <input type="text" id="mod-ruta" placeholder="Ruta (ej. ./checador.html)" required>
-          <button type="submit" class="btn btn-secondary">+ Guardar Módulo</button>
-        </form>
-      </div>
 
-      <!-- 2. Perfil & Matriz CRUD -->
-      <div class="card">
-        <div class="card-title">
-          <span id="form-mode-title">2. Asignar Perfil y Matriz CRUD</span>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-form" style="display: none;">Limpiar / Nuevo</button>
-        </div>
-
-        <form id="form-user-rbac">
-          <div class="form-group">
-            <label>UID de Firebase Auth</label>
-            <input type="text" id="user-uid" placeholder="zeVjo7RcQqRKjq1T7goO22SMHip1" required>
-          </div>
-
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Nombre Completo</label>
-              <input type="text" id="user-nombre" placeholder="Ing. Residente" required>
-            </div>
-            <div class="form-group">
-              <label>Correo Electrónico</label>
-              <input type="email" id="user-email" placeholder="usuario@conglomerado.com" required>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Rol / Denominación</label>
-              <input type="text" id="user-rol" placeholder="Ej. Residente de Frente" required>
-            </div>
-            <div class="form-group">
-              <label>Alcance Geográfico (Scope)</label>
-              <select id="user-alcance">
-                <option value="global">Global (Todas las Obras)</option>
-                <option value="asignado">Obras Asignadas Específicas</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group" id="container-proyectos-asignados" style="display: none;">
-            <label>Obras Autorizadas (mantén presionado Ctrl para selección múltiple):</label>
-            <select id="user-proyectos" multiple style="height: 85px;"></select>
-          </div>
-
-          <div class="form-group" style="background: #f1f5f9; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px;">
-            <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
-              <input type="checkbox" id="user-is-superadmin" style="width: 18px; height: 18px;">
-              <span><strong>Super Administrador</strong> (Bypass Total de Permisos)</span>
-            </label>
-          </div>
-
-          <!-- Matriz Dinámica CRUD -->
-          <div class="form-group" id="container-matrix">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-              <label style="margin: 0;">Matriz Granular de Accesos</label>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-all">Marcar / Desmarcar Todo</button>
-            </div>
-            
-            <table class="matrix-table">
+        <div class="card">
+          <div class="card-title">Módulos Activos en el Sistema</div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
               <thead>
                 <tr>
-                  <th>Módulo</th>
-                  <th title="Crear / Insertar">C</th>
-                  <th title="Leer / Consultar">R</th>
-                  <th title="Actualizar / Editar">U</th>
-                  <th title="Eliminar / Borrar">D</th>
+                  <th>Ícono</th>
+                  <th>ID</th>
+                  <th>Nombre y Descripción</th>
+                  <th>Ruta</th>
+                  <th>Estatus</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
-              <tbody id="matrix-body">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Cargando módulos...</td></tr>
+              <tbody id="modulos-table-body">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Cargando catálogo...</td></tr>
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <div style="margin-top: 1.25rem;">
-            <button type="submit" class="btn btn-primary" id="btn-save-rbac">Inyectar Gobernanza a Firestore</button>
+    <!-- ==========================================
+         PESTAÑA 2: EMPRESAS DEL GRUPO
+         ========================================== -->
+    <section id="tab-empresas" class="tab-content">
+      <div class="grid-admin">
+        <div class="card">
+          <div class="card-title">Registrar Empresa / Razón Social</div>
+          <form id="form-empresa">
+            <div class="form-group">
+              <label>ID Clave (ej. construred, ingenia)</label>
+              <input type="text" id="emp-id" placeholder="id-clave" required>
+            </div>
+            <div class="form-group">
+              <label>Razón Social Oficial</label>
+              <input type="text" id="emp-razon" placeholder="Constructora del Centro S.A. de C.V." required>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>R.F.C.</label>
+                <input type="text" id="emp-rfc" placeholder="CDN123456789" required>
+              </div>
+              <div class="form-group">
+                <label>I.V.A. Predeterminado</label>
+                <select id="emp-iva">
+                  <option value="16">16% - Régimen General</option>
+                  <option value="8">8% - Estímulo Fronterizo</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Representante Legal</label>
+              <input type="text" id="emp-representante" placeholder="Ing. Residente General">
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Empresa</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Empresas Consolidadas</div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Clave</th>
+                  <th>Razón Social</th>
+                  <th>RFC</th>
+                  <th>IVA Base</th>
+                  <th>Estatus</th>
+                </tr>
+              </thead>
+              <tbody id="empresas-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando empresas...</td></tr>
+              </tbody>
+            </table>
           </div>
-        </form>
+        </div>
       </div>
+    </section>
 
-    </div>
+    <!-- ==========================================
+         PESTAÑA 3: ROLES Y MATRICES
+         ========================================== -->
+    <section id="tab-roles" class="tab-content">
+      <div class="grid-admin">
+        <div class="card">
+          <div class="card-title">Crear / Editar Plantilla de Rol</div>
+          <form id="form-rol-template">
+            <div class="form-group">
+              <label>ID del Rol (ej. residente_frente)</label>
+              <input type="text" id="role-id" placeholder="residente_obra" required>
+            </div>
+            <div class="form-group">
+              <label>Nombre del Puesto</label>
+              <input type="text" id="role-nombre" placeholder="Residente General de Obra" required>
+            </div>
+            
+            <label style="margin-top: 1rem;">Matriz de Permisos Predeterminada</label>
+            <table class="data-table" style="margin-top: 0.5rem;">
+              <thead>
+                <tr>
+                  <th>Módulo</th>
+                  <th title="Crear">C</th>
+                  <th title="Leer">R</th>
+                  <th title="Actualizar">U</th>
+                  <th title="Eliminar">D</th>
+                </tr>
+              </thead>
+              <tbody id="role-matrix-body"></tbody>
+            </table>
 
-    <!-- COLUMNA 2: Padrón de Usuarios -->
-    <div>
+            <div style="margin-top: 1rem;">
+              <button type="submit" class="btn btn-primary">Guardar Plantilla de Rol</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Roles Registrados</div>
+          <div id="roles-cards-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="text-align: center; color: var(--text-muted);">Cargando roles...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PESTAÑA 4: PADRÓN DE COLABORADORES
+         ========================================== -->
+    <section id="tab-usuarios" class="tab-content">
+      <div class="grid-admin">
+        <div class="card">
+          <div class="card-title">
+            <span id="user-form-title">Vincular Colaborador</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-user" style="display: none;">Nuevo</button>
+          </div>
+          <form id="form-gestionar-usuario">
+            <div class="form-group">
+              <label>UID de Firebase Auth</label>
+              <input type="text" id="usr-uid" placeholder="UID oficial del colaborador" required>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" id="usr-nombre" placeholder="Nombre completo" required>
+              </div>
+              <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="usr-email" placeholder="usuario@conglomerado.com" required>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Empresa</label>
+                <select id="usr-empresa" required></select>
+              </div>
+              <div class="form-group">
+                <label>Plantilla de Rol</label>
+                <select id="usr-rol-template" required></select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Alcance Operativo</label>
+                <select id="usr-alcance">
+                  <option value="global">Global (Todas las Obras)</option>
+                  <option value="asignado">Obras Asignadas</option>
+                </select>
+              </div>
+              <div class="form-group" id="container-user-obras" style="display: none;">
+                <label>Obras Asignadas (Ctrl para multi-selección)</label>
+                <select id="usr-obras" multiple style="height: 80px;"></select>
+              </div>
+            </div>
+
+            <div class="form-group" style="background: #f1f5f9; padding: 0.75rem; border-radius: 6px;">
+              <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
+                <input type="checkbox" id="usr-superadmin" style="width: 17px; height: 17px;">
+                <span><b>Super Administrador</b> (Bypass sin restricciones)</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-save-usr">Guardar Gobernanza</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Directorio de Colaboradores</div>
+          <div id="usuarios-list-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="text-align: center; color: var(--text-muted);">Cargando directorio...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PESTAÑA 5: AUDITORÍA
+         ========================================== -->
+    <section id="tab-auditoria" class="tab-content">
       <div class="card">
-        <div class="card-title">
-          <span>Padrón de Usuarios con Gobernanza Activa</span>
-        </div>
-        <div id="users-container" class="users-list">
-          <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">Cargando usuarios desde Firestore...</div>
+        <div class="card-title">Bitácora Central de Auditoría</div>
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 150px;">Fecha / Hora</th>
+                <th>Usuario</th>
+                <th>Módulo</th>
+                <th>Acción</th>
+                <th>Detalles</th>
+              </tr>
+            </thead>
+            <tbody id="auditoria-body">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando registros...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </section>
 
   </div>
 
   <div id="toast"></div>
 
   <script type="module">
-    import { db, auth, signOut, doc, setDoc, onSnapshot, collection } from "./js/firebase-config.js";
-    import { protegerVista, escucharModulosSistema } from "./js/rbac.js";
+    import { 
+      db, 
+      auth, 
+      signOut, 
+      doc, 
+      setDoc, 
+      onSnapshot, 
+      collection, 
+      addDoc, 
+      updateDoc 
+    } from "./js/firebase-config.js";
+    import { protegerVista } from "./js/rbac.js";
 
-    const matrixBody = document.getElementById("matrix-body");
-    const selectProyectos = document.getElementById("user-proyectos");
-    const containerProyectos = document.getElementById("container-proyectos-asignados");
-    const alcanceSelect = document.getElementById("user-alcance");
-    const checkSuperAdmin = document.getElementById("user-is-superadmin");
-    const containerMatrix = document.getElementById("container-matrix");
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        contents.forEach(c => c.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById(tab.dataset.tab).classList.add("active");
+      });
+    });
+
     const toast = document.getElementById("toast");
-    const btnForzarInyeccion = document.getElementById("btn-forzar-inyeccion");
-
-    let modulosActivos = [];
-
     function showToast(msg) {
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 3200);
+      setTimeout(() => toast.style.display = "none", 3000);
+    }
+
+    let modulosActivos = [];
+    let rolesCatalogo = {};
+    let usuarioActual = null;
+    let perfilActual = null;
+
+    async function logEvento(modulo, accion, detalle) {
+      try {
+        await addDoc(collection(db, "auditoria"), {
+          timestamp: new Date().toISOString(),
+          uid: usuarioActual?.uid || "root",
+          usuario: perfilActual?.nombre || usuarioActual?.email || "Super Admin",
+          modulo,
+          accion,
+          detalle
+        });
+      } catch (err) {
+        console.warn("Fallo log:", err);
+      }
     }
 
     // 1. Proteger Vista (RBAC)
-    protegerVista("usuarios", "u").then(({ perfil }) => {
-      document.getElementById("super-email").textContent = perfil.nombre || perfil.email;
+    protegerVista("usuarios", "u").then(({ user, perfil }) => {
+      usuarioActual = user;
+      perfilActual = perfil;
+      document.getElementById("super-display").textContent = perfil.nombre || user.email;
+      iniciarSubscripciones();
     });
 
-    // 2. Botón de Inyección Forzada Blindado (No depende de auth.currentUser en memoria)
-    btnForzarInyeccion.addEventListener("click", async () => {
-      btnForzarInyeccion.disabled = true;
-      btnForzarInyeccion.textContent = "Inyectando a Firestore...";
+    function iniciarSubscripciones() {
+      escucharModulos();
+      escucharEmpresas();
+      escucharRoles();
+      escucharUsuarios();
+      escucharProyectos();
+      escucharAuditoria();
+    }
+
+    // 2. Gestión Dinámica de Módulos
+    document.getElementById("form-modulo-dinamico").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("mod-id").value.trim().toLowerCase();
+      const payload = {
+        id: id,
+        nombre: document.getElementById("mod-nombre").value.trim(),
+        ruta: document.getElementById("mod-ruta").value.trim(),
+        icono: document.getElementById("mod-icono").value.trim() || "📁",
+        descripcion: document.getElementById("mod-desc").value.trim(),
+        activo: true,
+        actualizadoEn: new Date().toISOString()
+      };
 
       try {
-        const targetUid = auth.currentUser ? auth.currentUser.uid : "zeVjo7RcQqRKjq1T7goO22SMHip1";
-        const targetEmail = auth.currentUser ? auth.currentUser.email : "valladarescid@gmail.com";
+        await setDoc(doc(db, "modulos", id), payload, { merge: true });
+        await logEvento("modulos", "alta/edicion", `Módulo ${payload.nombre} (${id})`);
+        showToast("Módulo inyectado a Firestore");
+        document.getElementById("form-modulo-dinamico").reset();
+      } catch (err) {
+        alert("Error al guardar módulo: " + err.message);
+      }
+    });
 
-        // Inyectar perfil en colección 'usuarios'
-        await setDoc(doc(db, "usuarios", targetUid), {
-          uid: targetUid,
-          email: targetEmail,
-          nombre: "Jose Antonio Valladares Cid",
-          rol: "superadmin",
-          rol_id: "superadmin",
-          is_superadmin: true,
-          alcance: "global",
-          proyectos_asignados: ["*"],
-          activo: true,
-          actualizadoEn: new Date().toISOString()
-        }, { merge: true });
+    function escucharModulos() {
+      onSnapshot(collection(db, "modulos"), (snap) => {
+        const tbody = document.getElementById("modulos-table-body");
+        tbody.innerHTML = "";
+        modulosActivos = [];
 
-        // Inyectar los 6 módulos base del sistema
-        const modulos = [
-          { id: "usuarios", nombre: "Gobernanza RBAC", ruta: "./admin.html" },
-          { id: "proyectos", nombre: "Proyectos y Geocercas", ruta: "./proyectos.html" },
-          { id: "checador", nombre: "Checador PWA", ruta: "./checador.html" },
-          { id: "bitacora", nombre: "Bitácora de Avance", ruta: "./bitacora.html" },
-          { id: "prenomina", nombre: "Prenómina M.O.", ruta: "./prenomina.html" },
-          { id: "estimaciones", nombre: "Estimaciones de Cobro", ruta: "./estimaciones.html" }
-        ];
-
-        for (const m of modulos) {
-          await setDoc(doc(db, "modulos", m.id), {
-            nombre: m.nombre,
-            ruta: m.ruta,
-            activo: true
-          }, { merge: true });
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin módulos en base de datos.</td></tr>';
+          return;
         }
 
-        alert("¡Estructura inyectada con éxito en Firestore!");
-        window.location.reload();
-      } catch (err) {
-        console.error("Detalle completo del error:", err);
-        alert("Fallo al escribir en Firestore: " + err.message);
-        btnForzarInyeccion.disabled = false;
-        btnForzarInyeccion.textContent = "Inyectar a Firestore Ahora";
-      }
-    });
+        snap.forEach(d => {
+          const m = { id: d.id, ...d.data() };
+          modulosActivos.push(m);
 
-    // 3. Auto-descubrimiento de Módulos
-    escucharModulosSistema((modulos) => {
-      modulosActivos = modulos;
-      renderMatrix();
-    });
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="font-size: 1.3rem; text-align: center;">${m.icono || '📁'}</td>
+            <td><code>${m.id}</code></td>
+            <td><strong>${m.nombre}</strong><br><small style="color:var(--text-muted);">${m.descripcion || ''}</small></td>
+            <td><code>${m.ruta}</code></td>
+            <td><span class="badge-status ${m.activo ? 'badge-active' : 'badge-inactive'}">${m.activo ? 'Activo' : 'Pausado'}</span></td>
+            <td>
+              <button class="btn ${m.activo ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarModulo('${m.id}', ${m.activo})">
+                ${m.activo ? 'Pausar' : 'Activar'}
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
 
-    function renderMatrix() {
-      matrixBody.innerHTML = "";
-      if (modulosActivos.length === 0) {
-        matrixBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No hay módulos en la colección "modulos". Usa el botón amarillo superior para inyectarlos.</td></tr>';
-        return;
-      }
-
-      modulosActivos.forEach((m) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${m.nombre} <small style="color:#64748b;">(${m.id})</small></td>
-          <td><input type="checkbox" data-mod="${m.id}" data-act="c"></td>
-          <td><input type="checkbox" data-mod="${m.id}" data-act="r"></td>
-          <td><input type="checkbox" data-mod="${m.id}" data-act="u"></td>
-          <td><input type="checkbox" data-mod="${m.id}" data-act="d"></td>
-        `;
-        matrixBody.appendChild(tr);
+        renderRoleMatrix();
       });
     }
 
-    // 4. Proyectos en vivo para el Selector de Alcance
-    onSnapshot(collection(db, "proyectos"), (snap) => {
-      selectProyectos.innerHTML = "";
-      snap.forEach((d) => {
-        const p = d.data();
-        const opt = document.createElement("option");
-        opt.value = d.id;
-        opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
-        selectProyectos.appendChild(opt);
+    window.conmutarModulo = async (modId, activoActual) => {
+      await updateDoc(doc(db, "modulos", modId), { activo: !activoActual });
+      await logEvento("modulos", "estatus", `Módulo ${modId} cambiado a ${!activoActual}`);
+      showToast("Estatus de módulo actualizado");
+    };
+
+    function renderRoleMatrix() {
+      const tbody = document.getElementById("role-matrix-body");
+      tbody.innerHTML = "";
+      modulosActivos.forEach(m => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${m.icono || '📁'} <strong>${m.nombre}</strong></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="c"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="r"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="u"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="d"></td>
+        `;
+        tbody.appendChild(tr);
       });
-    }, (err) => console.warn("Error leyendo proyectos:", err.message));
+    }
 
-    alcanceSelect.addEventListener("change", () => {
-      containerProyectos.style.display = alcanceSelect.value === "asignado" ? "block" : "none";
-    });
-
-    checkSuperAdmin.addEventListener("change", () => {
-      const disabled = checkSuperAdmin.checked;
-      containerMatrix.style.opacity = disabled ? "0.35" : "1";
-      containerMatrix.style.pointerEvents = disabled ? "none" : "auto";
-    });
-
-    document.getElementById("btn-toggle-all").addEventListener("click", () => {
-      const checkboxes = matrixBody.querySelectorAll('input[type="checkbox"]');
-      const allChecked = Array.from(checkboxes).every(b => b.checked);
-      checkboxes.forEach(b => b.checked = !allChecked);
-    });
-
-    // 5. Alta Manual de Nuevos Módulos
-    document.getElementById("form-nuevo-modulo").addEventListener("submit", async (e) => {
+    // 3. Empresas
+    document.getElementById("form-empresa").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const id = document.getElementById("mod-id").value.trim().toLowerCase();
-      const nombre = document.getElementById("mod-nombre").value.trim();
-      const ruta = document.getElementById("mod-ruta").value.trim();
+      const id = document.getElementById("emp-id").value.trim().toLowerCase();
+      const payload = {
+        id,
+        razonSocial: document.getElementById("emp-razon").value.trim(),
+        rfc: document.getElementById("emp-rfc").value.trim().toUpperCase(),
+        ivaDefault: parseFloat(document.getElementById("emp-iva").value) || 16,
+        representante: document.getElementById("emp-representante").value.trim(),
+        activo: true
+      };
 
       try {
-        await setDoc(doc(db, "modulos", id), { nombre, ruta, activo: true });
-        showToast(`Módulo "${nombre}" registrado`);
-        document.getElementById("form-nuevo-modulo").reset();
+        await setDoc(doc(db, "empresas", id), payload, { merge: true });
+        await logEvento("empresas", "alta", `Empresa ${payload.razonSocial}`);
+        showToast("Empresa guardada");
+        document.getElementById("form-empresa").reset();
       } catch (err) {
-        console.error(err);
-        showToast("Error al registrar módulo: " + err.message);
+        alert("Error: " + err.message);
       }
     });
 
-    // 6. Inyección de Perfiles Granulares
-    document.getElementById("form-user-rbac").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const uid = document.getElementById("user-uid").value.trim();
-      const isSuper = checkSuperAdmin.checked;
+    function escucharEmpresas() {
+      onSnapshot(collection(db, "empresas"), (snap) => {
+        const tbody = document.getElementById("empresas-body");
+        const selectUserEmp = document.getElementById("usr-empresa");
+        tbody.innerHTML = "";
+        selectUserEmp.innerHTML = '<option value="">-- Selecciona Empresa --</option>';
 
-      const matrizEfectiva = {};
-      modulosActivos.forEach((m) => {
-        matrizEfectiva[m.id] = {
-          c: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="c"]`)?.checked,
-          r: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="r"]`)?.checked,
-          u: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="u"]`)?.checked,
-          d: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="d"]`)?.checked
+        snap.forEach(d => {
+          const emp = d.data();
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><code>${d.id}</code></td>
+            <td><strong>${emp.razonSocial}</strong></td>
+            <td>${emp.rfc}</td>
+            <td>${emp.ivaDefault}%</td>
+            <td><span class="badge-status ${emp.activo ? 'badge-active' : 'badge-inactive'}">${emp.activo ? 'Activa' : 'Inactiva'}</span></td>
+          `;
+          tbody.appendChild(tr);
+
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = `${emp.rfc} - ${emp.razonSocial}`;
+          selectUserEmp.appendChild(opt);
+        });
+      });
+    }
+
+    // 4. Roles
+    document.getElementById("form-rol-template").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const roleId = document.getElementById("role-id").value.trim().toLowerCase();
+      const roleNombre = document.getElementById("role-nombre").value.trim();
+
+      const matriz = {};
+      modulosActivos.forEach(m => {
+        matriz[m.id] = {
+          c: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="c"]`)?.checked,
+          r: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="r"]`)?.checked,
+          u: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="u"]`)?.checked,
+          d: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="d"]`)?.checked
         };
       });
 
-      const proyectosAsignados = isSuper || alcanceSelect.value === "global" 
-        ? ["*"] 
-        : Array.from(selectProyectos.selectedOptions).map(o => o.value);
+      try {
+        await setDoc(doc(db, "roles", roleId), { id: roleId, nombre: roleNombre, matriz }, { merge: true });
+        await logEvento("roles", "alta/edicion", `Rol ${roleNombre}`);
+        showToast("Plantilla de rol guardada");
+        document.getElementById("form-rol-template").reset();
+        renderRoleMatrix();
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    });
+
+    function escucharRoles() {
+      onSnapshot(collection(db, "roles"), (snap) => {
+        const container = document.getElementById("roles-cards-container");
+        const selectUserRol = document.getElementById("usr-rol-template");
+        container.innerHTML = "";
+        selectUserRol.innerHTML = '<option value="">-- Selecciona Rol --</option>';
+        rolesCatalogo = {};
+
+        snap.forEach(d => {
+          const r = d.data();
+          rolesCatalogo[d.id] = r;
+
+          const card = document.createElement("div");
+          card.style.cssText = "border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background:#fff; display:flex; justify-content:space-between; align-items:center;";
+          card.innerHTML = `
+            <div><strong>${r.nombre}</strong> <code style="font-size:0.75rem;">(${d.id})</code></div>
+            <button class="btn btn-secondary btn-sm" onclick="window.cargarRol('${d.id}')">Editar</button>
+          `;
+          container.appendChild(card);
+
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = r.nombre;
+          selectUserRol.appendChild(opt);
+        });
+      });
+    }
+
+    window.cargarRol = (roleId) => {
+      const r = rolesCatalogo[roleId];
+      if (!r) return;
+      document.getElementById("role-id").value = r.id;
+      document.getElementById("role-nombre").value = r.nombre;
+      renderRoleMatrix();
+      setTimeout(() => {
+        Object.keys(r.matriz || {}).forEach(mod => {
+          ["c", "r", "u", "d"].forEach(act => {
+            const cb = document.querySelector(`#role-matrix-body input[data-mod="${mod}"][data-act="${act}"]`);
+            if (cb) cb.checked = !!r.matriz[mod][act];
+          });
+        });
+      }, 50);
+    };
+
+    // 5. Directorio de Usuarios
+    const usrAlcance = document.getElementById("usr-alcance");
+    const containerObras = document.getElementById("container-user-obras");
+    usrAlcance.addEventListener("change", () => {
+      containerObras.style.display = usrAlcance.value === "asignado" ? "block" : "none";
+    });
+
+    function escucharProyectos() {
+      onSnapshot(collection(db, "proyectos"), (snap) => {
+        const selectObras = document.getElementById("usr-obras");
+        selectObras.innerHTML = "";
+        snap.forEach(d => {
+          const p = d.data();
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
+          selectObras.appendChild(opt);
+        });
+      });
+    }
+
+    document.getElementById("form-gestionar-usuario").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const uid = document.getElementById("usr-uid").value.trim();
+      const isSuper = document.getElementById("usr-superadmin").checked;
+      const rolSeleccionadoId = document.getElementById("usr-rol-template").value;
+      const plantillaRol = rolesCatalogo[rolSeleccionadoId];
+
+      const matrizEfectiva = {};
+      modulosActivos.forEach(m => {
+        matrizEfectiva[m.id] = {
+          c: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.c,
+          r: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.r,
+          u: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.u,
+          d: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.d
+        };
+      });
+
+      const proyectos = isSuper || usrAlcance.value === "global"
+        ? ["*"]
+        : Array.from(document.getElementById("usr-obras").selectedOptions).map(o => o.value);
 
       const payload = {
-        uid: uid,
-        nombre: document.getElementById("user-nombre").value.trim(),
-        email: document.getElementById("user-email").value.trim(),
-        rol: document.getElementById("user-rol").value.trim(),
-        rol_id: isSuper ? "superadmin" : "personalizado",
+        uid,
+        nombre: document.getElementById("usr-nombre").value.trim(),
+        email: document.getElementById("usr-email").value.trim(),
+        empresaId: document.getElementById("usr-empresa").value,
+        rol_id: isSuper ? "superadmin" : rolSeleccionadoId,
+        rol: isSuper ? "Super Administrador" : (plantillaRol?.nombre || "Colaborador"),
         is_superadmin: isSuper,
-        alcance: alcanceSelect.value,
-        proyectos_asignados: proyectosAsignados,
+        alcance: usrAlcance.value,
+        proyectos_asignados: proyectos,
         matriz_efectiva: matrizEfectiva,
         activo: true,
         actualizadoEn: new Date().toISOString()
@@ -519,105 +803,108 @@
 
       try {
         await setDoc(doc(db, "usuarios", uid), payload, { merge: true });
-        showToast("Gobernanza inyectada con éxito");
-        resetForm();
+        await logEvento("usuarios", "actualizar", `Gobernanza de ${payload.nombre}`);
+        showToast("Usuario actualizado con éxito");
+        resetUserForm();
       } catch (err) {
-        console.error(err);
-        showToast("Error al guardar en Firestore: " + err.message);
+        alert("Error: " + err.message);
       }
     });
 
-    function resetForm() {
-      document.getElementById("form-user-rbac").reset();
-      document.getElementById("user-uid").removeAttribute("readonly");
-      document.getElementById("form-mode-title").textContent = "2. Asignar Perfil y Matriz CRUD";
-      document.getElementById("btn-reset-form").style.display = "none";
-      containerProyectos.style.display = "none";
-      containerMatrix.style.opacity = "1";
-      containerMatrix.style.pointerEvents = "auto";
-      renderMatrix();
+    function resetUserForm() {
+      document.getElementById("form-gestionar-usuario").reset();
+      document.getElementById("usr-uid").removeAttribute("readonly");
+      document.getElementById("user-form-title").textContent = "Vincular Colaborador";
+      document.getElementById("btn-reset-user").style.display = "none";
+      containerObras.style.display = "none";
+    }
+    document.getElementById("btn-reset-user").addEventListener("click", resetUserForm);
+
+    function escucharUsuarios() {
+      onSnapshot(collection(db, "usuarios"), (snap) => {
+        const container = document.getElementById("usuarios-list-container");
+        container.innerHTML = "";
+
+        snap.forEach(d => {
+          const u = d.data();
+          const card = document.createElement("div");
+          card.style.cssText = "border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background:#fff; display:flex; justify-content:space-between; align-items:center;";
+          card.innerHTML = `
+            <div>
+              <strong>${u.nombre || "Usuario"}</strong>
+              <span class="badge-status ${u.is_superadmin ? 'badge-super' : 'badge-active'}">
+                ${u.is_superadmin ? 'Super Admin' : (u.rol || 'Operativo')}
+              </span>
+              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+                ${u.email} | Empresa: <b>${u.empresaId || 'Sin asignar'}</b>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary btn-sm" onclick="window.editarUsuario('${d.id}')">Editar</button>
+              <button class="btn ${u.activo ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarUsuario('${d.id}', ${u.activo})">
+                ${u.activo ? 'Desactivar' : 'Activar'}
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      });
     }
 
-    document.getElementById("btn-reset-form").addEventListener("click", resetForm);
-
-    // 7. Directorio de Usuarios en Tiempo Real
-    onSnapshot(collection(db, "usuarios"), (snap) => {
-      const container = document.getElementById("users-container");
-      if (snap.empty) {
-        container.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Sin colaboradores registrados en "usuarios".</div>';
-        return;
-      }
-
-      container.innerHTML = "";
-      snap.forEach((docSnap) => {
-        const u = docSnap.data();
-        const id = docSnap.id;
-        const item = document.createElement("div");
-        item.className = "user-card";
-        item.innerHTML = `
-          <div>
-            <strong>${u.nombre || "Usuario"}</strong>
-            <span class="badge-status ${u.is_superadmin ? 'badge-super' : 'badge-active'}">
-              ${u.is_superadmin ? 'Super Admin' : (u.rol || 'Operativo')}
-            </span>
-            <div class="user-meta">
-              ${u.email} | Alcance: <b>${u.alcance || 'global'}</b> | UID: <code>${id.substring(0, 8)}...</code>
-            </div>
-          </div>
-          <div style="display: flex; gap: 6px;">
-            <button class="btn btn-secondary btn-sm" onclick="window.cargarUsuario('${id}')">Configurar</button>
-            <button class="btn ${u.activo ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarEstatus('${id}', ${u.activo})">
-              ${u.activo ? 'Desactivar' : 'Reactivar'}
-            </button>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }, (err) => console.warn("Error leyendo directorio:", err.message));
-
-    // Cargar perfil seleccionado al formulario
-    window.cargarUsuario = (uid) => {
+    window.editarUsuario = (uid) => {
       onSnapshot(doc(db, "usuarios", uid), (d) => {
         if (!d.exists()) return;
         const u = d.data();
+        document.getElementById("usr-uid").value = uid;
+        document.getElementById("usr-uid").setAttribute("readonly", true);
+        document.getElementById("usr-nombre").value = u.nombre || "";
+        document.getElementById("usr-email").value = u.email || "";
+        document.getElementById("usr-empresa").value = u.empresaId || "";
+        document.getElementById("usr-rol-template").value = u.rol_id || "";
+        document.getElementById("usr-alcance").value = u.alcance || "global";
+        document.getElementById("usr-superadmin").checked = !!u.is_superadmin;
 
-        document.getElementById("user-uid").value = uid;
-        document.getElementById("user-uid").setAttribute("readonly", true);
-        document.getElementById("user-nombre").value = u.nombre || "";
-        document.getElementById("user-email").value = u.email || "";
-        document.getElementById("user-rol").value = u.rol || "";
-        document.getElementById("user-alcance").value = u.alcance || "global";
-        checkSuperAdmin.checked = !!u.is_superadmin;
-
-        containerProyectos.style.display = u.alcance === "asignado" ? "block" : "none";
-        Array.from(selectProyectos.options).forEach((opt) => {
+        containerObras.style.display = u.alcance === "asignado" ? "block" : "none";
+        const selectObras = document.getElementById("usr-obras");
+        Array.from(selectObras.options).forEach(opt => {
           opt.selected = (u.proyectos_asignados || []).includes(opt.value);
         });
 
-        renderMatrix();
-        if (u.matriz_efectiva) {
-          Object.keys(u.matriz_efectiva).forEach((mod) => {
-            ["c", "r", "u", "d"].forEach((act) => {
-              const cb = matrixBody.querySelector(`input[data-mod="${mod}"][data-act="${act}"]`);
-              if (cb) cb.checked = !!u.matriz_efectiva[mod][act];
-            });
-          });
-        }
-
-        if (u.is_superadmin) {
-          containerMatrix.style.opacity = "0.35";
-          containerMatrix.style.pointerEvents = "none";
-        }
-
-        document.getElementById("form-mode-title").textContent = `Editando: ${u.nombre}`;
-        document.getElementById("btn-reset-form").style.display = "inline-flex";
+        document.getElementById("user-form-title").textContent = `Editando: ${u.nombre}`;
+        document.getElementById("btn-reset-user").style.display = "inline-flex";
       });
     };
 
-    window.conmutarEstatus = async (uid, activoActual) => {
-      await setDoc(doc(db, "usuarios", uid), { activo: !activoActual }, { merge: true });
-      showToast(`Usuario ${activoActual ? 'desactivado' : 'reactivado'}`);
+    window.conmutarUsuario = async (uid, activoActual) => {
+      await updateDoc(doc(db, "usuarios", uid), { activo: !activoActual });
+      await logEvento("usuarios", "estatus", `Usuario ${uid} a ${!activoActual}`);
+      showToast("Estatus actualizado");
     };
+
+    // 6. Auditoría
+    function escucharAuditoria() {
+      onSnapshot(collection(db, "auditoria"), (snap) => {
+        const tbody = document.getElementById("auditoria-body");
+        tbody.innerHTML = "";
+
+        let logs = [];
+        snap.forEach(d => logs.push({ id: d.id, ...d.data() }));
+        logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        logs.slice(0, 50).forEach(l => {
+          const fecha = new Date(l.timestamp).toLocaleString();
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><small style="color:var(--text-muted);">${fecha}</small></td>
+            <td><strong>${l.usuario}</strong></td>
+            <td><code>${l.modulo}</code></td>
+            <td><span class="badge-status badge-active">${l.accion}</span></td>
+            <td>${l.detalle}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
 
     document.getElementById("btn-logout").addEventListener("click", async () => {
       await signOut(auth);

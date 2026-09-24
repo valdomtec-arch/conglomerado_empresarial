@@ -3,71 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Control de Obra - Conglomerado Empresarial</title>
+  <title>Control de Obra - Tablero de Módulos</title>
   <style>
     :root {
-      --primary: #1e3a8a;
-      --primary-hover: #1e40af;
-      --accent: #0284c7;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
       --bg: #f8fafc;
       --surface: #ffffff;
       --border: #e2e8f0;
       --text: #0f172a;
       --text-muted: #64748b;
       --danger: #ef4444;
+      --success: #10b981;
       --radius: 12px;
-      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 1.5rem;
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
-      z-index: 1000;
+      z-index: 100;
     }
-    .brand { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-    .header-actions { display: flex; align-items: center; gap: 1rem; }
-    .user-email { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
-    
-    .btn-logout {
-      background: #fee2e2;
-      color: #b91c1c;
-      border: none;
-      padding: 0.4rem 0.8rem;
+    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .badge-role {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      background: #334155;
+      color: #93c5fd;
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-nav {
+      background: #1e293b;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.45rem 0.85rem;
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
+      border: 1px solid #334155;
     }
-    .btn-logout:hover { background: #fca5a5; }
+    .btn-nav:hover { background: #334155; }
 
-    .container {
-      max-width: 1050px;
-      margin: 2.5rem auto;
-      padding: 0 1.5rem;
-      flex: 1;
+    .main-content {
+      max-width: 1300px;
+      margin: 2rem auto;
+      padding: 0 1.25rem;
+      flex-grow: 1;
       width: 100%;
     }
 
-    .welcome {
-      margin-bottom: 2.5rem;
-      text-align: center;
+    .dashboard-header {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
-    .welcome h1 { font-size: 1.85rem; color: var(--primary); margin-bottom: 0.4rem; }
-    .welcome p { color: var(--text-muted); font-size: 1rem; }
+    .welcome-title { font-size: 1.45rem; font-weight: 800; color: var(--primary); }
+    .welcome-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
 
-    .grid-modules {
+    /* Grid de Módulos Dinámicos */
+    .modules-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
       gap: 1.5rem;
     }
 
@@ -75,145 +87,183 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.75rem;
+      padding: 1.5rem;
       box-shadow: var(--shadow);
-      text-decoration: none;
-      color: inherit;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: all 0.2s ease-in-out;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
     }
     .module-card:hover {
-      border-color: var(--accent);
       transform: translateY(-3px);
       box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      border-color: var(--accent);
     }
 
-    .icon-box {
-      width: 50px;
-      height: 50px;
-      border-radius: 10px;
-      background: #eff6ff;
-      color: var(--accent);
+    .card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+    .module-icon {
+      font-size: 2.2rem;
+      background: #f8fafc;
+      width: 58px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 1.2rem;
-      font-size: 1.6rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .module-info h3 { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .module-info p { font-size: 0.83rem; color: var(--text-muted); line-height: 1.4; }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      border-top: 1px solid #f1f5f9;
+      padding-top: 0.85rem;
+      margin-top: 0.5rem;
     }
 
-    .module-card h2 { font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
-    .module-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1.5rem; }
-    
-    .badge-status {
-      align-self: flex-start;
-      font-size: 0.75rem;
-      padding: 3px 9px;
+    .btn-logout {
+      background: #e2e8f0;
+      color: #334155;
+      border: none;
+      padding: 0.45rem 0.85rem;
       border-radius: 6px;
+      font-size: 0.85rem;
       font-weight: 600;
+      cursor: pointer;
     }
-    .status-ready { background: #dcfce7; color: #15803d; }
-    .status-next { background: #fef9c3; color: #854d0e; }
+    .btn-logout:hover { background: #cbd5e1; }
   </style>
 </head>
 <body>
 
   <header>
     <div class="brand">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      <span>Control de Obra</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span>Conglomerado Empresarial</span>
+      <span class="badge-role" id="user-badge-role">Cargando...</span>
     </div>
     <div class="header-actions">
-      <span class="user-email" id="user-display">Verificando...</span>
+      <span id="user-name-display" style="font-size: 0.85rem; color: #94a3b8;"></span>
+      <a href="./admin.html" id="link-admin" class="btn-nav" style="display: none;">Torre de Control</a>
       <button class="btn-logout" id="btn-logout">Cerrar Sesión</button>
     </div>
   </header>
 
-  <div class="container">
-    <div class="welcome">
-      <h1>Panel de Operaciones en Sitio</h1>
-      <p>Selecciona un frente operativo para capturar o supervisar datos</p>
+  <main class="main-content">
+    <div class="dashboard-header">
+      <div>
+        <h1 class="welcome-title">Tablero de Control de Obra</h1>
+        <p class="welcome-sub">Módulos operacionales autorizados según tu rol de gobernanza.</p>
+      </div>
+      <div id="obras-scope-badge" style="font-size: 0.82rem; color: var(--text-muted); background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);">
+        Alcance: Verificando...
+      </div>
     </div>
 
-    <div class="grid-modules">
-
-      <!-- Módulo Proyectos -->
-      <a href="./proyectos.html" class="module-card">
-        <div>
-          <div class="icon-box">🏗️</div>
-          <h2>Proyectos & Geocercas</h2>
-          <p>Catálogo de obras, coordenadas GPS Haversine, asignación de cuadrillas y partidas contractuales.</p>
-        </div>
-        <span class="badge-status status-ready">Activo</span>
-      </a>
-
-      <!-- Módulo Checador PWA -->
-      <a href="./checador.html" class="module-card">
-        <div>
-          <div class="icon-box">⏱️</div>
-          <h2>Checador en Sitio (PWA)</h2>
-          <p>Registro de asistencia con tolerancia por geocerca, captura fotográfica facial y soporte offline.</p>
-        </div>
-        <span class="badge-status status-next">Siguiente Módulo</span>
-      </a>
-
-      <!-- Módulo Bitácora -->
-      <a href="./bitacora.html" class="module-card">
-        <div>
-          <div class="icon-box">📋</div>
-          <h2>Bitácora de Avance Diario</h2>
-          <p>Registro de avance físico por concepto/partida y almacenamiento de evidencias fotográficas.</p>
-        </div>
-        <span class="badge-status status-next">Planeado</span>
-      </a>
-
-      <!-- Módulo Prenómina -->
-      <a href="./prenomina.html" class="module-card">
-        <div>
-          <div class="icon-box">💵</div>
-          <h2>Prenómina y Cortes M.O.</h2>
-          <p>Conciliación de horas efectivas laboradas, incidencias fuera de geocerca y costo de mano de obra.</p>
-        </div>
-        <span class="badge-status status-next">Planeado</span>
-      </a>
-
-      <!-- Módulo Estimaciones -->
-      <a href="./estimaciones.html" class="module-card">
-        <div>
-          <div class="icon-box">📊</div>
-          <h2>Estimaciones de Cobro</h2>
-          <p>Matriz acumulativa contractual, balance de volúmenes ejecutados y cálculo de importes para cobro.</p>
-        </div>
-        <span class="badge-status status-next">Planeado</span>
-      </a>
-
+    <!-- Contenedor Reactivo a Firestore -->
+    <div class="modules-grid" id="modules-container">
+      <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 0;">
+        Sincronizando módulos autorizados desde Firestore...
+      </div>
     </div>
-  </div>
+  </main>
 
   <script type="module">
-    // Consumo exclusivo del SDK centralizado en GitHub
-    import { auth, onAuthStateChanged, signOut } from "./js/firebase-config.js";
+    import { db, auth, signOut, onSnapshot, collection } from "./js/firebase-config.js";
+    import { obtenerPerfilActual, tienePermiso } from "./js/rbac.js";
 
-    // Protección de ruta: Solo usuarios autenticados
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = './index.html';
-      } else {
-        document.getElementById('user-display').textContent = user.email;
-      }
-    });
+    const modulesContainer = document.getElementById("modules-container");
+    const userNameDisplay = document.getElementById("user-name-display");
+    const userBadgeRole = document.getElementById("user-badge-role");
+    const linkAdmin = document.getElementById("link-admin");
+    const obrasScopeBadge = document.getElementById("obras-scope-badge");
 
-    // Cerrar sesión
-    document.getElementById('btn-logout').addEventListener('click', async () => {
+    async function inicializarDashboard() {
       try {
-        await signOut(auth);
-        window.location.href = './index.html';
-      } catch (err) {
-        console.error("Error al salir:", err);
-      }
-    });
-  </script>
+        const { user, perfil } = await obtenerPerfilActual();
 
+        userNameDisplay.textContent = perfil.nombre || user.email;
+        userBadgeRole.textContent = perfil.is_superadmin ? "SUPER ADMIN" : (perfil.rol || "COLABORADOR");
+
+        if (perfil.is_superadmin) {
+          linkAdmin.style.display = "inline-block";
+          userBadgeRole.style.background = "#dc2626";
+          userBadgeRole.style.color = "#fff";
+        }
+
+        obrasScopeBadge.textContent = perfil.is_superadmin || perfil.alcance === "global"
+          ? "Alcance: Global (Todas las Obras)"
+          : `Alcance: ${perfil.proyectos_asignados?.length || 0} Obra(s) Asignada(s)`;
+
+        // Escuchar la colección 'modulos' en tiempo real
+        onSnapshot(collection(db, "modulos"), (snap) => {
+          modulesContainer.innerHTML = "";
+
+          if (snap.empty) {
+            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Sin módulos configurados en la base de datos.</div>';
+            return;
+          }
+
+          let modulosVisibles = 0;
+
+          snap.forEach(docSnap => {
+            const m = docSnap.data();
+            const modId = docSnap.id;
+
+            // 1. Debe estar activo en la base
+            // 2. El usuario debe tener permiso de lectura ('r') o ser Super Admin
+            const tieneAcceso = perfil.is_superadmin || (m.activo && tienePermiso(perfil, modId, "r"));
+
+            if (tieneAcceso) {
+              modulosVisibles++;
+              const card = document.createElement("a");
+              card.href = m.ruta;
+              card.className = "module-card";
+              card.innerHTML = `
+                <div class="card-top">
+                  <div class="module-icon">${m.icono || '📁'}</div>
+                  <div class="module-info">
+                    <h3>${m.nombre}</h3>
+                    <p>${m.descripcion || 'Acceso al módulo operativo de obra.'}</p>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <span>Acceder al módulo</span>
+                  <span>→</span>
+                </div>
+              `;
+              modulesContainer.appendChild(card);
+            }
+          });
+
+          if (modulosVisibles === 0) {
+            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No tienes permisos asignados para visualizar módulos en este momento.</div>';
+          }
+        });
+
+      } catch (err) {
+        console.error("Acceso restringido:", err);
+        window.location.href = "./index.html";
+      }
+    }
+
+    document.getElementById("btn-logout").addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "./index.html";
+    });
+
+    inicializarDashboard();
+  </script>
 </body>
 </html>
