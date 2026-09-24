@@ -15,19 +15,11 @@
       --text-muted: #64748b;
       --danger: #ef4444;
       --radius: 12px;
-      --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.25), 0 8px 10px -6px rgb(0 0 0 / 0.25);
+      --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.25);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    
-    body {
-      background-color: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-    }
+    body { background-color: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
 
     .login-card {
       background: var(--card-bg);
@@ -51,32 +43,11 @@
       margin-bottom: 1.25rem;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      color: var(--text);
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
+    h1 { font-size: 1.5rem; color: var(--text); font-weight: 700; margin-bottom: 0.5rem; }
+    p.subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem; }
 
-    p.subtitle {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 2rem;
-    }
-
-    .form-group {
-      text-align: left;
-      margin-bottom: 1.25rem;
-    }
-
-    label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 0.4rem;
-    }
-
+    .form-group { text-align: left; margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
     input {
       width: 100%;
       padding: 0.75rem 0.9rem;
@@ -84,12 +55,8 @@
       border-radius: 8px;
       font-size: 0.95rem;
       outline: none;
-      transition: border-color 0.2s;
     }
-
-    input:focus {
-      border-color: var(--primary);
-    }
+    input:focus { border-color: var(--primary); }
 
     .btn {
       width: 100%;
@@ -99,18 +66,12 @@
       font-size: 1rem;
       cursor: pointer;
       border: none;
-      transition: background 0.2s;
       margin-top: 0.5rem;
-    }
-
-    .btn-primary {
       background: var(--primary);
       color: #ffffff;
+      transition: background 0.2s;
     }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
+    .btn:hover { background: var(--primary-hover); }
 
     .error-msg {
       background: #fef2f2;
@@ -157,21 +118,24 @@
         <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
       </div>
 
-      <button type="submit" class="btn btn-primary" id="btn-submit">Ingresar</button>
-      <div id="loading" class="loading-spinner">Validando permisos con Firebase SDK...</div>
+      <button type="submit" class="btn" id="btn-submit">Ingresar</button>
+      <div id="loading" class="loading-spinner">Verificando credenciales...</div>
     </form>
   </div>
 
   <script type="module">
-    // Importación limpia desde tu propio módulo de configuración SDK
     import { 
       auth, 
       db, 
       signInWithEmailAndPassword, 
       onAuthStateChanged, 
       doc, 
-      getDoc 
+      getDoc, 
+      setDoc 
     } from "./js/firebase-config.js";
+
+    // Correo raíz con privilegios de auto-sembrado inicial
+    const SUPERADMIN_EMAIL_ROOT = "valladarescid@gmail.com";
 
     const form = document.getElementById('login-form');
     const errBox = document.getElementById('error-box');
@@ -185,37 +149,96 @@
       btnSubmit.disabled = false;
     }
 
-    // Router de autenticación por rol
+    // Auto-sembrado inicial en Firestore si es la primera entrada
+    async function asegurarSuperAdmin(user) {
+      const userRef = doc(db, "usuarios", user.uid);
+      const snap = await getDoc(userRef);
+
+      // Si el usuario es el correo raíz y aún no tiene documento o no tiene perfil de superadmin
+      if (user.email.toLowerCase() === SUPERADMIN_EMAIL_ROOT.toLowerCase()) {
+        if (!snap.exists() || !snap.data().is_superadmin) {
+          loading.textContent = "Sembrando estructura de Super Administrador...";
+          
+          // 1. Inyecta el perfil completo a la colección 'usuarios'
+          await setDoc(userRef, {
+            uid: user.uid,
+            email: user.email,
+            nombre: "Jose Antonio Valladares Cid",
+            rol: "superadmin",
+            rol_id: "superadmin",
+            is_superadmin: true,
+            alcance: "global",
+            proyectos_asignados: ["*"],
+            activo: true,
+            creadoEn: new Date().toISOString()
+          }, { merge: true });
+
+          // 2. Inyecta el catálogo base inicial en la colección 'modulos'
+          const modulosBase = [
+            { id: "usuarios", nombre: "Gobernanza RBAC", ruta: "./admin.html" },
+            { id: "proyectos", nombre: "Proyectos y Geocercas", ruta: "./proyectos.html" },
+            { id: "checador", nombre: "Checador PWA", ruta: "./checador.html" },
+            { id: "bitacora", nombre: "Bitácora de Avance", ruta: "./bitacora.html" },
+            { id: "prenomina", nombre: "Prenómina M.O.", ruta: "./prenomina.html" },
+            { id: "estimaciones", nombre: "Estimaciones de Cobro", ruta: "./estimaciones.html" }
+          ];
+
+          for (const m of modulosBase) {
+            await setDoc(doc(db, "modulos", m.id), {
+              nombre: m.nombre,
+              ruta: m.ruta,
+              activo: true
+            }, { merge: true });
+          }
+        }
+      }
+    }
+
+    // Enrutador inteligente
     async function redirectByRole(user) {
       loading.style.display = 'block';
       btnSubmit.disabled = true;
 
       try {
+        // Ejecuta el auto-sembrado si corresponde
+        await asegurarSuperAdmin(user);
+
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
         
-        if (userDoc.exists() && userDoc.data().rol === 'admin') {
-          window.location.href = './admin.html';
-        } else {
-          window.location.href = './control_obra.html';
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          const esAdmin = data.is_superadmin === true || 
+                          data.rol === 'admin' || 
+                          data.rol === 'superadmin' || 
+                          data.rol_id === 'superadmin';
+
+          if (esAdmin) {
+            window.location.href = './admin.html';
+            return;
+          }
         }
-      } catch (err) {
-        console.warn("Fallo al consultar rol en Firestore:", err);
+        
+        // Perfil operativo regular
         window.location.href = './control_obra.html';
+      } catch (err) {
+        console.error("Error al evaluar sesión:", err);
+        showError("Error de permisos en base de datos: " + err.message);
       }
     }
 
-    // Listener de sesión activa
+    // Sesión persistente
     onAuthStateChanged(auth, (user) => {
       if (user) {
         redirectByRole(user);
       }
     });
 
-    // Envío del formulario
+    // Envío del Login
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errBox.style.display = 'none';
       loading.style.display = 'block';
+      loading.textContent = "Validando credenciales...";
       btnSubmit.disabled = true;
 
       const email = document.getElementById('email').value.trim();
@@ -225,12 +248,10 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         await redirectByRole(userCredential.user);
       } catch (err) {
-        console.error("Error Firebase Auth:", err);
-        let mensaje = "Credenciales incorrectas o usuario no registrado.";
-        if (err.code === 'auth/too-many-requests') {
-          mensaje = "Demasiados intentos. Intenta más tarde.";
-        } else if (err.code === 'auth/network-request-failed') {
-          mensaje = "Error de red: sin conexión a internet.";
+        console.error(err);
+        let mensaje = "Error al autenticar. Verifica correo y contraseña.";
+        if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+          mensaje = "Credenciales incorrectas.";
         }
         showError(mensaje);
       }
