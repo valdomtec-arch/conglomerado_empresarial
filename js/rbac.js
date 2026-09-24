@@ -1,43 +1,62 @@
 // js/rbac.js
 import { auth, db, doc, getDoc, collection, onSnapshot, onAuthStateChanged } from "./firebase-config.js";
 
-// Escucha reactiva de la colección de módulos dados de alta en el sistema
+// Correo raíz intocable
+export const ROOT_ADMIN = "valladarescid@gmail.com";
+
+// Escucha reactiva de módulos en Firestore
 export function escucharModulosSistema(callback) {
   return onSnapshot(collection(db, "modulos"), (snap) => {
     const lista = [];
     snap.forEach((d) => lista.push({ id: d.id, ...d.data() }));
     callback(lista);
+  }, (err) => {
+    console.warn("Aviso en modulos:", err.message);
+    callback([]);
   });
 }
 
-// Obtiene el perfil de gobernanza del usuario
-export async function obtenerPerfilUsuario(uid) {
+// Obtener perfil
+export async function obtenerPerfilUsuario(uid, userEmail = "") {
+  // BYPASS MAESTRO: Si es tu correo, genera el perfil en memoria sin esperar a Firestore
+  if (userEmail && userEmail.toLowerCase() === ROOT_ADMIN.toLowerCase()) {
+    return {
+      uid: uid,
+      email: userEmail,
+      nombre: "Jose Antonio Valladares Cid",
+      rol: "superadmin",
+      rol_id: "superadmin",
+      is_superadmin: true,
+      alcance: "global",
+      proyectos_asignados: ["*"],
+      activo: true
+    };
+  }
+
   try {
     const snap = await getDoc(doc(db, "usuarios", uid));
     return snap.exists() ? snap.data() : null;
   } catch (err) {
-    console.error("Error RBAC al obtener perfil:", err);
+    console.warn("Error RBAC al consultar Firestore:", err.message);
     return null;
   }
 }
 
-// Evalúa si tiene permiso para cualquier módulo (sea cual sea su nombre)
+// Validación de permisos
 export function tienePermiso(perfil, moduloId, accion = "r", proyectoId = null) {
-  if (!perfil || !perfil.activo) return false;
+  if (!perfil) return false;
+  if (perfil.email?.toLowerCase() === ROOT_ADMIN.toLowerCase()) return true;
+  if (!perfil.activo) return false;
   if (perfil.is_superadmin === true || perfil.rol === "superadmin") return true;
 
-  // Validación de alcance territorial / por proyecto
   if (proyectoId && perfil.alcance === "asignado") {
-    if (!perfil.proyectos_asignados?.includes(proyectoId)) {
-      return false;
-    }
+    if (!perfil.proyectos_asignados?.includes(proyectoId)) return false;
   }
 
-  // Validación dinámica sobre la matriz guardada en Firestore
   return !!perfil.matriz_efectiva?.[moduloId]?.[accion];
 }
 
-// Guardia de seguridad para colocar al inicio de cualquier HTML
+// Guardia de seguridad
 export function protegerVista(moduloId, accion = "r") {
   return new Promise((resolve) => {
     onAuthStateChanged(auth, async (user) => {
@@ -46,22 +65,27 @@ export function protegerVista(moduloId, accion = "r") {
         return;
       }
 
-      const perfil = await obtenerPerfilUsuario(user.uid);
+      // Si es el correo maestro, se salta cualquier bloqueo de BD
+      if (user.email.toLowerCase() === ROOT_ADMIN.toLowerCase()) {
+        const superPerfil = await obtenerPerfilUsuario(user.uid, user.email);
+        resolve({ user, perfil: superPerfil });
+        return;
+      }
+
+      const perfil = await obtenerPerfilUsuario(user.uid, user.email);
       if (!perfil || !perfil.activo) {
-        alert("Acceso denegado: Usuario inactivo o sin perfil.");
+        alert("Usuario inactivo o sin perfil.");
         window.location.href = "./index.html";
         return;
       }
 
-      // Bypass Superadmin
       if (perfil.is_superadmin === true || perfil.rol === "superadmin") {
         resolve({ user, perfil });
         return;
       }
 
-      // Comprobación de regla dinámica
       if (!tienePermiso(perfil, moduloId, accion)) {
-        alert(`No tienes privilegios para el módulo: [${moduloId}]`);
+        alert(`Sin privilegios para el módulo: [${moduloId}]`);
         window.location.href = "./control_obra.html";
         return;
       }
@@ -71,9 +95,10 @@ export function protegerVista(moduloId, accion = "r") {
   });
 }
 
-// Oculta botones o vistas que tengan data-rbac="c|u|d"
 export function aplicarSeguridadUI(perfil, moduloActual) {
-  if (!perfil || perfil.is_superadmin === true || perfil.rol === "superadmin") return;
+  if (!perfil) return;
+  if (perfil.email?.toLowerCase() === ROOT_ADMIN.toLowerCase()) return;
+  if (perfil.is_superadmin === true || perfil.rol === "superadmin") return;
 
   document.querySelectorAll("[data-rbac]").forEach((el) => {
     const accion = el.getAttribute("data-rbac");
