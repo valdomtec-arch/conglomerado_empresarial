@@ -54,6 +54,7 @@
       font-size: 0.85rem;
       font-weight: 600;
       border: 1px solid #334155;
+      transition: background 0.2s;
     }
     .btn-nav:hover { background: #334155; }
 
@@ -76,7 +77,6 @@
     .welcome-title { font-size: 1.45rem; font-weight: 800; color: var(--primary); }
     .welcome-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
 
-    /* Grid de Módulos Dinámicos */
     .modules-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -96,7 +96,6 @@
       color: inherit;
       transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
       position: relative;
-      overflow: hidden;
     }
     .module-card:hover {
       transform: translateY(-3px);
@@ -164,7 +163,7 @@
     <div class="dashboard-header">
       <div>
         <h1 class="welcome-title">Tablero de Control de Obra</h1>
-        <p class="welcome-sub">Módulos operacionales autorizados según tu rol de gobernanza.</p>
+        <p class="welcome-sub">Módulos operacionales autorizados en tiempo real.</p>
       </div>
       <div id="obras-scope-badge" style="font-size: 0.82rem; color: var(--text-muted); background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);">
         Alcance: Verificando...
@@ -174,14 +173,14 @@
     <!-- Contenedor Reactivo a Firestore -->
     <div class="modules-grid" id="modules-container">
       <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 0;">
-        Sincronizando módulos autorizados desde Firestore...
+        Sincronizando módulos desde Firestore...
       </div>
     </div>
   </main>
 
   <script type="module">
-    import { db, auth, signOut, onSnapshot, collection } from "./js/firebase-config.js";
-    import { obtenerPerfilActual, tienePermiso } from "./js/rbac.js";
+    import { auth, signOut } from "./js/firebase-config.js";
+    import { obtenerPerfilActual, escucharModulosSistema, tienePermiso } from "./js/rbac.js";
 
     const modulesContainer = document.getElementById("modules-container");
     const userNameDisplay = document.getElementById("user-name-display");
@@ -206,24 +205,20 @@
           ? "Alcance: Global (Todas las Obras)"
           : `Alcance: ${perfil.proyectos_asignados?.length || 0} Obra(s) Asignada(s)`;
 
-        // Escuchar la colección 'modulos' en tiempo real
-        onSnapshot(collection(db, "modulos"), (snap) => {
+        // Escucha en tiempo real mediante el listener de rbac.js
+        escucharModulosSistema((modulos) => {
           modulesContainer.innerHTML = "";
 
-          if (snap.empty) {
+          if (!modulos || modulos.length === 0) {
             modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Sin módulos configurados en la base de datos.</div>';
             return;
           }
 
           let modulosVisibles = 0;
 
-          snap.forEach(docSnap => {
-            const m = docSnap.data();
-            const modId = docSnap.id;
-
-            // 1. Debe estar activo en la base
-            // 2. El usuario debe tener permiso de lectura ('r') o ser Super Admin
-            const tieneAcceso = perfil.is_superadmin || (m.activo && tienePermiso(perfil, modId, "r"));
+          modulos.forEach(m => {
+            // Se valida que esté activo y que el usuario tenga permiso de lectura ('r') o sea Super Admin
+            const tieneAcceso = perfil.is_superadmin || (m.activo !== false && tienePermiso(perfil, m.id, "r"));
 
             if (tieneAcceso) {
               modulosVisibles++;
@@ -248,7 +243,7 @@
           });
 
           if (modulosVisibles === 0) {
-            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No tienes permisos asignados para visualizar módulos en este momento.</div>';
+            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No tienes módulos asignados con tu rol actual.</div>';
           }
         });
 
