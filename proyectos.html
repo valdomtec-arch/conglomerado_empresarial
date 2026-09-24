@@ -1,1 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Proyectos, Geocercas y Catálogos</title>
+  
+  <!-- Tailwind CSS para estilos limpios y responsivos -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Leaflet para visualización de mapa y geocercas -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <style>
+    #mapa { height: 260px; border-radius: 0.5rem; z-index: 10; }
+    .toast-transition {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- Navegación Superior -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-tight text-amber-400">CONGLOMERADO</span>
+        <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded border border-slate-700">Módulo Proyectos</span>
+      </div>
+      <nav class="flex items-center space-x-2 text-sm">
+        <a href="index.html" class="hover:text-amber-400 px-2 py-1 rounded">Inicio</a>
+        <a href="checador.html" class="hover:text-amber-400 px-2 py-1 rounded">Checador</a>
+        <a href="bitacora.html" class="hover:text-amber-400 px-2 py-1 rounded">Bitácora</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Columna Izquierda: Formulario de Alta y Configuración (5 cols) -->
+    <section class="lg:col-span-5 bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col space-y-4">
+      <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+          Registrar / Editar Proyecto
+        </h2>
+        <button id="btn-limpiar" type="button" class="text-xs text-slate-400 hover:text-slate-600 underline">Limpiar</button>
+      </div>
+
+      <form id="form-proyecto" class="space-y-4">
+        <input type="hidden" id="proyecto-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre del Proyecto / Frente</label>
+          <input type="text" id="nombre" required placeholder="Ej. Nave Industrial Fase 1" 
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Código / Folio</label>
+            <input type="text" id="codigo" required placeholder="PRJ-001" 
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tipo de Sitio</label>
+            <select id="tipo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              <option value="Obra">Obra Principal</option>
+              <option value="Campamento">Campamento / Patio</option>
+              <option value="Oficina">Oficina Central</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Parámetros de Geocerca -->
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">Geocerca de Marcaje</span>
+            <button type="button" id="btn-gps" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded flex items-center gap-1 transition">
+              <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Tomar Mi GPS
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="text-slate-500">Latitud</label>
+              <input type="number" step="any" id="lat" required placeholder="23.2494" 
+                     class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-amber-500">
+            </div>
+            <div>
+              <label class="text-slate-500">Longitud</label>
+              <input type="number" step="any" id="lng" required placeholder="-106.4111" 
+                     class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-amber-500">
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-500">Radio de Tolerancia:</span>
+              <span id="radio-display" class="font-bold text-slate-800">100 m</span>
+            </div>
+            <input type="range" id="radio_metros" min="20" max="1000" step="10" value="100" class="w-full accent-amber-500">
+          </div>
+
+          <!-- Mapa Interactivo de Geocerca -->
+          <div id="mapa"></div>
+          <p class="text-[11px] text-slate-400 italic">Haz clic en el mapa para posicionar el centro de la obra.</p>
+        </div>
+
+        <button type="submit" id="btn-guardar" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-lg shadow-sm transition">
+          Guardar Proyecto
+        </button>
+      </form>
+    </section>
+
+    <!-- Columna Derecha: Listado de Proyectos y Detalle de Catálogos (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col space-y-4">
+      
+      <!-- Listado Activo -->
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <span>Proyectos Registrados</span>
+          <span id="contador-proyectos" class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-normal">0</span>
+        </h3>
+        
+        <div id="lista-proyectos" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
+          <div class="p-4 border border-dashed border-slate-300 rounded-lg text-center text-sm text-slate-400">
+            Cargando proyectos desde Firestore...
+          </div>
+        </div>
+      </div>
+
+      <!-- Pestañas de Catálogos Secundarios (Personal & Partidas del Proyecto Seleccionado) -->
+      <div id="panel-catalogos" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-1 hidden">
+        <div class="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+          <div>
+            <h4 id="proyecto-seleccionado-nombre" class="font-bold text-slate-900 text-base leading-tight">Proyecto</h4>
+            <p id="proyecto-seleccionado-codigo" class="text-xs text-slate-400">Seleccione una acción</p>
+          </div>
+          <div class="flex space-x-2">
+            <button id="tab-btn-empleados" class="tab-btn px-3 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800">
+              Personal Asignado
+            </button>
+            <button id="tab-btn-partidas" class="tab-btn px-3 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-600 hover:bg-slate-200">
+              Catálogo de Partidas
+            </button>
+          </div>
+        </div>
+
+        <!-- Vista 1: Catálogo de Personal -->
+        <div id="tab-empleados" class="space-y-4">
+          <form id="form-empleado" class="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+            <input type="text" id="emp-nombre" placeholder="Nombre completo del operario" required class="sm:col-span-5 px-2.5 py-1.5 border border-slate-300 rounded">
+            <input type="text" id="emp-puesto" placeholder="Puesto / Categoría" required class="sm:col-span-4 px-2.5 py-1.5 border border-slate-300 rounded">
+            <input type="number" id="emp-cuota" placeholder="Tarifa/Día" step="any" class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
+            <button type="submit" class="sm:col-span-1 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold flex items-center justify-center py-1.5">
+              +
+            </button>
+          </form>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border border-slate-200 rounded-lg overflow-hidden">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-2.5">Nombre</th>
+                  <th class="p-2.5">Puesto</th>
+                  <th class="p-2.5">Tarifa</th>
+                  <th class="p-2.5 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="lista-empleados" class="divide-y divide-slate-100">
+                <tr><td colspan="4" class="p-3 text-center text-slate-400">Sin empleados dados de alta en este frente.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Vista 2: Catálogo de Partidas y Volúmenes de Contrato -->
+        <div id="tab-partidas" class="space-y-4 hidden">
+          <form id="form-partida" class="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+            <input type="text" id="part-clave" placeholder="Clave (ej. PRE-01)" required class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
+            <input type="text" id="part-concepto" placeholder="Descripción del concepto" required class="sm:col-span-5 px-2.5 py-1.5 border border-slate-300 rounded">
+            <input type="text" id="part-unidad" placeholder="Unidad (m3, m2, pza)" required class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
+            <input type="number" id="part-volumen" placeholder="Volumen" step="any" required class="sm:col-span-2 px-2.5 py-1.5 border border-slate-300 rounded">
+            <button type="submit" class="sm:col-span-1 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold flex items-center justify-center py-1.5">
+              +
+            </button>
+          </form>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border border-slate-200 rounded-lg overflow-hidden">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-2.5">Clave</th>
+                  <th class="p-2.5">Concepto</th>
+                  <th class="p-2.5">Unidad</th>
+                  <th class="p-2.5">Vol. Total</th>
+                  <th class="p-2.5 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="lista-partidas" class="divide-y divide-slate-100">
+                <tr><td colspan="5" class="p-3 text-center text-slate-400">Sin partidas cargadas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Contenedor de Alertas Tipo Toast -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Modal Genérico de Confirmación -->
+  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4 transform transition-all">
+      <h3 id="modal-confirm-title" class="font-bold text-slate-900 text-base">Confirmación</h3>
+      <p id="modal-confirm-msg" class="text-sm text-slate-600">¿Estás seguro de continuar con esta acción?</p>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button id="modal-confirm-cancel" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Cancelar</button>
+        <button id="modal-confirm-accept" class="px-3 py-1.5 text-xs font-semibold rounded bg-rose-600 text-white hover:bg-rose-700 transition">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      enableIndexedDbPersistence,
+      collection, 
+      addDoc, 
+      setDoc, 
+      doc, 
+      deleteDoc, 
+      onSnapshot, 
+      query, 
+      where, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Inicialización directa y unificada de Firebase (evita fallos de módulos relativos)
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevroffk",
+      authDomain: "conglomerado-empresarial.firebaseapp.com",
+      projectId: "conglomerado-empresarial",
+      storageBucket: "conglomerado-empresarial.appspot.com",
+      messagingSenderId: "36848994870",
+      appId: "1:36848994870:web:2fa267a5e1d35ce1baa697"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Persistencia local offline
+    enableIndexedDbPersistence(db).catch((err) => {
+      if (err.code === 'failed-precondition') {
+        console.warn('Persistencia: pestañas múltiples abiertas.');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Persistencia: el navegador actual no soporta IndexedDB.');
+      }
+    });
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const bgColors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-rose-600 text-white',
+        warning: 'bg-amber-500 text-slate-900',
+        info: 'bg-slate-800 text-white'
+      };
+      toast.className = `toast-transition pointer-events-auto px-4 py-2.5 rounded-lg shadow-lg text-xs font-semibold flex items-center gap-2 ${bgColors[type] || bgColors.info}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function customConfirm(title, message) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('modal-confirm');
+        const titleEl = document.getElementById('modal-confirm-title');
+        const msgEl = document.getElementById('modal-confirm-msg');
+        const btnCancel = document.getElementById('modal-confirm-cancel');
+        const btnAccept = document.getElementById('modal-confirm-accept');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        modal.classList.remove('hidden');
+
+        const cleanup = (result) => {
+          modal.classList.add('hidden');
+          btnCancel.onclick = null;
+          btnAccept.onclick = null;
+          resolve(result);
+        };
+
+        btnCancel.onclick = () => cleanup(false);
+        btnAccept.onclick = () => cleanup(true);
+      });
+    }
+
+    let proyectoActivoId = null;
+    let mapa, marcador, circuloGeocerca;
+    const defaultCoords = [23.2494, -106.4111]; // Mazatlán
+
+    function inicializarMapa() {
+      mapa = L.map('mapa').setView(defaultCoords, 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(mapa);
+
+      marcador = L.marker(defaultCoords, { draggable: true }).addTo(mapa);
+      circuloGeocerca = L.circle(defaultCoords, {
+        color: '#f59e0b',
+        fillColor: '#fbbf24',
+        fillOpacity: 0.25,
+        radius: 100
+      }).addTo(mapa);
+
+      // Evento clic en mapa para posicionar marcador
+      mapa.on('click', (e) => {
+        actualizarCoordenadasEnMapa(e.latlng.lat, e.latlng.lng);
+      });
+
+      // Evento arrastrar marcador
+      marcador.on('dragend', (e) => {
+        const { lat, lng } = e.target.getLatLng();
+        actualizarCoordenadasEnMapa(lat, lng);
+      });
+    }
+
+    function actualizarCoordenadasEnMapa(lat, lng, zoom = false) {
+      document.getElementById('lat').value = lat.toFixed(6);
+      document.getElementById('lng').value = lng.toFixed(6);
+      marcador.setLatLng([lat, lng]);
+      circuloGeocerca.setLatLng([lat, lng]);
+      if (zoom) mapa.setView([lat, lng], 16);
+    }
+
+    const radioSlider = document.getElementById('radio_metros');
+    const radioDisplay = document.getElementById('radio-display');
+    radioSlider.addEventListener('input', (e) => {
+      const metros = Number(e.target.value);
+      radioDisplay.textContent = `${metros} m`;
+      if (circuloGeocerca) circuloGeocerca.setRadius(metros);
+    });
+
+    document.getElementById('btn-gps').addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        showToast("Tu navegador no soporta geolocalización.", "warning");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          actualizarCoordenadasEnMapa(pos.coords.latitude, pos.coords.longitude, true);
+          showToast("Ubicación GPS obtenida con éxito.", "success");
+        },
+        (err) => showToast("Error al obtener GPS: " + err.message, "error"),
+        { enableHighAccuracy: true }
+      );
+    });
+
+    ['lat', 'lng'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        const lat = parseFloat(document.getElementById('lat').value);
+        const lng = parseFloat(document.getElementById('lng').value);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          actualizarCoordenadasEnMapa(lat, lng, true);
+        }
+      });
+    });
+
+    document.getElementById('form-proyecto').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('proyecto-id').value;
+      const data = {
+        nombre: document.getElementById('nombre').value.trim(),
+        codigo: document.getElementById('codigo').value.trim(),
+        tipo: document.getElementById('tipo').value,
+        lat: parseFloat(document.getElementById('lat').value),
+        lng: parseFloat(document.getElementById('lng').value),
+        radio_metros: Number(document.getElementById('radio_metros').value),
+        actualizadoEn: serverTimestamp()
+      };
+
+      try {
+        if (id) {
+          await setDoc(doc(db, "proyectos", id), data, { merge: true });
+          showToast("Proyecto actualizado correctamente.", "success");
+        } else {
+          data.creadoEn = serverTimestamp();
+          data.activo = true;
+          await addDoc(collection(db, "proyectos"), data);
+          showToast("Proyecto registrado exitosamente.", "success");
+        }
+        resetFormulario();
+      } catch (err) {
+        console.error("Error al guardar proyecto:", err);
+        showToast("Error al guardar: " + err.message, "error");
+      }
+    });
+
+    function resetFormulario() {
+      document.getElementById('form-proyecto').reset();
+      document.getElementById('proyecto-id').value = '';
+      document.getElementById('btn-guardar').textContent = 'Guardar Proyecto';
+      radioDisplay.textContent = '100 m';
+      if (circuloGeocerca) circuloGeocerca.setRadius(100);
+      actualizarCoordenadasEnMapa(defaultCoords[0], defaultCoords[1], false);
+    }
+
+    document.getElementById('btn-limpiar').addEventListener('click', resetFormulario);
+
+    onSnapshot(collection(db, "proyectos"), (snapshot) => {
+      const container = document.getElementById('lista-proyectos');
+      document.getElementById('contador-proyectos').textContent = snapshot.size;
+      container.innerHTML = '';
+
+      if (snapshot.empty) {
+        container.innerHTML = `<div class="col-span-2 text-center text-xs text-slate-400 py-4">No hay proyectos dados de alta.</div>`;
+        return;
+      }
+
+      snapshot.forEach(docSnap => {
+        const p = docSnap.data();
+        const card = document.createElement('div');
+        const isActive = docSnap.id === proyectoActivoId;
+        card.className = `p-3 rounded-lg border text-xs cursor-pointer transition ${
+          isActive ? 'border-amber-500 bg-amber-50/50 ring-1 ring-amber-500' : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+        }`;
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-1">
+            <span class="font-bold text-slate-900">${p.nombre}</span>
+            <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono">${p.codigo}</span>
+          </div>
+          <div class="text-slate-500 space-y-0.5 text-[11px] mb-2">
+            <div>Tipo: <strong class="text-slate-700">${p.tipo}</strong></div>
+            <div>Geocerca: <strong class="text-slate-700">${p.radio_metros} m</strong> tolerados</div>
+          </div>
+          <div class="flex justify-end space-x-2 pt-2 border-t border-slate-200/60">
+            <button data-action="manage" class="text-blue-600 hover:underline font-semibold">Configurar Catálogos</button>
+            <button data-action="edit" class="text-slate-600 hover:underline">Editar</button>
+          </div>
+        `;
+
+        card.querySelector('[data-action="manage"]').addEventListener('click', (e) => {
+          e.stopPropagation();
+          seleccionarProyecto(docSnap.id, p);
+        });
+
+        card.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
+          e.stopPropagation();
+          cargarProyectoEnFormulario(docSnap.id, p);
+        });
+
+        container.appendChild(card);
+      });
+    });
+
+    function cargarProyectoEnFormulario(id, p) {
+      document.getElementById('proyecto-id').value = id;
+      document.getElementById('nombre').value = p.nombre;
+      document.getElementById('codigo').value = p.codigo;
+      document.getElementById('tipo').value = p.tipo;
+      document.getElementById('radio_metros').value = p.radio_metros;
+      radioDisplay.textContent = `${p.radio_metros} m`;
+      actualizarCoordenadasEnMapa(p.lat, p.lng, true);
+      document.getElementById('btn-guardar').textContent = 'Actualizar Proyecto';
+    }
+
+    function seleccionarProyecto(id, p) {
+      proyectoActivoId = id;
+      document.getElementById('panel-catalogos').classList.remove('hidden');
+      document.getElementById('proyecto-seleccionado-nombre').textContent = p.nombre;
+      document.getElementById('proyecto-seleccionado-codigo').textContent = `Código: ${p.codigo} | Geocerca: ${p.radio_metros}m`;
+      
+      escucharEmpleados(id);
+      escucharPartidas(id);
+    }
+
+    const tabBtnEmp = document.getElementById('tab-btn-empleados');
+    const tabBtnPart = document.getElementById('tab-btn-partidas');
+    const tabEmp = document.getElementById('tab-empleados');
+    const tabPart = document.getElementById('tab-partidas');
+
+    tabBtnEmp.addEventListener('click', () => {
+      tabBtnEmp.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800";
+      tabBtnPart.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-600 hover:bg-slate-200";
+      tabEmp.classList.remove('hidden');
+      tabPart.classList.add('hidden');
+    });
+
+    tabBtnPart.addEventListener('click', () => {
+      tabBtnPart.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-amber-100 text-amber-800";
+      tabBtnEmp.className = "tab-btn px-3 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-600 hover:bg-slate-200";
+      tabPart.classList.remove('hidden');
+      tabEmp.classList.add('hidden');
+    });
+
+    document.getElementById('form-empleado').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!proyectoActivoId) return;
+
+      const nuevoEmpleado = {
+        proyecto_id: proyectoActivoId,
+        nombre: document.getElementById('emp-nombre').value.trim(),
+        puesto: document.getElementById('emp-puesto').value.trim(),
+        cuota_dia: Number(document.getElementById('emp-cuota').value) || 0,
+        activo: true,
+        creadoEn: serverTimestamp()
+      };
+
+      try {
+        await addDoc(collection(db, "empleados"), nuevoEmpleado);
+        document.getElementById('form-empleado').reset();
+        showToast("Empleado asignado correctamente.", "success");
+      } catch (err) {
+        showToast("Error al registrar empleado: " + err.message, "error");
+      }
+    });
+
+    let unsubscribeEmpleados = null;
+    function escucharEmpleados(proyId) {
+      if (unsubscribeEmpleados) unsubscribeEmpleados();
+      const q = query(collection(db, "empleados"), where("proyecto_id", "==", proyId));
+      
+      unsubscribeEmpleados = onSnapshot(q, (snapshot) => {
+        const tbody = document.getElementById('lista-empleados');
+        tbody.innerHTML = '';
+        if (snapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">Sin empleados registrados en este frente.</td></tr>';
+          return;
+        }
+
+        snapshot.forEach(docSnap => {
+          const emp = docSnap.data();
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-50";
+          tr.innerHTML = `
+            <td class="p-2.5 font-medium text-slate-900">${emp.nombre}</td>
+            <td class="p-2.5 text-slate-600">${emp.puesto}</td>
+            <td class="p-2.5 font-mono">$${(emp.cuota_dia || 0).toFixed(2)}</td>
+            <td class="p-2.5 text-right">
+              <button data-del="${docSnap.id}" class="text-rose-500 hover:text-rose-700 font-bold px-2 py-1">✕</button>
+            </td>
+          `;
+          tr.querySelector(`[data-del="${docSnap.id}"]`).addEventListener('click', async () => {
+            const confirmed = await customConfirm('Eliminar Empleado', `¿Deseas dar de baja a ${emp.nombre}?`);
+            if (confirmed) {
+              await deleteDoc(doc(db, "empleados", docSnap.id));
+              showToast("Empleado eliminado.", "info");
+            }
+          });
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    document.getElementById('form-partida').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!proyectoActivoId) return;
+
+      const nuevaPartida = {
+        proyecto_id: proyectoActivoId,
+        clave: document.getElementById('part-clave').value.trim().toUpperCase(),
+        concepto: document.getElementById('part-concepto').value.trim(),
+        unidad: document.getElementById('part-unidad').value.trim().toLowerCase(),
+        volumen_total: Number(document.getElementById('part-volumen').value) || 0,
+        creadoEn: serverTimestamp()
+      };
+
+      try {
+        await addDoc(collection(db, "partidas"), nuevaPartida);
+        document.getElementById('form-partida').reset();
+        showToast("Partida agregada al catálogo.", "success");
+      } catch (err) {
+        showToast("Error al registrar partida: " + err.message, "error");
+      }
+    });
+
+    let unsubscribePartidas = null;
+    function escucharPartidas(proyId) {
+      if (unsubscribePartidas) unsubscribePartidas();
+      const q = query(collection(db, "partidas"), where("proyecto_id", "==", proyId));
+
+      unsubscribePartidas = onSnapshot(q, (snapshot) => {
+        const tbody = document.getElementById('lista-partidas');
+        tbody.innerHTML = '';
+        if (snapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Sin partidas cargadas.</td></tr>';
+          return;
+        }
+
+        snapshot.forEach(docSnap => {
+          const part = docSnap.data();
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-50";
+          tr.innerHTML = `
+            <td class="p-2.5 font-mono font-semibold text-slate-800">${part.clave}</td>
+            <td class="p-2.5 text-slate-600">${part.concepto}</td>
+            <td class="p-2.5 uppercase text-slate-500">${part.unidad}</td>
+            <td class="p-2.5 font-mono font-bold text-slate-800">${part.volumen_total}</td>
+            <td class="p-2.5 text-right">
+              <button data-del="${docSnap.id}" class="text-rose-500 hover:text-rose-700 font-bold px-2 py-1">✕</button>
+            </td>
+          `;
+          tr.querySelector(`[data-del="${docSnap.id}"]`).addEventListener('click', async () => {
+            const confirmed = await customConfirm('Eliminar Partida', `¿Deseas eliminar la partida ${part.clave}?`);
+            if (confirmed) {
+              await deleteDoc(doc(db, "partidas", docSnap.id));
+              showToast("Partida eliminada.", "info");
+            }
+          });
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', inicializarMapa);
+  </script>
+</body>
+</html>
