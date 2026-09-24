@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prenómina y Liquidación M.O. - Conglomerado Empresarial</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius: 10px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+    .btn-nav:hover { background: #475569; }
+
+    .container {
+      max-width: 1400px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .filters-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+    @media (max-width: 860px) {
+      .filters-bar { grid-template-columns: 1fr; }
+    }
+
+    .form-group { margin-bottom: 0; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    input, select {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #059669; }
+
+    /* Tabla de Prenómina */
+    .table-container { overflow-x: auto; margin-top: 1rem; border: 1px solid var(--border); border-radius: 8px; }
+    .prenomina-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      background: #fff;
+    }
+    .prenomina-table th {
+      background: #f1f5f9;
+      padding: 0.75rem 0.6rem;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      color: #334155;
+      font-weight: 700;
+    }
+    .prenomina-table td {
+      padding: 0.65rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .prenomina-table tbody tr:hover { background: #f8fafc; }
+
+    .prenomina-table input[type="number"] {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.85rem;
+      width: 90px;
+    }
+
+    .badge-pill {
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-weight: 600;
+      background: #eff6ff;
+      color: var(--accent);
+    }
+
+    /* Resumen Financiero */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .stat-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .stat-value { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 4px; }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+      z-index: 999;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span>Prenómina de Mano de Obra (M.O.)</span>
+    </div>
+    <div class="header-actions">
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Cargando...</span>
+      <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
+      <a href="./checador.html" class="btn-nav">Checador</a>
+      <a href="./estimaciones.html" class="btn-nav">Estimaciones</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Filtros de Período y Frente -->
+    <div class="card">
+      <div class="card-title">
+        <span>Filtro de Asistencia y Liquidación</span>
+        <button class="btn btn-success" id="btn-exportar-csv" style="font-size: 0.8rem;">📥 Exportar a Excel (CSV)</button>
+      </div>
+
+      <div class="filters-bar">
+        <div class="form-group">
+          <label for="select-proyecto">Obra / Frente de Trabajo</label>
+          <select id="select-proyecto">
+            <option value="">Cargando proyectos autorizados...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-fecha-inicio">Fecha Inicio</label>
+          <input type="date" id="input-fecha-inicio">
+        </div>
+        <div class="form-group">
+          <label for="input-fecha-fin">Fecha Fin</label>
+          <input type="date" id="input-fecha-fin">
+        </div>
+        <button class="btn btn-primary" id="btn-procesar">Consultar Asistencias</button>
+      </div>
+    </div>
+
+    <!-- Tabla de Nómina Consolidada -->
+    <div class="card">
+      <div class="card-title">
+        <span>Consolidado Semanal de Mano de Obra</span>
+        <span id="count-colaboradores" class="badge-pill">0 Colaboradores</span>
+      </div>
+
+      <div class="table-container">
+        <table class="prenomina-table">
+          <thead>
+            <tr>
+              <th>Colaborador</th>
+              <th>Puesto / Especialidad</th>
+              <th style="text-align: center;">Días Checados</th>
+              <th style="width: 110px;">Salario Diario ($)</th>
+              <th style="width: 100px;">Horas Extra ($)</th>
+              <th style="width: 100px;">Bonos ($)</th>
+              <th style="width: 100px;">Deducciones ($)</th>
+              <th style="text-align: right; width: 130px;">Total Neto ($)</th>
+            </tr>
+          </thead>
+          <tbody id="prenomina-body">
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
+                Selecciona un rango de fechas y presiona "Consultar Asistencias" para cruzar los datos del checador.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tarjetas de Resumen -->
+      <div class="summary-cards">
+        <div class="stat-card">
+          <div class="stat-title">Total Jornales (Días Trabajados)</div>
+          <div class="stat-value" id="stat-jornales">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Total Percepciones Extras</div>
+          <div class="stat-value" id="stat-extras">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Total Retenciones / Descuentos</div>
+          <div class="stat-value" id="stat-deducciones" style="color: var(--danger);">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">NÓMINA TOTAL A DISPERSAR</div>
+          <div class="stat-value" id="stat-total-nomina" style="color: var(--accent);">$0.00</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+  <script type="module">
+    import { db, collection, onSnapshot, getDocs, query, where } from "./js/firebase-config.js";
+    import { protegerVista } from "./js/rbac.js";
+
+    const selectProyecto = document.getElementById("select-proyecto");
+    const inputFechaInicio = document.getElementById("input-fecha-inicio");
+    const inputFechaFin = document.getElementById("input-fecha-fin");
+    const btnProcesar = document.getElementById("btn-procesar");
+    const prenominaBody = document.getElementById("prenomina-body");
+    const btnExportar = document.getElementById("btn-exportar-csv");
+    const countColaboradores = document.getElementById("count-colaboradores");
+
+    const statJornales = document.getElementById("stat-jornales");
+    const statExtras = document.getElementById("stat-extras");
+    const statDeducciones = document.getElementById("stat-deducciones");
+    const statTotalNomina = document.getElementById("stat-total-nomina");
+    const toast = document.getElementById("toast");
+
+    let usuarioActual = null;
+    let perfilActual = null;
+    let proyectosDisponibles = [];
+    let nominaFiltrada = [];
+
+    const formatoMoneda = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" });
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3000);
+    }
+
+    // Configurar fechas por defecto: semana actual (Lunes a Sábado)
+    const hoy = new Date();
+    const primerDia = new Date(hoy.setDate(hoy.getDate() - hoy.getDay() + 1));
+    const ultimoDia = new Date(hoy.setDate(primerDia.getDate() + 5));
+
+    inputFechaInicio.value = primerDia.toISOString().split("T")[0];
+    inputFechaFin.value = ultimoDia.toISOString().split("T")[0];
+
+    // 1. Proteger Vista (RBAC)
+    protegerVista("prenomina", "r").then(({ user, perfil }) => {
+      usuarioActual = user;
+      perfilActual = perfil;
+      document.getElementById("user-display").textContent = perfil.nombre || user.email;
+      cargarProyectos();
+    });
+
+    // 2. Cargar Proyectos Autorizados
+    function cargarProyectos() {
+      onSnapshot(collection(db, "proyectos"), (snap) => {
+        selectProyecto.innerHTML = '<option value="todos">Todos los frentes autorizados</option>';
+        proyectosDisponibles = [];
+
+        snap.forEach((d) => {
+          const p = { id: d.id, ...d.data() };
+          const tieneAcceso = perfilActual.is_superadmin || 
+                              perfilActual.alcance === "global" || 
+                              perfilActual.proyectos_asignados?.includes(d.id) || 
+                              perfilActual.proyectos_asignados?.includes("*");
+
+          if (tieneAcceso) {
+            proyectosDisponibles.push(p);
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            selectProyecto.appendChild(opt);
+          }
+        });
+      });
+    }
+
+    // 3. Procesar Marcajes del Checador vs Nómina
+    btnProcesar.addEventListener("click", async () => {
+      const fInicio = inputFechaInicio.value;
+      const fFin = inputFechaFin.value;
+      const pId = selectProyecto.value;
+
+      if (!fInicio || !fFin) return alert("Selecciona fecha de inicio y fin.");
+      if (fInicio > fFin) return alert("La fecha inicial no puede ser posterior a la fecha final.");
+
+      btnProcesar.disabled = true;
+      btnProcesar.textContent = "Procesando asistencias...";
+
+      try {
+        // Consultar asistencias en Firestore
+        const snapAsistencias = await getDocs(collection(db, "asistencias"));
+        const trabajadoresMap = new Map();
+
+        snapAsistencias.forEach(d => {
+          const a = d.data();
+          const fechaMarcaje = a.fechaCorta || (a.timestamp ? a.timestamp.split("T")[0] : "");
+
+          if (fechaMarcaje >= fInicio && fechaMarcaje <= fFin) {
+            // Filtrar por proyecto
+            const coincideProyecto = pId === "todos" ? true : a.proyectoId === pId;
+
+            // Validar alcance del usuario si ve todos
+            const permitido = perfilActual.is_superadmin || 
+                              perfilActual.alcance === "global" || 
+                              proyectosDisponibles.some(p => p.id === a.proyectoId);
+
+            if (coincideProyecto && permitido) {
+              const key = a.uid || a.usuarioEmail;
+              if (!trabajadoresMap.has(key)) {
+                trabajadoresMap.set(key, {
+                  uid: a.uid,
+                  nombre: a.usuarioNombre || a.usuarioEmail,
+                  rol: a.rol || "Oficial de Obra",
+                  diasChecados: new Set(),
+                  salarioDiario: 450, // Salario sugerido de obra base
+                  horasExtra: 0,
+                  bonos: 0,
+                  deducciones: 0
+                });
+              }
+              trabajadoresMap.get(key).diasChecados.add(fechaMarcaje);
+            }
+          }
+        });
+
+        nominaFiltrada = Array.from(trabajadoresMap.values());
+        renderizarTabla();
+      } catch (err) {
+        console.error("Error al procesar prenómina:", err);
+        alert("Fallo al consultar asistencias: " + err.message);
+      } finally {
+        btnProcesar.disabled = false;
+        btnProcesar.textContent = "Consultar Asistencias";
+      }
+    });
+
+    // 4. Renderizado Dinámico de la Nómina
+    function renderizarTabla() {
+      prenominaBody.innerHTML = "";
+      countColaboradores.textContent = `${nominaFiltrada.length} Colaboradores`;
+
+      if (nominaFiltrada.length === 0) {
+        prenominaBody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">
+              No se encontraron marcajes de asistencia válidos en el rango de fechas seleccionado.
+            </td>
+          </tr>
+        `;
+        recalcularTotalesGenerales();
+        return;
+      }
+
+      nominaFiltrada.forEach((t, index) => {
+        const dias = t.diasChecados.size;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${t.nombre}</strong></td>
+          <td><span class="badge-pill">${t.rol}</span></td>
+          <td style="text-align: center; font-weight: 700;">${dias} d</td>
+          <td><input type="number" class="inp-sd" min="0" step="10" value="${t.salarioDiario}" data-idx="${index}"></td>
+          <td><input type="number" class="inp-he" min="0" step="50" value="${t.horasExtra}" data-idx="${index}"></td>
+          <td><input type="number" class="inp-bono" min="0" step="50" value="${t.bonos}" data-idx="${index}"></td>
+          <td><input type="number" class="inp-ded" min="0" step="50" value="${t.deducciones}" data-idx="${index}"></td>
+          <td style="text-align: right; font-weight: 700; color: var(--primary);" class="col-neto">$0.00</td>
+        `;
+
+        tr.querySelectorAll("input").forEach(inp => {
+          inp.addEventListener("input", (e) => {
+            const idx = e.target.dataset.idx;
+            const campo = e.target.classList.contains("inp-sd") ? "salarioDiario" :
+                          e.target.classList.contains("inp-he") ? "horasExtra" :
+                          e.target.classList.contains("inp-bono") ? "bonos" : "deducciones";
+            nominaFiltrada[idx][campo] = parseFloat(e.target.value) || 0;
+            actualizarFilaNeto(tr, nominaFiltrada[idx]);
+            recalcularTotalesGenerales();
+          });
+        });
+
+        actualizarFilaNeto(tr, t);
+        prenominaBody.appendChild(tr);
+      });
+
+      recalcularTotalesGenerales();
+    }
+
+    function actualizarFilaNeto(tr, t) {
+      const dias = t.diasChecados.size;
+      const base = dias * t.salarioDiario;
+      const neto = base + t.horasExtra + t.bonos - t.deducciones;
+      tr.querySelector(".col-neto").textContent = formatoMoneda.format(neto);
+    }
+
+    // 5. Cálculos Globales de Liquidación
+    function recalcularTotalesGenerales() {
+      let totalJornales = 0;
+      let totalExtras = 0;
+      let totalDeducciones = 0;
+      let granTotal = 0;
+
+      nominaFiltrada.forEach(t => {
+        const dias = t.diasChecados.size;
+        const base = dias * t.salarioDiario;
+        const extras = t.horasExtra + t.bonos;
+        const neto = base + extras - t.deducciones;
+
+        totalJornales += dias;
+        totalExtras += extras;
+        totalDeducciones += t.deducciones;
+        granTotal += neto;
+      });
+
+      statJornales.textContent = `${totalJornales} días`;
+      statExtras.textContent = formatoMoneda.format(totalExtras);
+      statDeducciones.textContent = `-${formatoMoneda.format(totalDeducciones)}`;
+      statTotalNomina.textContent = formatoMoneda.format(granTotal);
+    }
+
+    // 6. Exportación a Excel (CSV)
+    btnExportar.addEventListener("click", () => {
+      if (nominaFiltrada.length === 0) return alert("No hay datos en pantalla para exportar.");
+
+      let csv = "Colaborador,Puesto,Dias Trabajados,Salario Diario,Horas Extras,Bonos,Deducciones,Total Neto\n";
+
+      nominaFiltrada.forEach(t => {
+        const dias = t.diasChecados.size;
+        const base = dias * t.salarioDiario;
+        const neto = base + t.horasExtra + t.bonos - t.deducciones;
+        csv += `"${t.nombre}","${t.rol}",${dias},${t.salarioDiario},${t.horasExtra},${t.bonos},${t.deducciones},${neto}\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `prenomina_${inputFechaInicio.value}_al_${inputFechaFin.value}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Archivo CSV descargado con éxito");
+    });
+  </script>
+</body>
+</html>
