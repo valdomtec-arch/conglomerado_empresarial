@@ -135,7 +135,10 @@
 
   <div class="login-card">
     <div class="brand-icon">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
     </div>
 
     <h1>Acceso al Sistema</h1>
@@ -145,7 +148,7 @@
 
     <form id="login-form">
       <div class="form-group">
-        <label for="email">Correo Corporativo</label>
+        <label for="email">Correo Electrónico</label>
         <input type="email" id="email" required placeholder="usuario@conglomerado.com" autocomplete="username">
       </div>
 
@@ -155,20 +158,20 @@
       </div>
 
       <button type="submit" class="btn btn-primary" id="btn-submit">Ingresar</button>
-      <div id="loading" class="loading-spinner">Validando perfil y permisos...</div>
+      <div id="loading" class="loading-spinner">Validando permisos con Firebase SDK...</div>
     </form>
   </div>
 
   <script type="module">
-    import { auth, db } from "./js/firebase-config.js";
+    // Importación limpia desde tu propio módulo de configuración SDK
     import { 
+      auth, 
+      db, 
       signInWithEmailAndPassword, 
-      onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { 
+      onAuthStateChanged, 
       doc, 
       getDoc 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    } from "./js/firebase-config.js";
 
     const form = document.getElementById('login-form');
     const errBox = document.getElementById('error-box');
@@ -182,7 +185,7 @@
       btnSubmit.disabled = false;
     }
 
-    // Evalúa el rol en Firestore y redirige
+    // Router de autenticación por rol
     async function redirectByRole(user) {
       loading.style.display = 'block';
       btnSubmit.disabled = true;
@@ -190,32 +193,25 @@
       try {
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
         
-        if (userDoc.exists()) {
-          const rol = userDoc.data().rol;
-          if (rol === 'admin') {
-            window.location.href = './admin.html';
-          } else {
-            window.location.href = './portal.html';
-          }
+        if (userDoc.exists() && userDoc.data().rol === 'admin') {
+          window.location.href = './admin.html';
         } else {
-          // Si no está registrado en la colección "usuarios", va al portal general por defecto
-          window.location.href = './portal.html';
+          window.location.href = './control_obra.html';
         }
       } catch (err) {
-        console.error("Error al obtener rol:", err);
-        // Fallback seguro
-        window.location.href = './portal.html';
+        console.warn("Fallo al consultar rol en Firestore:", err);
+        window.location.href = './control_obra.html';
       }
     }
 
-    // Revisa si ya hay una sesión persistida
+    // Listener de sesión activa
     onAuthStateChanged(auth, (user) => {
       if (user) {
         redirectByRole(user);
       }
     });
 
-    // Envío del Formulario
+    // Envío del formulario
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errBox.style.display = 'none';
@@ -229,12 +225,12 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         await redirectByRole(userCredential.user);
       } catch (err) {
-        console.error(err);
-        let mensaje = "Error al autenticar. Verifica tus credenciales.";
-        if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-          mensaje = "Correo o contraseña incorrectos.";
-        } else if (err.code === 'auth/too-many-requests') {
-          mensaje = "Demasiados intentos fallidos. Intenta más tarde.";
+        console.error("Error Firebase Auth:", err);
+        let mensaje = "Credenciales incorrectas o usuario no registrado.";
+        if (err.code === 'auth/too-many-requests') {
+          mensaje = "Demasiados intentos. Intenta más tarde.";
+        } else if (err.code === 'auth/network-request-failed') {
+          mensaje = "Error de red: sin conexión a internet.";
         }
         showError(mensaje);
       }
