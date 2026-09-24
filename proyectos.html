@@ -328,10 +328,10 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Lógica Principal consumiendo la arquitectura modular -->
+  <!-- Lógica Principal consumiendo el SDK centralizado en GitHub -->
   <script type="module">
-    import { db } from "./js/firebase-config.js";
     import { 
+      db, 
       collection, 
       doc, 
       setDoc, 
@@ -340,7 +340,7 @@
       onSnapshot, 
       query, 
       where 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    } from "./js/firebase-config.js";
 
     let currentProjectId = null;
     let map, marker, circle;
