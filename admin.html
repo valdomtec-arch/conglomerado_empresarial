@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consola de Gobernanza RBAC - Conglomerado Empresarial</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --radius: 10px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .badge-super { background: #dc2626; color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+    
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
+    .btn-nav:hover { background: #475569; }
+
+    .container {
+      max-width: 1400px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: 520px 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 1100px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group { margin-bottom: 0.9rem; }
+    label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+    input, select {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    /* Matriz Dinámica CRUD */
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .matrix-table th {
+      background: #f1f5f9;
+      padding: 0.55rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      color: #475569;
+    }
+    .matrix-table th:first-child { text-align: left; }
+    .matrix-table td {
+      padding: 0.55rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .matrix-table td:first-child { text-align: left; font-weight: 600; }
+    .matrix-table input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-danger:hover { background: #fca5a5; }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
+
+    /* Padrón de Usuarios */
+    .users-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .user-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+    }
+    .user-card:hover { border-color: var(--accent); }
+    .user-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
+    
+    .badge-status {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .badge-active { background: #dcfce7; color: #15803d; }
+    .badge-inactive { background: #fee2e2; color: #b91c1c; }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+      z-index: 999;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <span>Conglomerado Empresarial</span>
+      <span class="badge-super">Gobernanza RBAC</span>
+    </div>
+    <div class="header-actions">
+      <span id="super-email" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
+      <a href="./control_obra.html" class="btn-nav">Control de Obra</a>
+      <a href="./proyectos.html" class="btn-nav">Proyectos</a>
+      <button class="btn btn-secondary btn-sm" id="btn-logout">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <!-- COLUMNA 1: Catálogo de Módulos y Diseñador de Permisos -->
+    <div>
+      
+      <!-- 1. Alta Rápida de Módulos en Caliente -->
+      <div class="card">
+        <div class="card-title">
+          <span>1. Registro Dinámico de Módulos</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+          Inyecta nuevos módulos al sistema sin alterar el código fuente. Se reflejarán de inmediato en la matriz inferior.
+        </p>
+        <form id="form-nuevo-modulo" class="grid-2" style="margin-bottom: 0.5rem;">
+          <input type="text" id="mod-id" placeholder="ID único (ej. checador)" required>
+          <input type="text" id="mod-nombre" placeholder="Nombre (ej. Checador PWA)" required>
+          <input type="text" id="mod-ruta" placeholder="Ruta (ej. ./checador.html)" required>
+          <button type="submit" class="btn btn-secondary">+ Guardar Módulo</button>
+        </form>
+      </div>
+
+      <!-- 2. Formulario de Perfil & Matriz CRUD -->
+      <div class="card">
+        <div class="card-title">
+          <span id="form-mode-title">2. Asignar Perfil y Matriz CRUD</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-form" style="display: none;">Limpiar / Nuevo</button>
+        </div>
+
+        <form id="form-user-rbac">
+          <div class="form-group">
+            <label>UID de Firebase Auth</label>
+            <input type="text" id="user-uid" placeholder="zeVjo7RcQqRKjq1T7goO22SMHip1" required>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Nombre Completo</label>
+              <input type="text" id="user-nombre" placeholder="Ing. Residente" required>
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" id="user-email" placeholder="usuario@conglomerado.com" required>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Rol / Denominación</label>
+              <input type="text" id="user-rol" placeholder="Ej. Residente de Frente" required>
+            </div>
+            <div class="form-group">
+              <label>Alcance Geográfico (Scope)</label>
+              <select id="user-alcance">
+                <option value="global">Global (Todas las Obras)</option>
+                <option value="asignado">Obras Asignadas Específicas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" id="container-proyectos-asignados" style="display: none;">
+            <label>Obras Autorizadas (mantén presionado Ctrl para selección múltiple):</label>
+            <select id="user-proyectos" multiple style="height: 85px;"></select>
+          </div>
+
+          <div class="form-group" style="background: #f1f5f9; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px;">
+            <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
+              <input type="checkbox" id="user-is-superadmin" style="width: 18px; height: 18px;">
+              <span><strong>Super Administrador</strong> (Bypass Total de Permisos)</span>
+            </label>
+          </div>
+
+          <!-- Matriz Dinámica CRUD -->
+          <div class="form-group" id="container-matrix">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label style="margin: 0;">Matriz Granular de Accesos</label>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-all">Marcar / Desmarcar Todo</button>
+            </div>
+            
+            <table class="matrix-table">
+              <thead>
+                <tr>
+                  <th>Módulo</th>
+                  <th title="Crear / Insertar">C</th>
+                  <th title="Leer / Consultar">R</th>
+                  <th title="Actualizar / Editar">U</th>
+                  <th title="Eliminar / Borrar">D</th>
+                </tr>
+              </thead>
+              <tbody id="matrix-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Cargando módulos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="margin-top: 1.25rem;">
+            <button type="submit" class="btn btn-primary" id="btn-save-rbac">Inyectar Gobernanza a Firestore</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- COLUMNA 2: Directorio de Usuarios Activos -->
+    <div>
+      <div class="card">
+        <div class="card-title">
+          <span>Padrón de Usuarios con Gobernanza Activa</span>
+        </div>
+        <div id="users-container" class="users-list">
+          <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">Cargando usuarios desde Firestore...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+  <script type="module">
+    import { db, auth, signOut, doc, setDoc, onSnapshot, collection } from "./js/firebase-config.js";
+    import { protegerVista, escucharModulosSistema } from "./js/rbac.js";
+
+    const matrixBody = document.getElementById("matrix-body");
+    const selectProyectos = document.getElementById("user-proyectos");
+    const containerProyectos = document.getElementById("container-proyectos-asignados");
+    const alcanceSelect = document.getElementById("user-alcance");
+    const checkSuperAdmin = document.getElementById("user-is-superadmin");
+    const containerMatrix = document.getElementById("container-matrix");
+    const toast = document.getElementById("toast");
+
+    let modulosActivos = [];
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3200);
+    }
+
+    // 1. Proteger Consola Administrativa (Solo Superadmins)
+    protegerVista("usuarios", "u").then(({ perfil }) => {
+      document.getElementById("super-email").textContent = perfil.nombre || perfil.email;
+    });
+
+    // 2. Auto-descubrimiento de Módulos en Tiempo Real
+    escucharModulosSistema((modulos) => {
+      modulosActivos = modulos;
+      renderMatrix();
+    });
+
+    function renderMatrix() {
+      matrixBody.innerHTML = "";
+      if (modulosActivos.length === 0) {
+        matrixBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No hay módulos registrados en la colección "modulos".</td></tr>';
+        return;
+      }
+
+      modulosActivos.forEach((m) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${m.nombre} <small style="color:#64748b;">(${m.id})</small></td>
+          <td><input type="checkbox" data-mod="${m.id}" data-act="c"></td>
+          <td><input type="checkbox" data-mod="${m.id}" data-act="r"></td>
+          <td><input type="checkbox" data-mod="${m.id}" data-act="u"></td>
+          <td><input type="checkbox" data-mod="${m.id}" data-act="d"></td>
+        `;
+        matrixBody.appendChild(tr);
+      });
+    }
+
+    // 3. Cargar Proyectos para el Selector de Alcance
+    onSnapshot(collection(db, "proyectos"), (snap) => {
+      selectProyectos.innerHTML = "";
+      snap.forEach((d) => {
+        const p = d.data();
+        const opt = document.createElement("option");
+        opt.value = d.id;
+        opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
+        selectProyectos.appendChild(opt);
+      });
+    });
+
+    // Control de Eventos de Interfaz
+    alcanceSelect.addEventListener("change", () => {
+      containerProyectos.style.display = alcanceSelect.value === "asignado" ? "block" : "none";
+    });
+
+    checkSuperAdmin.addEventListener("change", () => {
+      const disabled = checkSuperAdmin.checked;
+      containerMatrix.style.opacity = disabled ? "0.35" : "1";
+      containerMatrix.style.pointerEvents = disabled ? "none" : "auto";
+    });
+
+    document.getElementById("btn-toggle-all").addEventListener("click", () => {
+      const checkboxes = matrixBody.querySelectorAll('input[type="checkbox"]');
+      const allChecked = Array.from(checkboxes).every(b => b.checked);
+      checkboxes.forEach(b => b.checked = !allChecked);
+    });
+
+    // 4. Registro de Nuevos Módulos en Caliente
+    document.getElementById("form-nuevo-modulo").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("mod-id").value.trim().toLowerCase();
+      const nombre = document.getElementById("mod-nombre").value.trim();
+      const ruta = document.getElementById("mod-ruta").value.trim();
+
+      try {
+        await setDoc(doc(db, "modulos", id), { nombre, ruta, activo: true });
+        showToast(`Módulo "${nombre}" registrado`);
+        document.getElementById("form-nuevo-modulo").reset();
+      } catch (err) {
+        console.error(err);
+        showToast("Error al registrar módulo: " + err.message);
+      }
+    });
+
+    // 5. Inyección del Perfil RBAC a Firestore
+    document.getElementById("form-user-rbac").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const uid = document.getElementById("user-uid").value.trim();
+      const isSuper = checkSuperAdmin.checked;
+
+      const matrizEfectiva = {};
+      modulosActivos.forEach((m) => {
+        matrizEfectiva[m.id] = {
+          c: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="c"]`)?.checked,
+          r: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="r"]`)?.checked,
+          u: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="u"]`)?.checked,
+          d: isSuper ? true : !!matrixBody.querySelector(`input[data-mod="${m.id}"][data-act="d"]`)?.checked
+        };
+      });
+
+      const proyectosAsignados = isSuper || alcanceSelect.value === "global" 
+        ? ["*"] 
+        : Array.from(selectProyectos.selectedOptions).map(o => o.value);
+
+      const payload = {
+        uid: uid,
+        nombre: document.getElementById("user-nombre").value.trim(),
+        email: document.getElementById("user-email").value.trim(),
+        rol: document.getElementById("user-rol").value.trim(),
+        rol_id: isSuper ? "superadmin" : "personalizado",
+        is_superadmin: isSuper,
+        alcance: alcanceSelect.value,
+        proyectos_asignados: proyectosAsignados,
+        matriz_efectiva: matrizEfectiva,
+        activo: true,
+        actualizadoEn: new Date().toISOString()
+      };
+
+      try {
+        await setDoc(doc(db, "usuarios", uid), payload, { merge: true });
+        showToast("Gobernanza inyectada con éxito");
+        resetForm();
+      } catch (err) {
+        console.error(err);
+        showToast("Error al guardar en Firestore: " + err.message);
+      }
+    });
+
+    function resetForm() {
+      document.getElementById("form-user-rbac").reset();
+      document.getElementById("user-uid").removeAttribute("readonly");
+      document.getElementById("form-mode-title").textContent = "2. Asignar Perfil y Matriz CRUD";
+      document.getElementById("btn-reset-form").style.display = "none";
+      containerProyectos.style.display = "none";
+      containerMatrix.style.opacity = "1";
+      containerMatrix.style.pointerEvents = "auto";
+      renderMatrix();
+    }
+
+    document.getElementById("btn-reset-form").addEventListener("click", resetForm);
+
+    // 6. Directorio en Tiempo Real
+    onSnapshot(collection(db, "usuarios"), (snap) => {
+      const container = document.getElementById("users-container");
+      if (snap.empty) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Sin colaboradores registrados en "usuarios".</div>';
+        return;
+      }
+
+      container.innerHTML = "";
+      snap.forEach((docSnap) => {
+        const u = docSnap.data();
+        const id = docSnap.id;
+        const item = document.createElement("div");
+        item.className = "user-card";
+        item.innerHTML = `
+          <div>
+            <strong>${u.nombre || "Usuario"}</strong>
+            <span class="badge-status ${u.is_superadmin ? 'badge-super' : 'badge-active'}">
+              ${u.is_superadmin ? 'Super Admin' : (u.rol || 'Operativo')}
+            </span>
+            <div class="user-meta">
+              ${u.email} | Alcance: <b>${u.alcance || 'global'}</b> | UID: <code>${id.substring(0, 8)}...</code>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.cargarUsuario('${id}')">Configurar</button>
+            <button class="btn ${u.activo ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarEstatus('${id}', ${u.activo})">
+              ${u.activo ? 'Desactivar' : 'Reactivar'}
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    });
+
+    // Cargar perfil seleccionado al formulario para editar
+    window.cargarUsuario = (uid) => {
+      onSnapshot(doc(db, "usuarios", uid), (d) => {
+        if (!d.exists()) return;
+        const u = d.data();
+
+        document.getElementById("user-uid").value = uid;
+        document.getElementById("user-uid").setAttribute("readonly", true);
+        document.getElementById("user-nombre").value = u.nombre || "";
+        document.getElementById("user-email").value = u.email || "";
+        document.getElementById("user-rol").value = u.rol || "";
+        document.getElementById("user-alcance").value = u.alcance || "global";
+        checkSuperAdmin.checked = !!u.is_superadmin;
+
+        containerProyectos.style.display = u.alcance === "asignado" ? "block" : "none";
+        Array.from(selectProyectos.options).forEach((opt) => {
+          opt.selected = (u.proyectos_asignados || []).includes(opt.value);
+        });
+
+        renderMatrix();
+        if (u.matriz_efectiva) {
+          Object.keys(u.matriz_efectiva).forEach((mod) => {
+            ["c", "r", "u", "d"].forEach((act) => {
+              const cb = matrixBody.querySelector(`input[data-mod="${mod}"][data-act="${act}"]`);
+              if (cb) cb.checked = !!u.matriz_efectiva[mod][act];
+            });
+          });
+        }
+
+        if (u.is_superadmin) {
+          containerMatrix.style.opacity = "0.35";
+          containerMatrix.style.pointerEvents = "none";
+        }
+
+        document.getElementById("form-mode-title").textContent = `Editando: ${u.nombre}`;
+        document.getElementById("btn-reset-form").style.display = "inline-flex";
+      });
+    };
+
+    window.conmutarEstatus = async (uid, activoActual) => {
+      await setDoc(doc(db, "usuarios", uid), { activo: !activoActual }, { merge: true });
+      showToast(`Usuario ${activoActual ? 'desactivado' : 'reactivado'}`);
+    };
+
+    document.getElementById("btn-logout").addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "./index.html";
+    });
+  </script>
+</body>
+</html>
