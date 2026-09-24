@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Control de Obra - Conglomerado Empresarial</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --accent: #0284c7;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-size: 1.3rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    .status-badge {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    .welcome {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .welcome h1 { font-size: 1.8rem; color: var(--primary); margin-bottom: 0.5rem; }
+    .welcome p { color: var(--text-muted); font-size: 1rem; }
+
+    .grid-modules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease-in-out;
+    }
+    .module-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .module-card h2 { font-size: 1.15rem; color: var(--text); margin-bottom: 0.5rem; }
+    .module-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.25rem; }
+    
+    .badge-status {
+      align-self: flex-start;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .status-ready { background: #dcfce7; color: #15803d; }
+    .status-next { background: #fef9c3; color: #854d0e; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <span>Conglomerado Empresarial</span>
+    </div>
+    <div class="status-badge">Sistema Modular v1.0</div>
+  </header>
+
+  <div class="container">
+    <div class="welcome">
+      <h1>Panel de Control de Operaciones</h1>
+      <p>Selecciona un módulo operativo para comenzar</p>
+    </div>
+
+    <div class="grid-modules">
+
+      <!-- Módulo Proyectos -->
+      <a href="./proyectos.html" class="module-card">
+        <div>
+          <div class="icon-box">🏗️</div>
+          <h2>Proyectos & Geocercas</h2>
+          <p>Alta de obras, delimitación de geocercas satelitales, cuadrillas y catálogo de conceptos.</p>
+        </div>
+        <span class="badge-status status-ready">Activo</span>
+      </a>
+
+      <!-- Módulo Checador PWA -->
+      <a href="./checador.html" class="module-card">
+        <div>
+          <div class="icon-box">⏱️</div>
+          <h2>Checador en Sitio (PWA)</h2>
+          <p>Reloj checador de asistencia con validación GPS Haversine, cámara fotográfica y modo offline.</p>
+        </div>
+        <span class="badge-status status-next">Siguiente Módulo</span>
+      </a>
+
+      <!-- Módulo Bitácora -->
+      <a href="./bitacora.html" class="module-card">
+        <div>
+          <div class="icon-box">📋</div>
+          <h2>Bitácora de Avance</h2>
+          <p>Captura de avance físico diario por partidas, volúmenes ejecutados y evidencia fotográfica.</p>
+        </div>
+        <span class="badge-status status-next">Planeado</span>
+      </a>
+
+      <!-- Módulo Prenómina -->
+      <a href="./prenomina.html" class="module-card">
+        <div>
+          <div class="icon-box">💵</div>
+          <h2>Prenómina M.O.</h2>
+          <p>Cálculo de horas, validación de tolerancias de entrada/salida y cortes de pago de mano de obra.</p>
+        </div>
+        <span class="badge-status status-next">Planeado</span>
+      </a>
+
+      <!-- Módulo Estimaciones -->
+      <a href="./estimaciones.html" class="module-card">
+        <div>
+          <div class="icon-box">📊</div>
+          <h2>Estimaciones de Cobro</h2>
+          <p>Matriz acumulativa de cobro contractual, avance acumulado y generación de estados de cuenta.</p>
+        </div>
+        <span class="badge-status status-next">Planeado</span>
+      </a>
+
+    </div>
+  </div>
+
+</body>
+</html>
