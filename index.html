@@ -6,17 +6,18 @@
   <title>Acceso al Sistema - Conglomerado Empresarial</title>
   <style>
     :root {
-      --primary: #1e3a8a;
-      --primary-hover: #1e40af;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
       --bg: #0f172a;
       --card-bg: #ffffff;
-      --border: #cbd5e1;
+      --border: #e2e8f0;
       --text: #0f172a;
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
       --radius: 12px;
-      --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.25);
+      --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -33,10 +34,10 @@
     }
 
     .brand-icon {
-      width: 56px;
-      height: 56px;
+      width: 58px;
+      height: 58px;
       background: #eff6ff;
-      color: var(--primary);
+      color: var(--accent);
       border-radius: 12px;
       display: inline-flex;
       align-items: center;
@@ -44,11 +45,11 @@
       margin-bottom: 1.25rem;
     }
 
-    h1 { font-size: 1.5rem; color: var(--text); font-weight: 700; margin-bottom: 0.5rem; }
-    p.subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem; }
+    h1 { font-size: 1.45rem; color: var(--text); font-weight: 800; margin-bottom: 0.35rem; }
+    p.subtitle { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 2rem; }
 
-    .form-group { text-align: left; margin-bottom: 1.25rem; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .form-group { text-align: left; margin-bottom: 1.15rem; }
+    label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
 
     .password-wrapper {
       position: relative;
@@ -58,18 +59,16 @@
 
     input {
       width: 100%;
-      padding: 0.75rem 0.9rem;
+      padding: 0.75rem 0.85rem;
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 0.95rem;
       outline: none;
       transition: border-color 0.2s;
     }
-    input:focus { border-color: var(--primary); }
+    input:focus { border-color: var(--accent); }
 
-    .password-wrapper input {
-      padding-right: 2.75rem;
-    }
+    .password-wrapper input { padding-right: 2.75rem; }
 
     .toggle-password {
       position: absolute;
@@ -88,13 +87,13 @@
     .actions-row {
       display: flex;
       justify-content: flex-end;
-      margin-top: -0.5rem;
+      margin-top: -0.4rem;
       margin-bottom: 1.25rem;
     }
 
     .link-forgot {
       font-size: 0.82rem;
-      color: var(--primary);
+      color: var(--accent);
       text-decoration: none;
       font-weight: 600;
       cursor: pointer;
@@ -106,14 +105,15 @@
       padding: 0.8rem;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 1rem;
+      font-size: 0.95rem;
       cursor: pointer;
       border: none;
-      background: var(--primary);
+      background: var(--accent);
       color: #ffffff;
       transition: background 0.2s;
     }
-    .btn:hover { background: var(--primary-hover); }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
     .status-msg {
       padding: 0.65rem;
@@ -151,7 +151,7 @@
       border-radius: var(--radius);
       padding: 2rem;
       width: 100%;
-      max-width: 380px;
+      max-width: 390px;
       box-shadow: var(--shadow);
       text-align: left;
     }
@@ -167,8 +167,10 @@
   <div class="login-card">
     <div class="brand-icon">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
       </svg>
     </div>
 
@@ -179,7 +181,7 @@
 
     <form id="login-form">
       <div class="form-group">
-        <label for="email">Correo Electrónico</label>
+        <label for="email">Correo Corporativo</label>
         <input type="email" id="email" required placeholder="usuario@conglomerado.com" autocomplete="username">
       </div>
 
@@ -187,7 +189,7 @@
         <label for="password">Contraseña</label>
         <div class="password-wrapper">
           <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
-          <button type="button" class="toggle-password" id="btn-toggle-pwd" title="Mostrar/Ocultar contraseña">
+          <button type="button" class="toggle-password" id="btn-toggle-pwd" title="Mostrar/Ocultar">
             <svg id="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
@@ -200,8 +202,8 @@
         <span class="link-forgot" id="link-forgot-modal">¿Olvidaste tu contraseña?</span>
       </div>
 
-      <button type="submit" class="btn" id="btn-submit">Ingresar</button>
-      <div id="loading" class="loading-spinner">Verificando credenciales...</div>
+      <button type="submit" class="btn" id="btn-submit">Ingresar al Sistema</button>
+      <div id="loading" class="loading-spinner">Verificando credenciales corporativas...</div>
     </form>
   </div>
 
@@ -209,7 +211,7 @@
   <div class="modal-backdrop" id="modal-forgot">
     <div class="modal-box">
       <h2>Restablecer Clave</h2>
-      <p>Ingresa tu correo corporativo y te enviaremos un enlace de recuperación.</p>
+      <p>Ingresa tu correo corporativo y te enviaremos un enlace oficial de recuperación.</p>
       
       <div id="modal-status" class="status-msg"></div>
 
@@ -234,11 +236,13 @@
       onAuthStateChanged, 
       doc, 
       getDoc, 
-      setDoc 
+      setDoc,
+      collection,
+      getDocs
     } from "./js/firebase-config.js";
     import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const SUPERADMIN_EMAIL_ROOT = "valladarescid@gmail.com";
+    const SUPERADMIN_ROOT = "valladarescid@gmail.com";
 
     const form = document.getElementById('login-form');
     const pwdInput = document.getElementById('password');
@@ -248,7 +252,6 @@
     const loading = document.getElementById('loading');
     const btnSubmit = document.getElementById('btn-submit');
 
-    // Modal elements
     const modalForgot = document.getElementById('modal-forgot');
     const linkForgot = document.getElementById('link-forgot-modal');
     const btnCloseModal = document.getElementById('btn-close-modal');
@@ -265,7 +268,6 @@
       btnSubmit.disabled = false;
     }
 
-    // Toggle Mostrar/Ocultar Contraseña
     btnTogglePwd.addEventListener('click', () => {
       const isPassword = pwdInput.type === 'password';
       pwdInput.type = isPassword ? 'text' : 'password';
@@ -275,16 +277,13 @@
         : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
     });
 
-    // Control del Modal de Recuperación
     linkForgot.addEventListener('click', () => {
       forgotEmail.value = document.getElementById('email').value.trim();
       modalStatus.style.display = 'none';
       modalForgot.style.display = 'flex';
     });
 
-    btnCloseModal.addEventListener('click', () => {
-      modalForgot.style.display = 'none';
-    });
+    btnCloseModal.addEventListener('click', () => modalForgot.style.display = 'none');
 
     formForgot.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -309,9 +308,9 @@
       }
     });
 
-    // Sembrado inicial si la BD está lista
-    async function asegurarSuperAdmin(user) {
-      if (user.email.toLowerCase() === SUPERADMIN_EMAIL_ROOT.toLowerCase()) {
+    // Auto-sembrado de gobernanza y módulos si es primera ejecución
+    async function sembrarEcosistemaSiEsNecesario(user) {
+      if (user.email.toLowerCase() === SUPERADMIN_ROOT.toLowerCase()) {
         try {
           const userRef = doc(db, "usuarios", user.uid);
           const snap = await getDoc(userRef);
@@ -321,7 +320,7 @@
               uid: user.uid,
               email: user.email,
               nombre: "Jose Antonio Valladares Cid",
-              rol: "superadmin",
+              rol: "Super Administrador",
               rol_id: "superadmin",
               is_superadmin: true,
               alcance: "global",
@@ -329,48 +328,57 @@
               activo: true,
               creadoEn: new Date().toISOString()
             }, { merge: true });
+          }
 
+          // Verificar si existen módulos
+          const modSnap = await getDocs(collection(db, "modulos"));
+          if (modSnap.empty) {
             const modulosBase = [
-              { id: "usuarios", nombre: "Gobernanza RBAC", ruta: "./admin.html" },
-              { id: "proyectos", nombre: "Proyectos y Geocercas", ruta: "./proyectos.html" },
-              { id: "checador", nombre: "Checador PWA", ruta: "./checador.html" },
-              { id: "bitacora", nombre: "Bitácora de Avance", ruta: "./bitacora.html" },
-              { id: "prenomina", nombre: "Prenómina M.O.", ruta: "./prenomina.html" },
-              { id: "estimaciones", nombre: "Estimaciones de Cobro", ruta: "./estimaciones.html" }
+              { id: "proyectos", nombre: "Obras y Geocercas", ruta: "./proyectos.html", icono: "📍", descripcion: "Control de frentes de obra, ubicación GPS y catálogos." },
+              { id: "checador", nombre: "Checador Móvil", ruta: "./checador.html", icono: "⏱️", descripcion: "Pase de lista con validación perimetral y foto facial." },
+              { id: "bitacora", nombre: "Bitácora de Obra", ruta: "./bitacora.html", icono: "📓", descripcion: "Reportes diarios de avances, incidencias, clima y personal." },
+              { id: "estimaciones", nombre: "Estimaciones de Cobro", ruta: "./estimaciones.html", icono: "📊", descripcion: "Generación de partidas, amortizaciones e impuestos (IVA)." },
+              { id: "prenomina", nombre: "Prenómina de M.O.", ruta: "./prenomina.html", icono: "👥", descripcion: "Dispersión semanal cruzada con el checador móvil." }
             ];
 
             for (const m of modulosBase) {
               await setDoc(doc(db, "modulos", m.id), {
+                id: m.id,
                 nombre: m.nombre,
                 ruta: m.ruta,
-                activo: true
-              }, { merge: true });
+                icono: m.icono,
+                descripcion: m.descripcion,
+                activo: true,
+                actualizadoEn: new Date().toISOString()
+              });
             }
           }
         } catch (dbErr) {
-          console.warn("Firestore aún no accesible, omitiendo auto-sembrado:", dbErr);
+          console.warn("Sembrado omitido:", dbErr);
         }
       }
     }
 
-    async function redirectByRole(user) {
+    async function redirigirSegunRol(user) {
       loading.style.display = 'block';
       btnSubmit.disabled = true;
 
-      // Si es el correo maestro, entra directo a admin.html sin trabarse por Firestore
-      if (user.email.toLowerCase() === SUPERADMIN_EMAIL_ROOT.toLowerCase()) {
-        await asegurarSuperAdmin(user);
+      if (user.email.toLowerCase() === SUPERADMIN_ROOT.toLowerCase()) {
+        await sembrarEcosistemaSiEsNecesario(user);
         window.location.href = './admin.html';
         return;
       }
 
       try {
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        if (userDoc.exists() && (userDoc.data().is_superadmin || userDoc.data().rol === 'superadmin' || userDoc.data().rol === 'admin')) {
-          window.location.href = './admin.html';
-        } else {
-          window.location.href = './control_obra.html';
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.is_superadmin || data.rol_id === 'superadmin' || data.rol === 'superadmin') {
+            window.location.href = './admin.html';
+            return;
+          }
         }
+        window.location.href = './control_obra.html';
       } catch (err) {
         window.location.href = './control_obra.html';
       }
@@ -378,7 +386,7 @@
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        redirectByRole(user);
+        redirigirSegunRol(user);
       }
     });
 
@@ -392,14 +400,14 @@
       const password = pwdInput.value;
 
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        await redirectByRole(userCredential.user);
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        await redirigirSegunRol(cred.user);
       } catch (err) {
         let msg = "Credenciales incorrectas.";
         if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
           msg = "Correo o contraseña no válidos.";
         } else if (err.code === 'auth/too-many-requests') {
-          msg = "Demasiados intentos fallidos. Restablece tu contraseña.";
+          msg = "Demasiados intentos fallidos. Intenta más tarde.";
         }
         notify(msg, true);
       }

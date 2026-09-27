@@ -27,7 +27,7 @@
     header {
       background: var(--primary);
       color: #fff;
-      padding: 1rem 1.5rem;
+      padding: 1rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -35,8 +35,8 @@
       top: 0;
       z-index: 100;
     }
-    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
     .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
     .btn-nav:hover { background: #475569; }
 
@@ -50,9 +50,9 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem;
+      padding: 1.5rem;
       box-shadow: var(--shadow);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
     .card-title {
       font-size: 1.05rem;
@@ -77,7 +77,7 @@
     }
 
     .form-group { margin-bottom: 0; }
-    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
     input, select {
       width: 100%;
       padding: 0.6rem 0.75rem;
@@ -135,14 +135,14 @@
     .prenomina-table input[type="number"] {
       padding: 0.35rem 0.5rem;
       font-size: 0.85rem;
-      width: 90px;
+      width: 95px;
     }
 
     .badge-pill {
       font-size: 0.75rem;
-      padding: 2px 7px;
+      padding: 3px 8px;
       border-radius: 12px;
-      font-weight: 600;
+      font-weight: 700;
       background: #eff6ff;
       color: var(--accent);
     }
@@ -158,7 +158,7 @@
       background: #f8fafc;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 1rem;
+      padding: 1.1rem;
     }
     .stat-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
     .stat-value { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 4px; }
@@ -186,7 +186,7 @@
       <span>Prenómina de Mano de Obra (M.O.)</span>
     </div>
     <div class="header-actions">
-      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Cargando...</span>
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
       <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
       <a href="./checador.html" class="btn-nav">Checador</a>
       <a href="./estimaciones.html" class="btn-nav">Estimaciones</a>
@@ -199,14 +199,14 @@
     <div class="card">
       <div class="card-title">
         <span>Filtro de Asistencia y Liquidación</span>
-        <button class="btn btn-success" id="btn-exportar-csv" style="font-size: 0.8rem;">📥 Exportar a Excel (CSV)</button>
+        <button class="btn btn-success" id="btn-exportar-csv" style="font-size: 0.8rem;">📥 Exportar Sábana a Excel (CSV)</button>
       </div>
 
       <div class="filters-bar">
         <div class="form-group">
           <label for="select-proyecto">Obra / Frente de Trabajo</label>
           <select id="select-proyecto">
-            <option value="">Cargando proyectos autorizados...</option>
+            <option value="">Cargando obras autorizadas...</option>
           </select>
         </div>
         <div class="form-group">
@@ -233,8 +233,9 @@
           <thead>
             <tr>
               <th>Colaborador</th>
-              <th>Puesto / Especialidad</th>
-              <th style="text-align: center;">Días Checados</th>
+              <th>Puesto / Rol</th>
+              <th>Empresa / Obra</th>
+              <th style="text-align: center;">Jornales (Días)</th>
               <th style="width: 110px;">Salario Diario ($)</th>
               <th style="width: 100px;">Horas Extra ($)</th>
               <th style="width: 100px;">Bonos ($)</th>
@@ -244,7 +245,7 @@
           </thead>
           <tbody id="prenomina-body">
             <tr>
-              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
+              <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
                 Selecciona un rango de fechas y presiona "Consultar Asistencias" para cruzar los datos del checador.
               </td>
             </tr>
@@ -255,7 +256,7 @@
       <!-- Tarjetas de Resumen -->
       <div class="summary-cards">
         <div class="stat-card">
-          <div class="stat-title">Total Jornales (Días Trabajados)</div>
+          <div class="stat-title">Total Jornales Computados</div>
           <div class="stat-value" id="stat-jornales">0</div>
         </div>
         <div class="stat-card">
@@ -267,7 +268,7 @@
           <div class="stat-value" id="stat-deducciones" style="color: var(--danger);">$0.00</div>
         </div>
         <div class="stat-card">
-          <div class="stat-title">NÓMINA TOTAL A DISPERSAR</div>
+          <div class="stat-title">DISPERSIÓN TOTAL DE NÓMINA</div>
           <div class="stat-value" id="stat-total-nomina" style="color: var(--accent);">$0.00</div>
         </div>
       </div>
@@ -278,7 +279,7 @@
   <div id="toast"></div>
 
   <script type="module">
-    import { db, collection, onSnapshot, getDocs, query, where } from "./js/firebase-config.js";
+    import { db, collection, onSnapshot, getDocs, addDoc } from "./js/firebase-config.js";
     import { protegerVista } from "./js/rbac.js";
 
     const selectProyecto = document.getElementById("select-proyecto");
@@ -305,18 +306,35 @@
     function showToast(msg) {
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 3000);
+      setTimeout(() => toast.style.display = "none", 3200);
+    }
+
+    async function logEvento(accion, detalle) {
+      try {
+        await addDoc(collection(db, "auditoria"), {
+          timestamp: new Date().toISOString(),
+          uid: usuarioActual?.uid || "root",
+          usuario: perfilActual?.nombre || usuarioActual?.email || "Admin",
+          modulo: "prenomina",
+          accion,
+          detalle
+        });
+      } catch (err) {
+        console.warn("Fallo log:", err);
+      }
     }
 
     // Configurar fechas por defecto: semana actual (Lunes a Sábado)
     const hoy = new Date();
-    const primerDia = new Date(hoy.setDate(hoy.getDate() - hoy.getDay() + 1));
-    const ultimoDia = new Date(hoy.setDate(primerDia.getDate() + 5));
+    const diaSemana = hoy.getDay();
+    const diffLunes = hoy.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+    const primerDia = new Date(hoy.setDate(diffLunes));
+    const ultimoDia = new Date(new Date(primerDia).setDate(primerDia.getDate() + 5));
 
     inputFechaInicio.value = primerDia.toISOString().split("T")[0];
     inputFechaFin.value = ultimoDia.toISOString().split("T")[0];
 
-    // 1. Proteger Vista (RBAC)
+    // 1. Proteger Vista (RBAC - Ver / Consultar)
     protegerVista("prenomina", "r").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
@@ -324,7 +342,7 @@
       cargarProyectos();
     });
 
-    // 2. Cargar Proyectos Autorizados
+    // 2. Cargar Obras Autorizadas
     function cargarProyectos() {
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyecto.innerHTML = '<option value="todos">Todos los frentes autorizados</option>';
@@ -337,7 +355,7 @@
                               perfilActual.proyectos_asignados?.includes(d.id) || 
                               perfilActual.proyectos_asignados?.includes("*");
 
-          if (tieneAcceso) {
+          if (tieneAcceso && p.activo !== false) {
             proyectosDisponibles.push(p);
             const opt = document.createElement("option");
             opt.value = p.id;
@@ -348,7 +366,7 @@
       });
     }
 
-    // 3. Procesar Marcajes del Checador vs Nómina
+    // 3. Procesar Marcajes del Checador vs Usuarios
     btnProcesar.addEventListener("click", async () => {
       const fInicio = inputFechaInicio.value;
       const fFin = inputFechaFin.value;
@@ -358,7 +376,7 @@
       if (fInicio > fFin) return alert("La fecha inicial no puede ser posterior a la fecha final.");
 
       btnProcesar.disabled = true;
-      btnProcesar.textContent = "Procesando asistencias...";
+      btnProcesar.textContent = "Procesando...";
 
       try {
         // Consultar asistencias en Firestore
@@ -370,10 +388,7 @@
           const fechaMarcaje = a.fechaCorta || (a.timestamp ? a.timestamp.split("T")[0] : "");
 
           if (fechaMarcaje >= fInicio && fechaMarcaje <= fFin) {
-            // Filtrar por proyecto
             const coincideProyecto = pId === "todos" ? true : a.proyectoId === pId;
-
-            // Validar alcance del usuario si ve todos
             const permitido = perfilActual.is_superadmin || 
                               perfilActual.alcance === "global" || 
                               proyectosDisponibles.some(p => p.id === a.proyectoId);
@@ -385,8 +400,10 @@
                   uid: a.uid,
                   nombre: a.usuarioNombre || a.usuarioEmail,
                   rol: a.rol || "Oficial de Obra",
+                  empresaNombre: a.empresaNombre || "Empresa General",
+                  proyectoNombre: a.proyectoNombre || "Obra",
                   diasChecados: new Set(),
-                  salarioDiario: 450, // Salario sugerido de obra base
+                  salarioDiario: 450, // Cuota base
                   horasExtra: 0,
                   bonos: 0,
                   deducciones: 0
@@ -399,6 +416,7 @@
 
         nominaFiltrada = Array.from(trabajadoresMap.values());
         renderizarTabla();
+        await logEvento("consulta_prenomina", `Filtro: ${fInicio} al ${fFin} (${nominaFiltrada.length} personas)`);
       } catch (err) {
         console.error("Error al procesar prenómina:", err);
         alert("Fallo al consultar asistencias: " + err.message);
@@ -416,7 +434,7 @@
       if (nominaFiltrada.length === 0) {
         prenominaBody.innerHTML = `
           <tr>
-            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">
+            <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
               No se encontraron marcajes de asistencia válidos en el rango de fechas seleccionado.
             </td>
           </tr>
@@ -431,6 +449,7 @@
         tr.innerHTML = `
           <td><strong>${t.nombre}</strong></td>
           <td><span class="badge-pill">${t.rol}</span></td>
+          <td><small>${t.empresaNombre}<br><span style="color:var(--text-muted);">${t.proyectoNombre}</span></small></td>
           <td style="text-align: center; font-weight: 700;">${dias} d</td>
           <td><input type="number" class="inp-sd" min="0" step="10" value="${t.salarioDiario}" data-idx="${index}"></td>
           <td><input type="number" class="inp-he" min="0" step="50" value="${t.horasExtra}" data-idx="${index}"></td>
@@ -491,16 +510,16 @@
     }
 
     // 6. Exportación a Excel (CSV)
-    btnExportar.addEventListener("click", () => {
+    btnExportar.addEventListener("click", async () => {
       if (nominaFiltrada.length === 0) return alert("No hay datos en pantalla para exportar.");
 
-      let csv = "Colaborador,Puesto,Dias Trabajados,Salario Diario,Horas Extras,Bonos,Deducciones,Total Neto\n";
+      let csv = "Colaborador,Puesto,Empresa,Obra,Dias Trabajados,Salario Diario,Horas Extras,Bonos,Deducciones,Total Neto\n";
 
       nominaFiltrada.forEach(t => {
         const dias = t.diasChecados.size;
         const base = dias * t.salarioDiario;
         const neto = base + t.horasExtra + t.bonos - t.deducciones;
-        csv += `"${t.nombre}","${t.rol}",${dias},${t.salarioDiario},${t.horasExtra},${t.bonos},${t.deducciones},${neto}\n`;
+        csv += `"${t.nombre}","${t.rol}","${t.empresaNombre}","${t.proyectoNombre}",${dias},${t.salarioDiario},${t.horasExtra},${t.bonos},${t.deducciones},${neto}\n`;
       });
 
       const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -511,6 +530,8 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      await logEvento("exportar_prenomina", `CSV generado del ${inputFechaInicio.value} al ${inputFechaFin.value}`);
       showToast("Archivo CSV descargado con éxito");
     });
   </script>

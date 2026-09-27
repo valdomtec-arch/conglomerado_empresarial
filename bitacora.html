@@ -26,7 +26,7 @@
     header {
       background: var(--primary);
       color: #fff;
-      padding: 1rem 1.5rem;
+      padding: 1rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -34,17 +34,17 @@
       top: 0;
       z-index: 100;
     }
-    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
     .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
     .btn-nav:hover { background: #475569; }
 
     .container {
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 1.5rem auto;
       padding: 0 1rem;
       display: grid;
-      grid-template-columns: 460px 1fr;
+      grid-template-columns: 480px 1fr;
       gap: 1.5rem;
     }
     @media (max-width: 1024px) {
@@ -55,9 +55,9 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem;
+      padding: 1.5rem;
       box-shadow: var(--shadow);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
     .card-title {
       font-size: 1.05rem;
@@ -66,14 +66,14 @@
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
     }
 
     .form-group { margin-bottom: 0.9rem; }
-    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
     input, select, textarea {
       width: 100%;
-      padding: 0.65rem 0.75rem;
+      padding: 0.6rem 0.75rem;
       border: 1px solid var(--border);
       border-radius: 6px;
       font-size: 0.9rem;
@@ -85,7 +85,6 @@
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
-    /* Contenedor de Fotografía */
     .photo-preview-container {
       display: flex;
       gap: 8px;
@@ -93,8 +92,8 @@
       margin-top: 0.5rem;
     }
     .photo-thumb {
-      width: 70px;
-      height: 70px;
+      width: 80px;
+      height: 80px;
       border-radius: 6px;
       object-fit: cover;
       border: 1px solid var(--border);
@@ -106,7 +105,7 @@
       font-weight: 600;
       cursor: pointer;
       border: none;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -117,7 +116,7 @@
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
 
-    /* Feed de Entradas */
+    /* Feed Asientos */
     .feed-header {
       display: flex;
       justify-content: space-between;
@@ -129,29 +128,29 @@
     .entry-card {
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 1rem;
+      padding: 1.1rem;
       background: #fff;
-      margin-bottom: 0.85rem;
+      margin-bottom: 1rem;
     }
     .entry-meta {
       display: flex;
       justify-content: space-between;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: var(--text-muted);
       border-bottom: 1px solid #f1f5f9;
       padding-bottom: 0.5rem;
-      margin-bottom: 0.65rem;
+      margin-bottom: 0.75rem;
     }
     .badge {
       display: inline-block;
       font-size: 0.75rem;
       padding: 2px 7px;
       border-radius: 4px;
-      font-weight: 600;
+      font-weight: 700;
       background: #eff6ff;
       color: var(--accent);
     }
-    .entry-section { margin-bottom: 0.5rem; font-size: 0.85rem; }
+    .entry-section { margin-bottom: 0.6rem; font-size: 0.88rem; }
     .entry-section strong { color: var(--primary); }
 
     #toast {
@@ -177,7 +176,7 @@
       <span>Bitácora Diaria de Obra</span>
     </div>
     <div class="header-actions">
-      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Cargando...</span>
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando...</span>
       <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
       <a href="./checador.html" class="btn-nav">Checador</a>
     </div>
@@ -196,7 +195,7 @@
           <div class="form-group">
             <label for="select-proyecto">Obra / Frente de Trabajo</label>
             <select id="select-proyecto" required>
-              <option value="">Cargando proyectos...</option>
+              <option value="">Cargando obras autorizadas...</option>
             </select>
           </div>
 
@@ -211,7 +210,7 @@
                 <option value="Soleado / Despejado">☀️ Soleado / Despejado</option>
                 <option value="Nublado">⛅ Nublado</option>
                 <option value="Lluvia Ligera">🌦️ Lluvia Ligera</option>
-                <option value="Lluvia Intensa / Paro">🌧️ Lluvia Intensa (Paro)</option>
+                <option value="Lluvia Intensa (Paro)">🌧️ Lluvia Intensa (Paro)</option>
                 <option value="Viento Fuerte">💨 Viento Fuerte</option>
               </select>
             </div>
@@ -219,28 +218,31 @@
 
           <div class="grid-2">
             <div class="form-group">
-              <label for="input-personal">Personal en Sitio (M.O.)</label>
-              <input type="number" id="input-personal" placeholder="Ej. 18 personas" min="0">
+              <label for="input-personal">
+                Personal en Sitio 
+                <small id="lbl-asistencias-sinc" style="color: var(--accent); font-weight: 600;"></small>
+              </label>
+              <input type="number" id="input-personal" placeholder="Ej. 15 operarios" min="0" required>
             </div>
             <div class="form-group">
               <label for="input-maquinaria">Equipo / Maquinaria Activa</label>
-              <input type="text" id="input-maquinaria" placeholder="Ej. 1 Retroexcavadora, 2 Camiones">
+              <input type="text" id="input-maquinaria" placeholder="Ej. 1 Retro, 2 Camiones">
             </div>
           </div>
 
           <div class="form-group">
-            <label for="text-actividades">Actividades Ejecutadas y Avances</label>
+            <label for="text-actividades">Actividades Ejecutadas y Avances Reales</label>
             <textarea id="text-actividades" placeholder="Describe los frentes abordados, colados, excavaciones, armados..." required></textarea>
           </div>
 
           <div class="form-group">
-            <label for="text-incidentes">Incidentes, Retrasos o Notas Relevantes</label>
+            <label for="text-incidentes">Incidentes, Bloqueos o Notas Relevantes</label>
             <textarea id="text-incidentes" placeholder="Falta de suministro, interferencias, accidentes, visitas de supervisión..."></textarea>
           </div>
 
-          <!-- Evidencia Fotográfica con compresión en Canvas -->
+          <!-- Evidencia Fotográfica Comprimida -->
           <div class="form-group">
-            <label for="input-foto">Fotografía de Evidencia (Opcional)</label>
+            <label for="input-foto">Fotografía de Evidencia (Cámara / Galería)</label>
             <input type="file" id="input-foto" accept="image/*" capture="environment">
             <div class="photo-preview-container" id="preview-container"></div>
           </div>
@@ -250,14 +252,14 @@
       </div>
     </div>
 
-    <!-- COLUMNA 2: Feed Histórico de Asientos -->
+    <!-- COLUMNA 2: Historial Reactivo de Asientos -->
     <div>
       <div class="card">
         <div class="feed-header">
-          <div class="card-title" style="margin: 0;">Historial de Reportes</div>
+          <div class="card-title" style="margin: 0;">Historial de Asientos</div>
           <div style="display: flex; gap: 8px;">
             <select id="filtro-proyecto" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.85rem;">
-              <option value="todos">Todos los frentes</option>
+              <option value="todos">Todos los frentes autorizados</option>
             </select>
           </div>
         </div>
@@ -276,12 +278,14 @@
   <div id="toast"></div>
 
   <script type="module">
-    import { db, collection, addDoc, onSnapshot, query, where, doc } from "./js/firebase-config.js";
+    import { db, collection, addDoc, onSnapshot, query, where, getDocs } from "./js/firebase-config.js";
     import { protegerVista, tienePermiso } from "./js/rbac.js";
 
     const selectProyecto = document.getElementById("select-proyecto");
     const filtroProyecto = document.getElementById("filtro-proyecto");
     const inputFecha = document.getElementById("input-fecha");
+    const inputPersonal = document.getElementById("input-personal");
+    const lblAsistenciasSinc = document.getElementById("lbl-asistencias-sinc");
     const formBitacora = document.getElementById("form-bitacora");
     const btnGuardar = document.getElementById("btn-guardar");
     const inputFoto = document.getElementById("input-foto");
@@ -296,16 +300,30 @@
     let fotoBase64 = null;
     let unsubscribeFeed = null;
 
+    inputFecha.value = new Date().toISOString().split("T")[0];
+
     function showToast(msg) {
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 3000);
+      setTimeout(() => toast.style.display = "none", 3200);
     }
 
-    // Inicializar fecha actual (YYYY-MM-DD)
-    inputFecha.value = new Date().toISOString().split("T")[0];
+    async function logEvento(accion, detalle) {
+      try {
+        await addDoc(collection(db, "auditoria"), {
+          timestamp: new Date().toISOString(),
+          uid: usuarioActual?.uid || "root",
+          usuario: perfilActual?.nombre || usuarioActual?.email || "Admin",
+          modulo: "bitacora",
+          accion,
+          detalle
+        });
+      } catch (err) {
+        console.warn("Fallo log:", err);
+      }
+    }
 
-    // 1. Proteger Vista (RBAC)
+    // 1. Proteger Vista (RBAC - Ver / Consultar)
     protegerVista("bitacora", "r").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
@@ -319,11 +337,11 @@
       cargarProyectos();
     });
 
-    // 2. Cargar Proyectos Autorizados
+    // 2. Cargar Obras Autorizadas
     function cargarProyectos() {
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyecto.innerHTML = '<option value="">-- Selecciona una Obra --</option>';
-        filtroProyecto.innerHTML = '<option value="todos">Todos los proyectos autorizados</option>';
+        filtroProyecto.innerHTML = '<option value="todos">Todos los frentes autorizados</option>';
         proyectosDisponibles = [];
 
         snap.forEach((d) => {
@@ -333,7 +351,7 @@
                               perfilActual.proyectos_asignados?.includes(d.id) || 
                               perfilActual.proyectos_asignados?.includes("*");
 
-          if (tieneAcceso) {
+          if (tieneAcceso && p.activo !== false) {
             proyectosDisponibles.push(p);
 
             const optForm = document.createElement("option");
@@ -350,13 +368,54 @@
 
         if (proyectosDisponibles.length > 0) {
           selectProyecto.selectedIndex = 1;
+          sincronizarAsistenciaChecador();
         }
 
         escucharFeed();
       });
     }
 
-    // 3. Procesamiento y Compresión de Fotografía en el Navegador
+    // 3. Cruce en Tiempo Real con Asistencias del Checador
+    async function sincronizarAsistenciaChecador() {
+      const pId = selectProyecto.value;
+      const fSel = inputFecha.value;
+
+      if (!pId || !fSel) {
+        lblAsistenciasSinc.textContent = "";
+        return;
+      }
+
+      try {
+        const qAsist = query(
+          collection(db, "asistencias"),
+          where("proyectoId", "==", pId),
+          where("fechaCorta", "==", fSel)
+        );
+        const snap = await getDocs(qAsist);
+
+        // Contar colaboradores únicos que marcaron entrada
+        const personalIds = new Set();
+        snap.forEach(d => {
+          const a = d.data();
+          if (a.tipo === "entrada") personalIds.add(a.uid);
+        });
+
+        const totalChecados = personalIds.size;
+        if (totalChecados > 0) {
+          inputPersonal.value = totalChecados;
+          lblAsistenciasSinc.textContent = `(${totalChecados} checados hoy)`;
+        } else {
+          lblAsistenciasSinc.textContent = "(0 en checador)";
+        }
+      } catch (err) {
+        console.warn("No se pudo sincronizar con asistencias:", err);
+      }
+    }
+
+    selectProyecto.addEventListener("change", sincronizarAsistenciaChecador);
+    inputFecha.addEventListener("change", sincronizarAsistenciaChecador);
+
+    // 4. Compresión de Imagen en Canvas
     inputFoto.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -365,7 +424,6 @@
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          // Escalar máximo a 1024px para mantener el documento en Firestore ligero
           const maxDim = 1024;
           let width = img.width;
           let height = img.height;
@@ -391,23 +449,26 @@
       reader.readAsDataURL(file);
     });
 
-    // 4. Guardar Reporte en Firestore
+    // 5. Inyección a Firestore
     formBitacora.addEventListener("submit", async (e) => {
       e.preventDefault();
       const pId = selectProyecto.value;
-      if (!pId) return alert("Selecciona un proyecto.");
+      if (!pId) return alert("Selecciona una obra.");
 
       btnGuardar.disabled = true;
-      btnGuardar.textContent = "Guardando...";
+      btnGuardar.textContent = "Registrando en Firestore...";
 
       const proyectoObj = proyectosDisponibles.find(p => p.id === pId);
 
       const payload = {
         proyectoId: pId,
         proyectoNombre: proyectoObj ? proyectoObj.nombre : "Obra",
+        proyectoCodigo: proyectoObj?.codigo || "",
+        empresaId: proyectoObj?.empresaId || perfilActual.empresaId || "sin_asignar",
+        empresaNombre: proyectoObj?.empresaNombre || "Empresa General",
         fecha: inputFecha.value,
         clima: document.getElementById("select-clima").value,
-        personalMO: Number(document.getElementById("input-personal").value) || 0,
+        personalMO: Number(inputPersonal.value) || 0,
         maquinaria: document.getElementById("input-maquinaria").value.trim(),
         actividades: document.getElementById("text-actividades").value.trim(),
         incidentes: document.getElementById("text-incidentes").value.trim(),
@@ -419,9 +480,10 @@
 
       try {
         await addDoc(collection(db, "bitacora"), payload);
+        await logEvento("registro_bitacora", `Asiento registrado en ${payload.proyectoNombre} (${payload.fecha})`);
         showToast("Asiento guardado con éxito.");
-        
-        // Reset parcial del formulario
+
+        // Reset Parcial
         document.getElementById("text-actividades").value = "";
         document.getElementById("text-incidentes").value = "";
         inputFoto.value = "";
@@ -429,21 +491,19 @@
         fotoBase64 = null;
       } catch (err) {
         console.error("Error al guardar en bitacora:", err);
-        alert("Fallo al guardar: " + err.message);
+        alert("Fallo al guardar asiento: " + err.message);
       } finally {
         btnGuardar.disabled = false;
         btnGuardar.textContent = "Registrar en Bitácora";
       }
     });
 
-    // 5. Escuchar Entradas en Tiempo Real
+    // 6. Feed Reactivo
     function escucharFeed() {
       if (unsubscribeFeed) unsubscribeFeed();
 
       const filtroId = filtroProyecto.value;
-      const ref = collection(db, "bitacora");
-
-      unsubscribeFeed = onSnapshot(ref, (snap) => {
+      unsubscribeFeed = onSnapshot(collection(db, "bitacora"), (snap) => {
         entriesFeed.innerHTML = "";
         if (snap.empty) {
           entriesFeed.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.9rem;">Sin asientos de bitácora registrados.</div>';
@@ -453,16 +513,13 @@
         let lista = [];
         snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
 
-        // Filtrar por permisos de proyectos
         const permitidos = proyectosDisponibles.map(p => p.id);
         lista = lista.filter(item => permitidos.includes(item.proyectoId));
 
-        // Filtro por selección del dropdown
         if (filtroId !== "todos") {
           lista = lista.filter(item => item.proyectoId === filtroId);
         }
 
-        // Ordenar desc por fecha
         lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         if (lista.length === 0) {
@@ -476,13 +533,14 @@
           card.innerHTML = `
             <div class="entry-meta">
               <div>
-                <span class="badge">${entry.proyectoNombre}</span>
-                <span style="margin-left: 6px; font-weight: 600;">${entry.fecha}</span>
+                <span class="badge">${entry.proyectoCodigo ? `[${entry.proyectoCodigo}] ` : ''}${entry.proyectoNombre}</span>
+                <span style="margin-left: 6px; font-weight: 700;">${entry.fecha}</span>
+                <small style="color: var(--text-muted); margin-left: 6px;">(${entry.empresaNombre || 'Matriz'})</small>
               </div>
               <div>Por: <b>${entry.creadoPorNombre}</b></div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 0.6rem; font-size: 0.8rem; color: var(--text-muted);">
+            <div class="grid-2" style="margin-bottom: 0.6rem; font-size: 0.82rem; color: var(--text-muted);">
               <div>Clima: <b>${entry.clima}</b></div>
               <div>Personal: <b>${entry.personalMO} pax</b> ${entry.maquinaria ? `| Eq: ${entry.maquinaria}` : ''}</div>
             </div>
@@ -501,7 +559,7 @@
 
             ${entry.foto ? `
               <div style="margin-top: 0.65rem;">
-                <img src="${entry.foto}" style="max-height: 180px; border-radius: 6px; border: 1px solid var(--border);" alt="Evidencia">
+                <img src="${entry.foto}" style="max-height: 180px; border-radius: 6px; border: 1px solid var(--border);" alt="Evidencia en Obra">
               </div>
             ` : ''}
           `;

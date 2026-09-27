@@ -200,67 +200,64 @@
     </div>
   </header>
 
-  <!-- Pestañas Maestras -->
   <nav class="tabs-nav">
-    <button class="tab-btn active" data-tab="tab-modulos">🧩 Catálogo de Módulos</button>
-    <button class="tab-btn" data-tab="tab-empresas">🏢 Empresas</button>
-    <button class="tab-btn" data-tab="tab-roles">🛡️ Roles y Matrices RBAC</button>
+    <button class="tab-btn active" data-tab="tab-modulos">🧩 Módulos Dinámicos</button>
+    <button class="tab-btn" data-tab="tab-empresas">🏢 Empresas Matriz</button>
+    <button class="tab-btn" data-tab="tab-roles">🛡️ Roles y Matrices de Permisos</button>
     <button class="tab-btn" data-tab="tab-usuarios">👥 Padrón de Colaboradores</button>
     <button class="tab-btn" data-tab="tab-auditoria">📜 Auditoría</button>
   </nav>
 
   <div class="container">
 
-    <!-- ==========================================
-         PESTAÑA 1: CATÁLOGO DINÁMICO DE MÓDULOS
-         ========================================== -->
+    <!-- PESTAÑA 1: MÓDULOS DINÁMICOS -->
     <section id="tab-modulos" class="tab-content active">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Registrar Nuevo Módulo en Caliente</div>
+          <div class="card-title">Inyectar Nuevo Módulo al Ecosistema</div>
           <form id="form-modulo-dinamico">
             <div class="form-group">
-              <label>ID Único del Módulo (ej. almacenes, maquinaria)</label>
+              <label>ID Clave del Módulo (ej. almacenes, maquinaria)</label>
               <input type="text" id="mod-id" placeholder="almacen_obra" required>
             </div>
             <div class="form-group">
-              <label>Nombre del Módulo (visible en el dashboard)</label>
+              <label>Título Visible en Tablero</label>
               <input type="text" id="mod-nombre" placeholder="Almacén y Suministros" required>
             </div>
             <div class="grid-2">
               <div class="form-group">
-                <label>Ruta URL / Archivo</label>
+                <label>Ruta URL del Archivo</label>
                 <input type="text" id="mod-ruta" placeholder="./almacen.html" required>
               </div>
               <div class="form-group">
-                <label>Emoji / Ícono representativo</label>
+                <label>Emoji / Ícono</label>
                 <input type="text" id="mod-icono" placeholder="📦" value="📦" required>
               </div>
             </div>
             <div class="form-group">
-              <label>Descripción Operativa</label>
-              <textarea id="mod-desc" placeholder="Control de entradas, salidas y existencias en frente de obra..." rows="2"></textarea>
+              <label>Descripción Operacional</label>
+              <textarea id="mod-desc" placeholder="Control de inventarios, vales de salida y recepción..." rows="2"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Inyectar Módulo a Firestore</button>
+            <button type="submit" class="btn btn-primary">Registrar Módulo en Firestore</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Módulos Activos en el Sistema</div>
+          <div class="card-title">Módulos en el Tablero Central</div>
           <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
                 <tr>
                   <th>Ícono</th>
                   <th>ID</th>
-                  <th>Nombre y Descripción</th>
+                  <th>Nombre</th>
                   <th>Ruta</th>
                   <th>Estatus</th>
                   <th>Acción</th>
                 </tr>
               </thead>
               <tbody id="modulos-table-body">
-                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Cargando catálogo...</td></tr>
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Consultando catálogo...</td></tr>
               </tbody>
             </table>
           </div>
@@ -268,29 +265,27 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         PESTAÑA 2: EMPRESAS DEL GRUPO
-         ========================================== -->
+    <!-- PESTAÑA 2: EMPRESAS MATRIZ -->
     <section id="tab-empresas" class="tab-content">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Registrar Empresa / Razón Social</div>
+          <div class="card-title">Registrar Razón Social</div>
           <form id="form-empresa">
             <div class="form-group">
-              <label>ID Clave (ej. construred, ingenia)</label>
-              <input type="text" id="emp-id" placeholder="id-clave" required>
+              <label>ID Clave (ej. construred, edificaciones)</label>
+              <input type="text" id="emp-id" placeholder="razon_clave" required>
             </div>
             <div class="form-group">
               <label>Razón Social Oficial</label>
-              <input type="text" id="emp-razon" placeholder="Constructora del Centro S.A. de C.V." required>
+              <input type="text" id="emp-razon" placeholder="Constructora del Valle S.A. de C.V." required>
             </div>
             <div class="grid-2">
               <div class="form-group">
                 <label>R.F.C.</label>
-                <input type="text" id="emp-rfc" placeholder="CDN123456789" required>
+                <input type="text" id="emp-rfc" placeholder="CDV123456789" required>
               </div>
               <div class="form-group">
-                <label>I.V.A. Predeterminado</label>
+                <label>Tasa de I.V.A. Predeterminada</label>
                 <select id="emp-iva">
                   <option value="16">16% - Régimen General</option>
                   <option value="8">8% - Estímulo Fronterizo</option>
@@ -298,15 +293,15 @@
               </div>
             </div>
             <div class="form-group">
-              <label>Representante Legal</label>
-              <input type="text" id="emp-representante" placeholder="Ing. Residente General">
+              <label>Representante Legal / Titular</label>
+              <input type="text" id="emp-representante" placeholder="Ing. Director General">
             </div>
             <button type="submit" class="btn btn-primary">Guardar Empresa</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Empresas Consolidadas</div>
+          <div class="card-title">Razones Sociales Activas</div>
           <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
@@ -314,7 +309,7 @@
                   <th>Clave</th>
                   <th>Razón Social</th>
                   <th>RFC</th>
-                  <th>IVA Base</th>
+                  <th>IVA</th>
                   <th>Estatus</th>
                 </tr>
               </thead>
@@ -327,20 +322,18 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         PESTAÑA 3: ROLES Y MATRICES
-         ========================================== -->
+    <!-- PESTAÑA 3: ROLES Y MATRICES (EN ESPAÑOL CLARO) -->
     <section id="tab-roles" class="tab-content">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Crear / Editar Plantilla de Rol</div>
+          <div class="card-title">Crear / Configurar Plantilla de Rol</div>
           <form id="form-rol-template">
             <div class="form-group">
               <label>ID del Rol (ej. residente_frente)</label>
               <input type="text" id="role-id" placeholder="residente_obra" required>
             </div>
             <div class="form-group">
-              <label>Nombre del Puesto</label>
+              <label>Puesto Oficial</label>
               <input type="text" id="role-nombre" placeholder="Residente General de Obra" required>
             </div>
             
@@ -348,11 +341,11 @@
             <table class="data-table" style="margin-top: 0.5rem;">
               <thead>
                 <tr>
-                  <th>Módulo</th>
-                  <th title="Crear">C</th>
-                  <th title="Leer">R</th>
-                  <th title="Actualizar">U</th>
-                  <th title="Eliminar">D</th>
+                  <th>Módulo Operativo</th>
+                  <th style="text-align: center;">Crear / Registrar</th>
+                  <th style="text-align: center;">Ver / Consultar</th>
+                  <th style="text-align: center;">Editar / Modificar</th>
+                  <th style="text-align: center;">Eliminar / Suprimir</th>
                 </tr>
               </thead>
               <tbody id="role-matrix-body"></tbody>
@@ -365,7 +358,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Roles Registrados</div>
+          <div class="card-title">Roles Configurados</div>
           <div id="roles-cards-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
             <div style="text-align: center; color: var(--text-muted);">Cargando roles...</div>
           </div>
@@ -373,9 +366,7 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         PESTAÑA 4: PADRÓN DE COLABORADORES
-         ========================================== -->
+    <!-- PESTAÑA 4: PADRÓN DE COLABORADORES -->
     <section id="tab-usuarios" class="tab-content">
       <div class="grid-admin">
         <div class="card">
@@ -391,7 +382,7 @@
             <div class="grid-2">
               <div class="form-group">
                 <label>Nombre Completo</label>
-                <input type="text" id="usr-nombre" placeholder="Nombre completo" required>
+                <input type="text" id="usr-nombre" placeholder="Nombre del colaborador" required>
               </div>
               <div class="form-group">
                 <label>Correo Electrónico</label>
@@ -401,11 +392,11 @@
 
             <div class="grid-2">
               <div class="form-group">
-                <label>Empresa</label>
+                <label>Empresa Matriz</label>
                 <select id="usr-empresa" required></select>
               </div>
               <div class="form-group">
-                <label>Plantilla de Rol</label>
+                <label>Rol Asignado</label>
                 <select id="usr-rol-template" required></select>
               </div>
             </div>
@@ -415,11 +406,11 @@
                 <label>Alcance Operativo</label>
                 <select id="usr-alcance">
                   <option value="global">Global (Todas las Obras)</option>
-                  <option value="asignado">Obras Asignadas</option>
+                  <option value="asignado">Obras Asignadas Específicas</option>
                 </select>
               </div>
               <div class="form-group" id="container-user-obras" style="display: none;">
-                <label>Obras Asignadas (Ctrl para multi-selección)</label>
+                <label>Obras Autorizadas (Ctrl para seleccionar varias)</label>
                 <select id="usr-obras" multiple style="height: 80px;"></select>
               </div>
             </div>
@@ -427,42 +418,40 @@
             <div class="form-group" style="background: #f1f5f9; padding: 0.75rem; border-radius: 6px;">
               <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
                 <input type="checkbox" id="usr-superadmin" style="width: 17px; height: 17px;">
-                <span><b>Super Administrador</b> (Bypass sin restricciones)</span>
+                <span><b>Super Administrador</b> (Bypass total al ecosistema)</span>
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="btn-save-usr">Guardar Gobernanza</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-usr">Actualizar Gobernanza</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Directorio de Colaboradores</div>
+          <div class="card-title">Colaboradores en Ecosistema</div>
           <div id="usuarios-list-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <div style="text-align: center; color: var(--text-muted);">Cargando directorio...</div>
+            <div style="text-align: center; color: var(--text-muted);">Consultando usuarios...</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ==========================================
-         PESTAÑA 5: AUDITORÍA
-         ========================================== -->
+    <!-- PESTAÑA 5: AUDITORÍA -->
     <section id="tab-auditoria" class="tab-content">
       <div class="card">
-        <div class="card-title">Bitácora Central de Auditoría</div>
+        <div class="card-title">Trazabilidad Central de Eventos y Cambios</div>
         <div style="overflow-x: auto;">
           <table class="data-table">
             <thead>
               <tr>
-                <th style="width: 150px;">Fecha / Hora</th>
-                <th>Usuario</th>
+                <th style="width: 160px;">Fecha / Hora</th>
+                <th>Usuario Responsable</th>
                 <th>Módulo</th>
                 <th>Acción</th>
-                <th>Detalles</th>
+                <th>Detalles Técnicos</th>
               </tr>
             </thead>
             <tbody id="auditoria-body">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando registros...</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando bitácora de auditoría...</td></tr>
             </tbody>
           </table>
         </div>
@@ -502,7 +491,7 @@
     function showToast(msg) {
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 3000);
+      setTimeout(() => toast.style.display = "none", 3200);
     }
 
     let modulosActivos = [];
@@ -542,12 +531,12 @@
       escucharAuditoria();
     }
 
-    // 2. Gestión Dinámica de Módulos
+    // 2. Módulos Dinámicos
     document.getElementById("form-modulo-dinamico").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("mod-id").value.trim().toLowerCase();
       const payload = {
-        id: id,
+        id,
         nombre: document.getElementById("mod-nombre").value.trim(),
         ruta: document.getElementById("mod-ruta").value.trim(),
         icono: document.getElementById("mod-icono").value.trim() || "📁",
@@ -559,7 +548,7 @@
       try {
         await setDoc(doc(db, "modulos", id), payload, { merge: true });
         await logEvento("modulos", "alta/edicion", `Módulo ${payload.nombre} (${id})`);
-        showToast("Módulo inyectado a Firestore");
+        showToast("Módulo guardado en Firestore");
         document.getElementById("form-modulo-dinamico").reset();
       } catch (err) {
         alert("Error al guardar módulo: " + err.message);
@@ -573,7 +562,7 @@
         modulosActivos = [];
 
         if (snap.empty) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin módulos en base de datos.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin módulos configurados.</td></tr>';
           return;
         }
 
@@ -614,16 +603,16 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${m.icono || '📁'} <strong>${m.nombre}</strong></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="c"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="r"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="u"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="d"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="c" title="Permiso para Crear / Registrar"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="r" title="Permiso para Ver / Consultar"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="u" title="Permiso para Editar / Modificar"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="d" title="Permiso para Eliminar / Suprimir"></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // 3. Empresas
+    // 3. Empresas Matriz
     document.getElementById("form-empresa").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("emp-id").value.trim().toLowerCase();
@@ -633,12 +622,13 @@
         rfc: document.getElementById("emp-rfc").value.trim().toUpperCase(),
         ivaDefault: parseFloat(document.getElementById("emp-iva").value) || 16,
         representante: document.getElementById("emp-representante").value.trim(),
-        activo: true
+        activo: true,
+        actualizadoEn: new Date().toISOString()
       };
 
       try {
         await setDoc(doc(db, "empresas", id), payload, { merge: true });
-        await logEvento("empresas", "alta", `Empresa ${payload.razonSocial}`);
+        await logEvento("empresas", "alta/edicion", `Empresa: ${payload.razonSocial}`);
         showToast("Empresa guardada");
         document.getElementById("form-empresa").reset();
       } catch (err) {
@@ -673,7 +663,7 @@
       });
     }
 
-    // 4. Roles
+    // 4. Roles y Matrices
     document.getElementById("form-rol-template").addEventListener("submit", async (e) => {
       e.preventDefault();
       const roleId = document.getElementById("role-id").value.trim().toLowerCase();
@@ -691,7 +681,7 @@
 
       try {
         await setDoc(doc(db, "roles", roleId), { id: roleId, nombre: roleNombre, matriz }, { merge: true });
-        await logEvento("roles", "alta/edicion", `Rol ${roleNombre}`);
+        await logEvento("roles", "alta/edicion", `Rol configurado: ${roleNombre}`);
         showToast("Plantilla de rol guardada");
         document.getElementById("form-rol-template").reset();
         renderRoleMatrix();
@@ -705,7 +695,7 @@
         const container = document.getElementById("roles-cards-container");
         const selectUserRol = document.getElementById("usr-rol-template");
         container.innerHTML = "";
-        selectUserRol.innerHTML = '<option value="">-- Selecciona Rol --</option>';
+        selectUserRol.innerHTML = '<option value="">-- Selecciona Rol Plantilla --</option>';
         rolesCatalogo = {};
 
         snap.forEach(d => {
@@ -716,7 +706,7 @@
           card.style.cssText = "border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background:#fff; display:flex; justify-content:space-between; align-items:center;";
           card.innerHTML = `
             <div><strong>${r.nombre}</strong> <code style="font-size:0.75rem;">(${d.id})</code></div>
-            <button class="btn btn-secondary btn-sm" onclick="window.cargarRol('${d.id}')">Editar</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.cargarRol('${d.id}')">Editar Matriz</button>
           `;
           container.appendChild(card);
 
@@ -744,7 +734,7 @@
       }, 50);
     };
 
-    // 5. Directorio de Usuarios
+    // 5. Directorio de Colaboradores
     const usrAlcance = document.getElementById("usr-alcance");
     const containerObras = document.getElementById("container-user-obras");
     usrAlcance.addEventListener("change", () => {
@@ -803,8 +793,8 @@
 
       try {
         await setDoc(doc(db, "usuarios", uid), payload, { merge: true });
-        await logEvento("usuarios", "actualizar", `Gobernanza de ${payload.nombre}`);
-        showToast("Usuario actualizado con éxito");
+        await logEvento("usuarios", "actualizar", `Gobernanza actualizada: ${payload.nombre}`);
+        showToast("Colaborador sincronizado con éxito");
         resetUserForm();
       } catch (err) {
         alert("Error: " + err.message);
@@ -877,11 +867,11 @@
 
     window.conmutarUsuario = async (uid, activoActual) => {
       await updateDoc(doc(db, "usuarios", uid), { activo: !activoActual });
-      await logEvento("usuarios", "estatus", `Usuario ${uid} a ${!activoActual}`);
+      await logEvento("usuarios", "estatus", `Usuario ${uid} conmutado a ${!activoActual}`);
       showToast("Estatus actualizado");
     };
 
-    // 6. Auditoría
+    // 6. Trazabilidad en Auditoría
     function escucharAuditoria() {
       onSnapshot(collection(db, "auditoria"), (snap) => {
         const tbody = document.getElementById("auditoria-body");

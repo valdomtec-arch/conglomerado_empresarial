@@ -16,6 +16,7 @@
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
+      --warning: #f59e0b;
       --radius: 12px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
@@ -59,15 +60,15 @@
     .btn-nav:hover { background: #334155; }
 
     .main-content {
-      max-width: 1300px;
-      margin: 2rem auto;
+      max-width: 1400px;
+      margin: 1.5rem auto;
       padding: 0 1.25rem;
       flex-grow: 1;
       width: 100%;
     }
 
     .dashboard-header {
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
@@ -77,6 +78,37 @@
     .welcome-title { font-size: 1.45rem; font-weight: 800; color: var(--primary); }
     .welcome-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
 
+    /* Barra de KPIs en Tiempo Real */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: #eff6ff;
+    }
+    .kpi-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .kpi-val { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
+
+    /* Grid de Módulos Dinámicos */
     .modules-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -162,11 +194,36 @@
   <main class="main-content">
     <div class="dashboard-header">
       <div>
-        <h1 class="welcome-title">Tablero de Control de Obra</h1>
-        <p class="welcome-sub">Módulos operacionales autorizados en tiempo real.</p>
+        <h1 class="welcome-title">Tablero Central de Operaciones</h1>
+        <p class="welcome-sub" id="welcome-sub">Módulos operacionales autorizados en tiempo real.</p>
       </div>
       <div id="obras-scope-badge" style="font-size: 0.82rem; color: var(--text-muted); background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);">
         Alcance: Verificando...
+      </div>
+    </div>
+
+    <!-- KPIs en Tiempo Real -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">🏗️</div>
+        <div>
+          <div class="kpi-title">Obras Autorizadas</div>
+          <div class="kpi-val" id="kpi-obras">0</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">👷</div>
+        <div>
+          <div class="kpi-title">Personal en Sitio Hoy</div>
+          <div class="kpi-val" id="kpi-asistencias">0</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📝</div>
+        <div>
+          <div class="kpi-title">Estimaciones en Proceso</div>
+          <div class="kpi-val" id="kpi-estimaciones">0</div>
+        </div>
       </div>
     </div>
 
@@ -179,7 +236,7 @@
   </main>
 
   <script type="module">
-    import { auth, signOut } from "./js/firebase-config.js";
+    import { auth, db, signOut, collection, onSnapshot, query, where } from "./js/firebase-config.js";
     import { obtenerPerfilActual, escucharModulosSistema, tienePermiso } from "./js/rbac.js";
 
     const modulesContainer = document.getElementById("modules-container");
@@ -187,6 +244,11 @@
     const userBadgeRole = document.getElementById("user-badge-role");
     const linkAdmin = document.getElementById("link-admin");
     const obrasScopeBadge = document.getElementById("obras-scope-badge");
+    const welcomeSub = document.getElementById("welcome-sub");
+
+    const kpiObras = document.getElementById("kpi-obras");
+    const kpiAsistencias = document.getElementById("kpi-asistencias");
+    const kpiEstimaciones = document.getElementById("kpi-estimaciones");
 
     async function inicializarDashboard() {
       try {
@@ -201,11 +263,18 @@
           userBadgeRole.style.color = "#fff";
         }
 
+        if (perfil.empresaId) {
+          welcomeSub.textContent = `Adscrito a empresa matriz [${perfil.empresaId}] | Módulos activos según gobernanza.`;
+        }
+
         obrasScopeBadge.textContent = perfil.is_superadmin || perfil.alcance === "global"
           ? "Alcance: Global (Todas las Obras)"
           : `Alcance: ${perfil.proyectos_asignados?.length || 0} Obra(s) Asignada(s)`;
 
-        // Escucha en tiempo real mediante el listener de rbac.js
+        // Iniciar métricas en vivo
+        escucharKPIs(perfil);
+
+        // Render Dinámico de Módulos (Reacciona a creación/pausa en admin.html)
         escucharModulosSistema((modulos) => {
           modulesContainer.innerHTML = "";
 
@@ -217,7 +286,7 @@
           let modulosVisibles = 0;
 
           modulos.forEach(m => {
-            // Se valida que esté activo y que el usuario tenga permiso de lectura ('r') o sea Super Admin
+            // El módulo debe estar activo en la base y el colaborador debe tener permiso de lectura ('r' o 'ver')
             const tieneAcceso = perfil.is_superadmin || (m.activo !== false && tienePermiso(perfil, m.id, "r"));
 
             if (tieneAcceso) {
@@ -243,14 +312,51 @@
           });
 
           if (modulosVisibles === 0) {
-            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No tienes módulos asignados con tu rol actual.</div>';
+            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No cuentas con módulos autorizados para tu puesto actual.</div>';
           }
         });
 
       } catch (err) {
-        console.error("Acceso restringido:", err);
+        console.error("Acceso restringido o error de sesión:", err);
         window.location.href = "./index.html";
       }
+    }
+
+    // Escucha de métricas en tiempo real
+    function escucharKPIs(perfil) {
+      // 1. Obras activas
+      onSnapshot(collection(db, "proyectos"), (snap) => {
+        let count = 0;
+        snap.forEach(d => {
+          const p = d.data();
+          const permitido = perfil.is_superadmin || 
+                            perfil.alcance === "global" || 
+                            perfil.proyectos_asignados?.includes(d.id) || 
+                            perfil.proyectos_asignados?.includes("*");
+          if (permitido && p.activo !== false) count++;
+        });
+        kpiObras.textContent = count;
+      });
+
+      // 2. Personal presente hoy
+      const hoy = new Date().toISOString().split("T")[0];
+      const qAsist = query(collection(db, "asistencias"), where("fechaCorta", "==", hoy));
+      onSnapshot(qAsist, (snap) => {
+        const uids = new Set();
+        snap.forEach(d => {
+          if (d.data().tipo === "entrada") uids.add(d.data().uid);
+        });
+        kpiAsistencias.textContent = uids.size;
+      });
+
+      // 3. Estimaciones en proceso
+      onSnapshot(collection(db, "estimaciones"), (snap) => {
+        let countRev = 0;
+        snap.forEach(d => {
+          if (d.data().estado === "revision") countRev++;
+        });
+        kpiEstimaciones.textContent = countRev;
+      });
     }
 
     document.getElementById("btn-logout").addEventListener("click", async () => {

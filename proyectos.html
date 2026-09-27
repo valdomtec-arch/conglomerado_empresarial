@@ -3,34 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Proyectos y Geocercas - Conglomerado Empresarial</title>
+  <title>Proyectos y Geocercas - Conglomerado Empresarial</title>
   
-  <!-- Leaflet CSS para Mapas -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
   <style>
     :root {
-      --primary: #1e3a8a;
-      --primary-hover: #1e40af;
-      --accent: #0284c7;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
       --bg: #f8fafc;
       --surface: #ffffff;
       --border: #e2e8f0;
       --text: #0f172a;
       --text-muted: #64748b;
-      --success: #10b981;
       --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
       --radius: 10px;
-      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
 
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 1.5rem;
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -38,30 +39,21 @@
       top: 0;
       z-index: 1000;
     }
-    .brand { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-    .status-badge {
-      font-size: 0.8rem;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      background: #e0f2fe;
-      color: #0369a1;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+    .btn-nav:hover { background: #475569; }
 
     .container {
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 1.5rem auto;
       padding: 0 1rem;
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 480px 1fr;
       gap: 1.5rem;
     }
-    @media (min-width: 1024px) {
-      .container { grid-template-columns: 480px 1fr; }
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
     }
 
     .card {
@@ -70,152 +62,178 @@
       border-radius: var(--radius);
       padding: 1.5rem;
       box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
     }
-    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-    .form-group { margin-bottom: 1rem; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    .form-group { margin-bottom: 0.9rem; }
+    label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
     input, select, textarea {
       width: 100%;
-      padding: 0.65rem 0.85rem;
+      padding: 0.6rem 0.75rem;
       border: 1px solid var(--border);
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       outline: none;
-      transition: border-color 0.2s;
+      background: #fff;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 0.65rem 1.25rem;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-      font-size: 0.9rem;
-    }
-    .btn-primary { background: var(--primary); color: #fff; width: 100%; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #e2e8f0; color: #334155; }
-    .btn-secondary:hover { background: #cbd5e1; }
-    .btn-danger { background: #fee2e2; color: #b91c1c; }
-    .btn-danger:hover { background: #fca5a5; }
-    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.8rem; }
 
     #map {
-      height: 250px;
+      height: 240px;
       border-radius: 6px;
       border: 1px solid var(--border);
       margin-top: 0.5rem;
       z-index: 1;
     }
 
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-danger:hover { background: #fca5a5; }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
+
+    /* Listado de Proyectos */
     .project-item {
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 1rem;
       margin-bottom: 0.75rem;
-      transition: all 0.2s;
+      background: #fff;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: all 0.2s;
     }
-    .project-item:hover { border-color: var(--accent); transform: translateY(-1px); }
-    .project-item.active { border-color: var(--accent); background: #f0f9ff; }
+    .project-item:hover { border-color: var(--accent); }
+    .project-item.active { border-color: var(--accent); background: #eff6ff; }
     .project-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 
+    /* Tabs para Catálogos */
     .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1rem; gap: 1rem; }
     .tab-btn {
       padding: 0.5rem 0.75rem;
       background: none;
       border: none;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--text-muted);
       cursor: pointer;
     }
-    .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -2px; }
-
+    .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); margin-bottom: -2px; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .table-container { overflow-x: auto; margin-top: 1rem; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
-    th { background: #f1f5f9; padding: 0.65rem; border-bottom: 1px solid var(--border); color: #475569; }
-    td { padding: 0.65rem; border-bottom: 1px solid var(--border); }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .data-table th {
+      background: #f1f5f9;
+      padding: 0.6rem;
+      text-align: left;
+      border: 1px solid var(--border);
+      color: #475569;
+    }
+    .data-table td {
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      vertical-align: middle;
+    }
 
-    #toast-container {
+    #toast {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .toast {
-      padding: 12px 18px;
       background: #1e293b;
       color: #fff;
+      padding: 10px 18px;
       border-radius: 6px;
       font-size: 0.85rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      animation: slideIn 0.3s ease-out;
+      display: none;
+      z-index: 9999;
+      box-shadow: var(--shadow);
     }
-    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
   </style>
 </head>
 <body>
 
   <header>
     <div class="brand">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      <span>Conglomerado Empresarial</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <span>Obras, Geocercas y Catálogos</span>
     </div>
-    <div class="status-badge">
-      <div class="status-dot"></div>
-      <span>Firestore Activo (default)</span>
+    <div class="header-actions">
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
+      <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
+      <a href="./admin.html" class="btn-nav">Torre de Control</a>
     </div>
   </header>
 
   <div class="container">
     
-    <!-- COLUMNA 1: Formulario de Proyecto & Geocerca -->
+    <!-- COLUMNA 1: Formulario Maestro de Obra -->
     <div class="card">
       <div class="card-title">
-        <span>Alta / Edición de Proyecto</span>
+        <span id="form-project-title">Alta de Nueva Obra / Proyecto</span>
       </div>
 
       <form id="project-form">
         <input type="hidden" id="project-id">
 
         <div class="form-group">
-          <label>Nombre del Proyecto / Frente de Trabajo</label>
-          <input type="text" id="project-name" required placeholder="Ej. Construcción Nave Industrial">
+          <label for="project-empresa">Empresa Titular (Razón Social)</label>
+          <select id="project-empresa" required>
+            <option value="">Cargando empresas del conglomerado...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="project-name">Nombre de la Obra / Frente</label>
+          <input type="text" id="project-name" required placeholder="Ej. Pavimentación y Drenaje Eje Sur">
         </div>
 
         <div class="grid-2">
           <div class="form-group">
-            <label>Código / Clave</label>
-            <input type="text" id="project-code" required placeholder="PRY-001">
+            <label for="project-code">Código / Folio Interno</label>
+            <input type="text" id="project-code" required placeholder="OBRA-2026-01">
           </div>
           <div class="form-group">
-            <label>Cliente / Razón Social</label>
-            <input type="text" id="project-client" required placeholder="Ej. Grupo Industrial del Norte">
+            <label for="project-client">Cliente Contratante</label>
+            <input type="text" id="project-client" required placeholder="Ej. Secretaría de Obras / Privado">
           </div>
         </div>
 
+        <!-- Mapeo Geográfico -->
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-            <label style="margin: 0;">Coordenadas de Sitio (Geocerca)</label>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-gps">📍 Tomar mi GPS</button>
+            <label style="margin: 0;">Centro de Obra (Geocerca para Checador)</label>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-gps">📍 GPS Actual</button>
           </div>
           <div class="grid-2">
             <input type="number" step="any" id="project-lat" placeholder="Latitud" required>
@@ -224,83 +242,84 @@
         </div>
 
         <div class="form-group">
-          <label>Radio de Tolerancia: <b id="radius-val">150</b> metros</label>
-          <input type="range" id="project-radius" min="20" max="1500" step="10" value="150">
+          <label>Tolerancia de Presencia: <b id="radius-val">150</b> metros</label>
+          <input type="range" id="project-radius" min="30" max="1500" step="10" value="150">
         </div>
 
         <div id="map"></div>
 
         <div style="margin-top: 1.25rem; display: flex; gap: 0.5rem;">
-          <button type="submit" class="btn btn-primary" id="btn-save-project">Guardar Proyecto</button>
-          <button type="button" class="btn btn-secondary" id="btn-cancel-edit" style="display: none;">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-project">Guardar Obra en Firestore</button>
+          <button type="button" class="btn btn-secondary" id="btn-cancel-edit" style="display: none;">Cancelar Edición</button>
         </div>
       </form>
     </div>
 
-    <!-- COLUMNA 2: Lista de Proyectos y Catálogos -->
+    <!-- COLUMNA 2: Lista de Obras y Catálogos Vinculados -->
     <div>
-      <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card">
         <div class="card-title">
-          <span>Proyectos Registrados</span>
+          <span>Obras Habilitadas</span>
         </div>
-        <div id="projects-list">Cargando proyectos desde Firestore...</div>
+        <div id="projects-list">Sincronizando obras...</div>
       </div>
 
+      <!-- Tarjeta Desplegable de Catálogos (Personal y Conceptos) -->
       <div class="card" id="catalog-card" style="display: none;">
         <div class="card-title">
-          <span id="selected-project-title">Catálogos Asignados</span>
+          <span id="selected-project-title">Estructura Operativa</span>
         </div>
 
         <div class="tabs">
-          <button class="tab-btn active" data-tab="tab-personal">Cuadrilla / Personal</button>
-          <button class="tab-btn" data-tab="tab-partidas">Partidas Contractuales</button>
+          <button class="tab-btn active" data-tab="tab-personal">Cuadrilla Asignada</button>
+          <button class="tab-btn" data-tab="tab-partidas">Catálogo de Conceptos (Estimaciones)</button>
         </div>
 
-        <!-- Pestaña 1: Personal -->
+        <!-- Tab 1: Personal asignado desde la colección usuarios -->
         <div id="tab-personal" class="tab-content active">
-          <form id="employee-form" class="grid-2" style="margin-bottom: 1rem;">
-            <input type="text" id="emp-name" placeholder="Nombre completo del operario" required>
-            <input type="text" id="emp-role" placeholder="Puesto / Categoría" required>
-            <input type="number" step="0.01" id="emp-rate" placeholder="Cuota x Hora ($)" required>
-            <button type="submit" class="btn btn-secondary">Agregar Empleado</button>
+          <form id="assign-user-form" class="grid-2" style="margin-bottom: 1rem;">
+            <select id="select-usuario-asignar" required>
+              <option value="">-- Asignar colaborador registrado --</option>
+            </select>
+            <button type="submit" class="btn btn-secondary">Vincular a esta Obra</button>
           </form>
 
-          <div class="table-container">
-            <table>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Puesto</th>
-                  <th>Cuota/Hr</th>
-                  <th>Acción</th>
+                  <th>Colaborador</th>
+                  <th>Rol / Puesto</th>
+                  <th>Correo</th>
+                  <th style="width: 40px;"></th>
                 </tr>
               </thead>
               <tbody id="employees-table">
-                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin empleados asignados.</td></tr>
+                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin colaboradores asignados.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Pestaña 2: Partidas -->
+        <!-- Tab 2: Conceptos contractuales de obra -->
         <div id="tab-partidas" class="tab-content">
           <form id="item-form" style="margin-bottom: 1rem;">
             <div class="grid-2" style="margin-bottom: 0.5rem;">
-              <input type="text" id="item-code" placeholder="Clave Partida (ej. CIV-01)" required>
+              <input type="text" id="item-code" placeholder="Clave (ej. TRA-01)" required>
               <input type="text" id="item-unit" placeholder="Unidad (m3, m2, pza, kg)" required>
             </div>
             <div class="form-group">
-              <input type="text" id="item-concept" placeholder="Descripción de concepto de obra" required>
+              <input type="text" id="item-concept" placeholder="Descripción del concepto de obra" required>
             </div>
             <div class="grid-2">
               <input type="number" step="0.01" id="item-vol" placeholder="Volumen Contratado" required>
               <input type="number" step="0.01" id="item-price" placeholder="P.U. Contratado ($)" required>
             </div>
-            <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">Agregar Partida</button>
+            <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">Agregar Concepto al Catálogo</button>
           </form>
 
-          <div class="table-container">
-            <table>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Clave</th>
@@ -308,11 +327,11 @@
                   <th>Unidad</th>
                   <th>Volumen</th>
                   <th>P.U.</th>
-                  <th>Acción</th>
+                  <th style="width: 40px;"></th>
                 </tr>
               </thead>
               <tbody id="items-table">
-                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin partidas registradas.</td></tr>
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin conceptos registrados.</td></tr>
               </tbody>
             </table>
           </div>
@@ -323,12 +342,11 @@
 
   </div>
 
-  <div id="toast-container"></div>
+  <div id="toast"></div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Lógica Principal consumiendo el SDK centralizado en GitHub -->
   <script type="module">
     import { 
       db, 
@@ -337,48 +355,86 @@
       setDoc, 
       addDoc, 
       deleteDoc, 
+      updateDoc,
       onSnapshot, 
       query, 
       where 
     } from "./js/firebase-config.js";
+    import { protegerVista } from "./js/rbac.js";
 
     let currentProjectId = null;
+    let currentProjectData = null;
     let map, marker, circle;
+    let usuarioActual = null;
+    let perfilActual = null;
 
-    function notify(msg) {
-      const c = document.getElementById('toast-container');
-      const t = document.createElement('div');
-      t.className = 'toast';
-      t.textContent = msg;
-      c.appendChild(t);
-      setTimeout(() => t.remove(), 3500);
+    let catalogoEmpresas = {};
+    let usuariosDisponibles = [];
+    let unsubPartidas = null;
+
+    const toast = document.getElementById("toast");
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3200);
     }
 
+    async function logEvento(accion, detalle) {
+      try {
+        await addDoc(collection(db, "auditoria"), {
+          timestamp: new Date().toISOString(),
+          uid: usuarioActual?.uid || "root",
+          usuario: perfilActual?.nombre || usuarioActual?.email || "Admin",
+          modulo: "proyectos",
+          accion,
+          detalle
+        });
+      } catch (err) {
+        console.warn("Fallo log:", err);
+      }
+    }
+
+    // 1. Proteger Vista (RBAC)
+    protegerVista("proyectos", "r").then(({ user, perfil }) => {
+      usuarioActual = user;
+      perfilActual = perfil;
+      document.getElementById("user-display").textContent = perfil.nombre || user.email;
+      iniciarModulo();
+    });
+
+    function iniciarModulo() {
+      initMap();
+      escucharEmpresas();
+      escucharUsuariosPadrón();
+      escucharProyectos();
+    }
+
+    // 2. Mapa Leaflet y Geocerca
     function initMap() {
-      const defaultLat = 19.4326;
-      const defaultLng = -99.1332;
-      
-      map = L.map('map').setView([defaultLat, defaultLng], 14);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
+      const defLat = 19.4326;
+      const defLng = -99.1332;
+
+      map = L.map("map").setView([defLat, defLng], 14);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap"
       }).addTo(map);
 
-      marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
-      circle = L.circle([defaultLat, defaultLng], { radius: 150, color: '#0284c7' }).addTo(map);
+      marker = L.marker([defLat, defLng], { draggable: true }).addTo(map);
+      circle = L.circle([defLat, defLng], { radius: 150, color: "#2563eb" }).addTo(map);
 
-      marker.on('dragend', () => {
+      marker.on("dragend", () => {
         const { lat, lng } = marker.getLatLng();
-        document.getElementById('project-lat').value = lat.toFixed(6);
-        document.getElementById('project-lng').value = lng.toFixed(6);
+        document.getElementById("project-lat").value = lat.toFixed(6);
+        document.getElementById("project-lng").value = lng.toFixed(6);
         circle.setLatLng([lat, lng]);
       });
 
-      map.on('click', (e) => {
+      map.on("click", (e) => {
         const { lat, lng } = e.latlng;
         marker.setLatLng([lat, lng]);
         circle.setLatLng([lat, lng]);
-        document.getElementById('project-lat').value = lat.toFixed(6);
-        document.getElementById('project-lng').value = lng.toFixed(6);
+        document.getElementById("project-lat").value = lat.toFixed(6);
+        document.getElementById("project-lng").value = lng.toFixed(6);
       });
     }
 
@@ -390,243 +446,349 @@
       map.setView([lat, lng], 15);
     }
 
-    document.getElementById('project-radius').addEventListener('input', (e) => {
+    document.getElementById("project-radius").addEventListener("input", (e) => {
       const val = Number(e.target.value);
-      document.getElementById('radius-val').textContent = val;
+      document.getElementById("radius-val").textContent = val;
       circle.setRadius(val);
     });
 
-    ['project-lat', 'project-lng'].forEach(id => {
-      document.getElementById(id).addEventListener('change', () => {
-        const lat = Number(document.getElementById('project-lat').value);
-        const lng = Number(document.getElementById('project-lng').value);
-        if (lat && lng) updateMap(lat, lng, Number(document.getElementById('project-radius').value));
+    ["project-lat", "project-lng"].forEach(id => {
+      document.getElementById(id).addEventListener("change", () => {
+        const lat = Number(document.getElementById("project-lat").value);
+        const lng = Number(document.getElementById("project-lng").value);
+        if (lat && lng) updateMap(lat, lng, Number(document.getElementById("project-radius").value));
       });
     });
 
-    document.getElementById('btn-gps').addEventListener('click', () => {
+    document.getElementById("btn-gps").addEventListener("click", () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
-            document.getElementById('project-lat').value = lat.toFixed(6);
-            document.getElementById('project-lng').value = lng.toFixed(6);
-            updateMap(lat, lng, Number(document.getElementById('project-radius').value));
-            notify("Ubicación GPS obtenida");
+            document.getElementById("project-lat").value = lat.toFixed(6);
+            document.getElementById("project-lng").value = lng.toFixed(6);
+            updateMap(lat, lng, Number(document.getElementById("project-radius").value));
+            showToast("Ubicación GPS capturada con éxito");
           },
-          () => notify("No se pudo obtener la ubicación GPS.")
+          () => alert("No se pudo obtener la ubicación GPS del dispositivo.")
         );
       }
     });
 
-    // Guardar o Editar Proyecto
-    document.getElementById('project-form').addEventListener('submit', async (e) => {
+    // 3. Cargar Empresas Consolidadas desde Firestore
+    function escucharEmpresas() {
+      onSnapshot(collection(db, "empresas"), (snap) => {
+        const selectEmp = document.getElementById("project-empresa");
+        selectEmp.innerHTML = '<option value="">-- Selecciona Razón Social Titular --</option>';
+        catalogoEmpresas = {};
+
+        snap.forEach(d => {
+          const emp = d.data();
+          catalogoEmpresas[d.id] = emp;
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = `${emp.rfc} - ${emp.razonSocial}`;
+          selectEmp.appendChild(opt);
+        });
+      });
+    }
+
+    // 4. Guardar o Editar Proyecto
+    document.getElementById("project-form").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const pId = document.getElementById('project-id').value;
-      const data = {
-        nombre: document.getElementById('project-name').value.trim(),
-        codigo: document.getElementById('project-code').value.trim(),
-        cliente: document.getElementById('project-client').value.trim(),
-        lat: parseFloat(document.getElementById('project-lat').value),
-        lng: parseFloat(document.getElementById('project-lng').value),
-        radio_metros: parseFloat(document.getElementById('project-radius').value),
+      const pId = document.getElementById("project-id").value;
+      const empresaId = document.getElementById("project-empresa").value;
+      const empresaObj = catalogoEmpresas[empresaId];
+
+      const lat = parseFloat(document.getElementById("project-lat").value);
+      const lng = parseFloat(document.getElementById("project-lng").value);
+      const radio = parseFloat(document.getElementById("project-radius").value);
+
+      const payload = {
+        empresaId: empresaId,
+        empresaNombre: empresaObj ? empresaObj.razonSocial : "Sin Razón Social",
+        empresaRfc: empresaObj ? empresaObj.rfc : "",
+        tasaIvaDefault: empresaObj ? empresaObj.ivaDefault : 16,
+        nombre: document.getElementById("project-name").value.trim(),
+        codigo: document.getElementById("project-code").value.trim().toUpperCase(),
+        cliente: document.getElementById("project-client").value.trim(),
+        // Estructura sincronizada para checador.html
+        geocerca: {
+          lat: lat,
+          lng: lng,
+          radio: radio
+        },
         activo: true,
         actualizadoEn: new Date().toISOString()
       };
 
       try {
         if (pId) {
-          await setDoc(doc(db, "proyectos", pId), data, { merge: true });
-          notify("Proyecto actualizado exitosamente");
+          await setDoc(doc(db, "proyectos", pId), payload, { merge: true });
+          await logEvento("editar_obra", `Obra actualizada: ${payload.nombre}`);
+          showToast("Obra actualizada en Firestore");
         } else {
-          await addDoc(collection(db, "proyectos"), data);
-          notify("Proyecto creado exitosamente");
+          payload.creadoEn = new Date().toISOString();
+          const docCreado = await addDoc(collection(db, "proyectos"), payload);
+          await logEvento("crear_obra", `Nueva obra: ${payload.nombre}`);
+          showToast("Obra creada en Firestore");
         }
         resetProjectForm();
       } catch (err) {
         console.error(err);
-        notify("Error al guardar en Firestore: " + err.message);
+        alert("Error al guardar obra: " + err.message);
       }
     });
 
     function resetProjectForm() {
-      document.getElementById('project-form').reset();
-      document.getElementById('project-id').value = '';
-      document.getElementById('radius-val').textContent = '150';
-      document.getElementById('btn-save-project').textContent = 'Guardar Proyecto';
-      document.getElementById('btn-cancel-edit').style.display = 'none';
+      document.getElementById("project-form").reset();
+      document.getElementById("project-id").value = "";
+      document.getElementById("radius-val").textContent = "150";
+      document.getElementById("btn-save-project").textContent = "Guardar Obra en Firestore";
+      document.getElementById("btn-cancel-edit").style.display = "none";
+      document.getElementById("form-project-title").textContent = "Alta de Nueva Obra / Proyecto";
     }
 
-    document.getElementById('btn-cancel-edit').addEventListener('click', resetProjectForm);
+    document.getElementById("btn-cancel-edit").addEventListener("click", resetProjectForm);
 
-    // Escuchar Proyectos en Tiempo Real
-    onSnapshot(collection(db, "proyectos"), (snapshot) => {
-      const container = document.getElementById('projects-list');
-      if (snapshot.empty) {
-        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">No hay proyectos registrados en Firestore. Crea el primero arriba.</div>';
+    // 5. Escuchar Proyectos en Tiempo Real
+    function escucharProyectos() {
+      onSnapshot(collection(db, "proyectos"), (snapshot) => {
+        const container = document.getElementById("projects-list");
+        if (snapshot.empty) {
+          container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0;">No hay obras registradas. Crea la primera a la izquierda.</div>';
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const p = docSnap.data();
+          const id = docSnap.id;
+
+          const tieneAcceso = perfilActual.is_superadmin || 
+                              perfilActual.alcance === "global" || 
+                              perfilActual.proyectos_asignados?.includes(id) || 
+                              perfilActual.proyectos_asignados?.includes("*");
+
+          if (!tieneAcceso) return;
+
+          const item = document.createElement("div");
+          item.className = `project-item ${currentProjectId === id ? 'active' : ''}`;
+          item.innerHTML = `
+            <div>
+              <strong>${p.nombre}</strong> 
+              <span style="font-size:0.75rem; background:#eff6ff; color:var(--accent); padding:2px 6px; border-radius:4px; font-weight:700;">${p.codigo}</span>
+              <div class="project-meta">
+                Titular: <b>${p.empresaNombre || 'N/A'}</b> | Cliente: ${p.cliente}<br>
+                Geocerca: Radio ${p.geocerca?.radio || 150}m (${p.geocerca?.lat?.toFixed(4)}, ${p.geocerca?.lng?.toFixed(4)})
+              </div>
+            </div>
+            <div style="display:flex; gap: 5px;">
+              <button class="btn btn-secondary btn-sm" onclick="window.selectProject('${id}')">Catálogos</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.editProject('${id}')">✏️</button>
+              ${perfilActual.is_superadmin ? `<button class="btn btn-danger btn-sm" onclick="window.deleteProject('${id}', '${p.nombre.replace(/'/g, "\\'")}')">🗑️</button>` : ''}
+            </div>
+          `;
+          container.appendChild(item);
+        });
+      });
+    }
+
+    window.editProject = (id) => {
+      onSnapshot(doc(db, "proyectos", id), (d) => {
+        if (!d.exists()) return;
+        const p = d.data();
+        document.getElementById("project-id").value = id;
+        document.getElementById("project-empresa").value = p.empresaId || "";
+        document.getElementById("project-name").value = p.nombre || "";
+        document.getElementById("project-code").value = p.codigo || "";
+        document.getElementById("project-client").value = p.cliente || "";
+        
+        const lat = p.geocerca?.lat || 19.4326;
+        const lng = p.geocerca?.lng || -99.1332;
+        const rad = p.geocerca?.radio || 150;
+
+        document.getElementById("project-lat").value = lat;
+        document.getElementById("project-lng").value = lng;
+        document.getElementById("project-radius").value = rad;
+        document.getElementById("radius-val").textContent = rad;
+        updateMap(lat, lng, rad);
+
+        document.getElementById("btn-save-project").textContent = "Actualizar Obra";
+        document.getElementById("btn-cancel-edit").style.display = "inline-flex";
+        document.getElementById("form-project-title").textContent = `Editando: ${p.nombre}`;
+      });
+    };
+
+    window.deleteProject = async (id, nombre) => {
+      if (confirm(`¿Confirmas eliminar la obra "${nombre}"? Sus conceptos quedarán archivados.`)) {
+        await deleteDoc(doc(db, "proyectos", id));
+        await logEvento("eliminar_obra", `Obra suprimida: ${nombre} (${id})`);
+        if (currentProjectId === id) {
+          document.getElementById("catalog-card").style.display = "none";
+          currentProjectId = null;
+        }
+        showToast("Obra eliminada del conglomerado");
+      }
+    };
+
+    window.selectProject = (id) => {
+      currentProjectId = id;
+      onSnapshot(doc(db, "proyectos", id), (snap) => {
+        if (!snap.exists()) return;
+        currentProjectData = snap.data();
+        document.getElementById("selected-project-title").textContent = `Estructura: ${currentProjectData.nombre} (${currentProjectData.codigo})`;
+        document.getElementById("catalog-card").style.display = "block";
+        renderizarPersonalAsignado();
+        escucharConceptosContratados(id);
+      });
+    };
+
+    // 6. Sincronización del Padrón de Usuarios con la Obra
+    function escucharUsuariosPadrón() {
+      onSnapshot(collection(db, "usuarios"), (snap) => {
+        usuariosDisponibles = [];
+        const selectUsuario = document.getElementById("select-usuario-asignar");
+        selectUsuario.innerHTML = '<option value="">-- Asignar colaborador registrado --</option>';
+
+        snap.forEach(d => {
+          const u = { id: d.id, ...d.data() };
+          usuariosDisponibles.push(u);
+          const opt = document.createElement("option");
+          opt.value = u.id;
+          opt.textContent = `${u.nombre || u.email} (${u.rol || 'Operativo'})`;
+          selectUsuario.appendChild(opt);
+        });
+
+        if (currentProjectId) renderizarPersonalAsignado();
+      });
+    }
+
+    function renderizarPersonalAsignado() {
+      const tbody = document.getElementById("employees-table");
+      tbody.innerHTML = "";
+
+      const asignados = usuariosDisponibles.filter(u => 
+        u.is_superadmin || 
+        u.alcance === "global" || 
+        (u.proyectos_asignados && u.proyectos_asignados.includes(currentProjectId))
+      );
+
+      if (asignados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sin colaboradores asignados a esta obra.</td></tr>';
         return;
       }
 
-      container.innerHTML = '';
-      snapshot.forEach((docSnap) => {
-        const p = docSnap.data();
-        const id = docSnap.id;
-        const item = document.createElement('div');
-        item.className = `project-item ${currentProjectId === id ? 'active' : ''}`;
-        item.innerHTML = `
-          <div>
-            <strong>${p.nombre}</strong> <span style="font-size:0.8rem; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${p.codigo}</span>
-            <div class="project-meta">Cliente: ${p.cliente} | Geocerca: Radio ${p.radio_metros}m</div>
-          </div>
-          <div style="display:flex; gap: 4px;">
-            <button class="btn btn-secondary btn-sm" onclick="window.selectProject('${id}', '${p.nombre.replace(/'/g, "\\'")}')">Catálogos</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.editProject('${id}')">✏️</button>
-            <button class="btn btn-danger btn-sm" onclick="window.deleteProject('${id}')">🗑️</button>
-          </div>
+      asignados.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${u.nombre || u.email}</strong></td>
+          <td><span style="font-size:0.75rem; background:#eff6ff; color:var(--accent); padding:2px 6px; border-radius:4px;">${u.rol || 'Colaborador'}</span></td>
+          <td>${u.email}</td>
+          <td>
+            ${!u.is_superadmin ? `<button class="btn btn-danger btn-sm" onclick="window.desvincularUsuario('${u.id}')">✕</button>` : '<small style="color:var(--text-muted)">Global</small>'}
+          </td>
         `;
-        container.appendChild(item);
+        tbody.appendChild(tr);
       });
-    }, (err) => {
-      console.error(err);
-      notify("Error de consulta Firestore: " + err.message);
+    }
+
+    document.getElementById("assign-user-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentProjectId) return;
+      const uid = document.getElementById("select-usuario-asignar").value;
+      if (!uid) return;
+
+      const userTarget = usuariosDisponibles.find(u => u.id === uid);
+      if (!userTarget) return;
+
+      const asignaciones = new Set(userTarget.proyectos_asignados || []);
+      asignaciones.add(currentProjectId);
+
+      try {
+        await updateDoc(doc(db, "usuarios", uid), {
+          proyectos_asignados: Array.from(asignaciones),
+          alcance: "asignado"
+        });
+        showToast("Colaborador vinculado a la obra");
+      } catch (err) {
+        alert("Error al vincular: " + err.message);
+      }
     });
 
-    window.selectProject = (id, nombre) => {
-      currentProjectId = id;
-      document.getElementById('selected-project-title').textContent = `Catálogos: ${nombre}`;
-      document.getElementById('catalog-card').style.display = 'block';
-      listenCatalogs(id);
-    };
+    window.desvincularUsuario = async (uid) => {
+      const userTarget = usuariosDisponibles.find(u => u.id === uid);
+      if (!userTarget) return;
 
-    window.editProject = (id) => {
-      const ref = doc(db, "proyectos", id);
-      onSnapshot(ref, (d) => {
-        if (!d.exists()) return;
-        const p = d.data();
-        document.getElementById('project-id').value = id;
-        document.getElementById('project-name').value = p.nombre;
-        document.getElementById('project-code').value = p.codigo;
-        document.getElementById('project-client').value = p.cliente;
-        document.getElementById('project-lat').value = p.lat;
-        document.getElementById('project-lng').value = p.lng;
-        document.getElementById('project-radius').value = p.radio_metros;
-        document.getElementById('radius-val').textContent = p.radio_metros;
-        updateMap(p.lat, p.lng, p.radio_metros);
-        document.getElementById('btn-save-project').textContent = 'Actualizar Proyecto';
-        document.getElementById('btn-cancel-edit').style.display = 'inline-flex';
+      const nuevasAsignaciones = (userTarget.proyectos_asignados || []).filter(pId => pId !== currentProjectId);
+      await updateDoc(doc(db, "usuarios", uid), {
+        proyectos_asignados: nuevasAsignaciones
       });
+      showToast("Colaborador desvinculado de la obra");
     };
 
-    window.deleteProject = async (id) => {
-      if (confirm("¿Deseas eliminar este proyecto? Sus catálogos quedarán huérfanos.")) {
-        await deleteDoc(doc(db, "proyectos", id));
-        if (currentProjectId === id) {
-          document.getElementById('catalog-card').style.display = 'none';
-          currentProjectId = null;
-        }
-        notify("Proyecto eliminado");
-      }
-    };
+    // 7. Catálogo de Conceptos Contractuales (Para Estimaciones)
+    function escucharConceptosContratados(pId) {
+      if (unsubPartidas) unsubPartidas();
+      const q = query(collection(db, "partidas"), where("proyecto_id", "==", pId));
 
-    let unsubEmployees = null;
-    let unsubItems = null;
-
-    function listenCatalogs(pId) {
-      if (unsubEmployees) unsubEmployees();
-      if (unsubItems) unsubItems();
-
-      // Cuadrilla / Empleados
-      const empQ = query(collection(db, "empleados"), where("proyecto_id", "==", pId));
-      unsubEmployees = onSnapshot(empQ, (snap) => {
-        const tbody = document.getElementById('employees-table');
+      unsubPartidas = onSnapshot(q, (snap) => {
+        const tbody = document.getElementById("items-table");
+        tbody.innerHTML = "";
         if (snap.empty) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sin empleados en este proyecto.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin conceptos contractuales registrados.</td></tr>';
           return;
         }
-        tbody.innerHTML = '';
-        snap.forEach(d => {
-          const emp = d.data();
-          tbody.innerHTML += `
-            <tr>
-              <td>${emp.nombre}</td>
-              <td>${emp.puesto}</td>
-              <td>$${Number(emp.cuota_hora).toFixed(2)}</td>
-              <td><button class="btn btn-danger btn-sm" onclick="window.deleteCatalogItem('empleados', '${d.id}')">✕</button></td>
-            </tr>
-          `;
-        });
-      });
 
-      // Partidas Contractuales
-      const itemQ = query(collection(db, "partidas"), where("proyecto_id", "==", pId));
-      unsubItems = onSnapshot(itemQ, (snap) => {
-        const tbody = document.getElementById('items-table');
-        if (snap.empty) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin partidas en este proyecto.</td></tr>';
-          return;
-        }
-        tbody.innerHTML = '';
         snap.forEach(d => {
           const itm = d.data();
-          tbody.innerHTML += `
-            <tr>
-              <td><b>${itm.clave}</b></td>
-              <td>${itm.concepto}</td>
-              <td>${itm.unidad}</td>
-              <td>${Number(itm.volumen_total).toLocaleString()}</td>
-              <td>$${Number(itm.precio_unitario).toFixed(2)}</td>
-              <td><button class="btn btn-danger btn-sm" onclick="window.deleteCatalogItem('partidas', '${d.id}')">✕</button></td>
-            </tr>
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><b>${itm.clave}</b></td>
+            <td>${itm.concepto}</td>
+            <td>${itm.unidad}</td>
+            <td>${Number(itm.volumen_total).toLocaleString()}</td>
+            <td>$${Number(itm.precio_unitario).toFixed(2)}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="window.eliminarConcepto('${d.id}')">✕</button></td>
           `;
+          tbody.appendChild(tr);
         });
       });
     }
 
-    document.getElementById('employee-form').addEventListener('submit', async (e) => {
+    document.getElementById("item-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!currentProjectId) return;
-      await addDoc(collection(db, "empleados"), {
-        proyecto_id: currentProjectId,
-        nombre: document.getElementById('emp-name').value.trim(),
-        puesto: document.getElementById('emp-role').value.trim(),
-        cuota_hora: parseFloat(document.getElementById('emp-rate').value),
-        activo: true
-      });
-      document.getElementById('employee-form').reset();
-      notify("Empleado registrado");
-    });
 
-    document.getElementById('item-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentProjectId) return;
       await addDoc(collection(db, "partidas"), {
         proyecto_id: currentProjectId,
-        clave: document.getElementById('item-code').value.trim(),
-        unidad: document.getElementById('item-unit').value.trim(),
-        concepto: document.getElementById('item-concept').value.trim(),
-        volumen_total: parseFloat(document.getElementById('item-vol').value),
-        precio_unitario: parseFloat(document.getElementById('item-price').value)
+        clave: document.getElementById("item-code").value.trim().toUpperCase(),
+        unidad: document.getElementById("item-unit").value.trim().toLowerCase(),
+        concepto: document.getElementById("item-concept").value.trim(),
+        volumen_total: parseFloat(document.getElementById("item-vol").value),
+        precio_unitario: parseFloat(document.getElementById("item-price").value),
+        creadoEn: new Date().toISOString()
       });
-      document.getElementById('item-form').reset();
-      notify("Partida agregada");
+
+      document.getElementById("item-form").reset();
+      showToast("Concepto contractual agregado");
     });
 
-    window.deleteCatalogItem = async (col, id) => {
-      await deleteDoc(doc(db, col, id));
-      notify("Elemento eliminado");
+    window.eliminarConcepto = async (id) => {
+      await deleteDoc(doc(db, "partidas", id));
+      showToast("Concepto eliminado");
     };
 
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
+    // Pestañas
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
       });
     });
-
-    window.addEventListener('load', initMap);
   </script>
 </body>
 </html>
