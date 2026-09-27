@@ -2,56 +2,117 @@
 import { auth, db, doc, getDoc, onSnapshot, collection } from "./firebase-config.js";
 
 /**
- * Normaliza las acciones operativas a español.
+ * Mapeo integral para resolver equivalencias en español y claves internas.
+ */
+const DICCIONARIO_ACCIONES = {
+  // Crear / Registrar
+  c: "c",
+  crear: "c",
+  registrar: "c",
+  alta: "c",
+  // Ver / Consultar
+  r: "r",
+  leer: "r",
+  ver: "r",
+  consultar: "r",
+  // Editar / Modificar
+  u: "u",
+  actualizar: "u",
+  editar: "u",
+  modificar: "u",
+  // Eliminar / Suprimir
+  d: "d",
+  eliminar: "d",
+  suprimir: "d",
+  borrar: "d",
+  baja: "d"
+};
+
+/**
+ * Normaliza cualquier entrada de acción a su representación canónica.
+ * @param {string} accion 
+ * @returns {string} 'c', 'r', 'u', o 'd'
  */
 function normalizarAccion(accion) {
-  const mapa = {
-    c: 'crear',
-    r: 'ver',
-    u: 'editar',
-    d: 'eliminar',
-    crear: 'crear',
-    ver: 'ver',
-    editar: 'editar',
-    eliminar: 'eliminar'
-  };
-  return mapa[accion] || accion;
+  if (!accion) return "r";
+  const str = accion.toString().trim().toLowerCase();
+  return DICCIONARIO_ACCIONES[str] || str;
 }
 
 /**
- * Valida si un perfil cuenta con la autorización requerida.
+ * Valida si un perfil cuenta con la autorización requerida para un módulo.
+ * @param {Object} perfil - Documento del colaborador en Firestore.
+ * @param {string} moduloId - Identificador del módulo (ej. 'checador', 'bitacora').
+ * @param {string} accionRequerida - Acción requerida ('c', 'r', 'u', 'd' o en español).
+ * @returns {boolean}
  */
-export function tienePermiso(perfil, moduloId, accionRequerida) {
+export function tienePermiso(perfil, moduloId, accionRequerida = "r") {
   if (!perfil) return false;
-  if (perfil.is_superadmin) return true;
 
-  const accion = normalizarAccion(accionRequerida);
+  // 1. Bypass total para Super Administradores
+  const esSuperAdmin = perfil.is_superadmin === true || 
+                       perfil.rol_id === "superadmin" || 
+                       perfil.rol === "superadmin" ||
+                       (perfil.email && perfil.email.toLowerCase() === "valladarescid@gmail.com");
+
+  if (esSuperAdmin) return true;
+
+  // 2. Normalizar acción
+  const accionClave = normalizarAccion(accionRequerida);
   const permisosModulo = perfil.matriz_efectiva?.[moduloId];
-  
   if (!permisosModulo) return false;
-  return !!(permisosModulo[accion] || permisosModulo[accionRequerida]);
+
+  // Evalúa coincidencia en formato corto ('c','r','u','d') o descriptivo previo
+  return !!(permisosModulo[accionClave] || permisosModulo[accionRequerida]);
 }
 
 /**
- * Obtiene el perfil del usuario autenticado desde Firestore.
+ * Obtiene el usuario autenticado y su perfil en Firestore.
+ * Si no hay sesión o la cuenta está inactiva, redirige a index.html.
  */
 export function obtenerPerfilActual() {
   return new Promise((resolve, reject) => {
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
+        window.location.href = "./index.html";
         return reject("No autenticado");
       }
+
       try {
         const snap = await getDoc(doc(db, "usuarios", user.uid));
-        if (!snap.exists()) {
+        let perfil = null;
+
+        if (snap.exists()) {
+          perfil = snap.data();
+        } else if (user.email.toLowerCase() === "valladarescid@gmail.com") {
+          // Perfil de rescate para el Super Administrador raíz
+          perfil = {
+            uid: user.uid,
+            email: user.email,
+            nombre: "Jose Antonio Valladares Cid",
+            rol: "Super Administrador",
+            rol_id: "superadmin",
+            is_superadmin: true,
+            alcance: "global",
+            proyectos_asignados: ["*"],
+            activo: true,
+            creadoEn: new Date().toISOString()
+          };
+        } else {
+          alert("Tu usuario no cuenta con un perfil asignado en la base de datos.");
+          window.location.href = "./index.html";
           return reject("Perfil no encontrado en Firestore");
         }
-        const perfil = snap.data();
+
         if (perfil.activo === false) {
+          alert("Tu cuenta se encuentra inactiva. Contacta al administrador.");
+          window.location.href = "./index.html";
           return reject("Usuario inactivo");
         }
+
         resolve({ user, perfil });
       } catch (err) {
+        console.error("Error al obtener perfil RBAC:", err);
         reject(err);
       }
     });
@@ -60,15 +121,24 @@ export function obtenerPerfilActual() {
 
 /**
  * Protege vistas completas redirigiendo si no cumple con la regla RBAC.
+ * @param {string} moduloId 
+ * @param {string} accionRequerida 
  */
-export async function protegerVista(moduloId, accionRequerida = "ver") {
+export async function protegerVista(moduloId, accionRequerida = "r") {
   try {
     const { user, perfil } = await obtenerPerfilActual();
-    if (!tienePermiso(perfil, moduloId, accionRequerida)) {
-      alert("Acceso denegado: No cuentas con privilegios para " + accionRequerida + " en " + moduloId);
-      window.location.href = "./control_obra.html";
-      return Promise.reject("Sin permisos");
+
+    // Bypass de sesión general
+    if (moduloId === "general") {
+      return { user, perfil };
     }
+
+    if (!tienePermiso(perfil, moduloId, accionRequerida)) {
+      alert(`Acceso denegado: No cuentas con privilegios para consultar o modificar el módulo "${moduloId}".`);
+      window.location.href = "./control_obra.html";
+      return Promise.reject("Sin permisos suficientes");
+    }
+
     return { user, perfil };
   } catch (err) {
     window.location.href = "./index.html";
@@ -84,5 +154,5 @@ export function escucharModulosSistema(callback) {
     const modulos = [];
     snap.forEach((d) => modulos.push({ id: d.id, ...d.data() }));
     callback(modulos);
-  });
+  }, (err) => console.warn("Error al escuchar módulos:", err));
 }
