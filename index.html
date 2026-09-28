@@ -19,10 +19,8 @@
       --radius: 12px;
       --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-
     .login-card {
       background: var(--card-bg);
       border-radius: var(--radius);
@@ -32,7 +30,6 @@
       padding: 2.5rem 2rem;
       text-align: center;
     }
-
     .brand-icon {
       width: 58px;
       height: 58px;
@@ -44,19 +41,11 @@
       justify-content: center;
       margin-bottom: 1.25rem;
     }
-
     h1 { font-size: 1.45rem; color: var(--text); font-weight: 800; margin-bottom: 0.35rem; }
     p.subtitle { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 2rem; }
-
     .form-group { text-align: left; margin-bottom: 1.15rem; }
     label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
-
-    .password-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
+    .password-wrapper { position: relative; display: flex; align-items: center; }
     input {
       width: 100%;
       padding: 0.75rem 0.85rem;
@@ -67,9 +56,7 @@
       transition: border-color 0.2s;
     }
     input:focus { border-color: var(--accent); }
-
     .password-wrapper input { padding-right: 2.75rem; }
-
     .toggle-password {
       position: absolute;
       right: 0.75rem;
@@ -83,23 +70,6 @@
       padding: 0.25rem;
     }
     .toggle-password:hover { color: var(--text); }
-
-    .actions-row {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: -0.4rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .link-forgot {
-      font-size: 0.82rem;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .link-forgot:hover { text-decoration: underline; }
-
     .btn {
       width: 100%;
       padding: 0.8rem;
@@ -114,7 +84,6 @@
     }
     .btn:hover { background: var(--accent-hover); }
     .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-
     .status-msg {
       padding: 0.65rem;
       border-radius: 6px;
@@ -124,7 +93,6 @@
     }
     .status-error { background: #fef2f2; color: var(--danger); border: 1px solid #fee2e2; }
     .status-success { background: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; }
-
     .loading-spinner {
       display: none;
       font-size: 0.85rem;
@@ -170,7 +138,7 @@
       </div>
 
       <button type="submit" class="btn" id="btn-submit">Ingresar al Sistema</button>
-      <div id="loading" class="loading-spinner">Verificando sesión...</div>
+      <div id="loading" class="loading-spinner">Verificando credenciales...</div>
     </form>
   </div>
 
@@ -181,7 +149,8 @@
       signInWithEmailAndPassword, 
       onAuthStateChanged, 
       doc, 
-      getDoc 
+      getDoc,
+      setDoc
     } from "./js/firebase-config.js";
 
     const SUPER_UID = "zeVjo7RcQqRKjq1T7goO22SMHip1";
@@ -212,18 +181,35 @@
         : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
     });
 
-    async function redirigirSegunRol(user) {
+    async function resolverRutaUsuario(user) {
       loading.style.display = 'block';
       btnSubmit.disabled = true;
 
-      // Validación directa de la cuenta raíz
-      if (user.uid === SUPER_UID || user.email.toLowerCase() === SUPER_EMAIL.toLowerCase()) {
-        window.location.href = './admin.html';
-        return;
-      }
+      const esRaiz = user.uid === SUPER_UID || (user.email && user.email.toLowerCase() === SUPER_EMAIL.toLowerCase());
 
       try {
-        const snap = await getDoc(doc(db, "usuarios", user.uid));
+        const refDoc = doc(db, "usuarios", user.uid);
+        const snap = await getDoc(refDoc);
+
+        if (esRaiz) {
+          // Si el Super Administrador aún no tiene documento en la colección usuarios, se crea de inmediato
+          if (!snap.exists()) {
+            await setDoc(refDoc, {
+              uid: user.uid,
+              nombre: "Jose Antonio Valladares Cid",
+              email: user.email,
+              rol: "Super Administrador",
+              rol_id: "superadmin",
+              is_superadmin: true,
+              alcance: "global",
+              proyectos_asignados: ["*"],
+              activo: true
+            }, { merge: true });
+          }
+          window.location.href = './admin.html';
+          return;
+        }
+
         if (snap.exists()) {
           const data = snap.data();
           if (data.is_superadmin || data.rol_id === 'superadmin' || data.rol === 'superadmin') {
@@ -231,15 +217,21 @@
             return;
           }
         }
+
         window.location.href = './control_obra.html';
       } catch (err) {
-        window.location.href = './control_obra.html';
+        console.warn("Fallo lectura de perfil, aplicando resolución por UID:", err);
+        if (esRaiz) {
+          window.location.href = './admin.html';
+        } else {
+          window.location.href = './control_obra.html';
+        }
       }
     }
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        redirigirSegunRol(user);
+        resolverRutaUsuario(user);
       }
     });
 
@@ -254,7 +246,7 @@
 
       try {
         const cred = await signInWithEmailAndPassword(auth, email, password);
-        await redirigirSegunRol(cred.user);
+        await resolverRutaUsuario(cred.user);
       } catch (err) {
         let msg = "Credenciales incorrectas.";
         if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
