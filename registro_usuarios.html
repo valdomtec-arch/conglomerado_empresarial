@@ -117,12 +117,12 @@
   <header>
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-      <span>Alta Directa de Colaboradores</span>
+      <span>Módulo Operativo: Alta de Colaboradores</span>
     </div>
     <div class="header-actions">
       <span id="admin-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
-      <a href="./admin.html" class="btn-nav">Torre de Control</a>
       <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
+      <a href="./admin.html" class="btn-nav">Torre de Control</a>
     </div>
   </header>
 
@@ -130,7 +130,7 @@
     <div class="card">
       <div class="card-title">Registrar Nuevo Colaborador</div>
       <div class="card-subtitle">
-        Crea las credenciales de acceso e inyecta la ficha de gobernanza en la colección <code>usuarios</code>, apareciendo de inmediato en la Torre de Control sin cerrar tu sesión actual.
+        Crea las credenciales de acceso e inyecta la ficha de gobernanza en la colección <code>usuarios</code>, sincronizándose de inmediato con la pestaña Colaboradores de la Torre de Control sin cerrar tu sesión actual.
       </div>
 
       <form id="form-crear-usuario">
@@ -215,8 +215,7 @@
 
     let usuarioActual = null;
 
-    // Configuración oficial del proyecto
-    const firebaseConfig = {
+    const firebaseConfigSecondary = {
       apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevrofFk",
       authDomain: "conglomerado-empresarial.firebaseapp.com",
       projectId: "conglomerado-empresarial",
@@ -246,7 +245,7 @@
       }
     }
 
-    // 1. Verificación de permisos de Super Administrador
+    // 1. Verificación de permisos
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
         window.location.href = "./index.html";
@@ -270,7 +269,7 @@
       }
 
       if (!esSuper) {
-        alert("Acceso exclusivo para Super Administradores.");
+        alert("Acceso exclusivo para administradores.");
         window.location.href = "./control_obra.html";
         return;
       }
@@ -280,7 +279,7 @@
     });
 
     function iniciarSubscripciones() {
-      // 1. Cargar Empresas sincronizadas con admin.html
+      // 1. Empresas
       onSnapshot(collection(db, "empresas"), (snap) => {
         selectEmpresa.innerHTML = '<option value="">-- Selecciona Empresa --</option>';
         snap.forEach(d => {
@@ -293,9 +292,9 @@
             selectEmpresa.appendChild(opt);
           }
         });
-      }, (err) => console.error("Error al escuchar empresas:", err));
+      });
 
-      // 2. Cargar Roles registrados en Firestore
+      // 2. Roles
       onSnapshot(collection(db, "roles"), (snap) => {
         selectRol.innerHTML = '<option value="">-- Selecciona Rol --</option>';
         snap.forEach(d => {
@@ -304,9 +303,9 @@
           opt.textContent = d.id.replace(/_/g, ' ').toUpperCase();
           selectRol.appendChild(opt);
         });
-      }, (err) => console.error("Error al escuchar roles:", err));
+      });
 
-      // 3. Cargar Obras para asignación territorial
+      // 3. Obras
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyectos.innerHTML = "";
         snap.forEach(d => {
@@ -318,14 +317,14 @@
             selectProyectos.appendChild(opt);
           }
         });
-      }, (err) => console.error("Error al escuchar proyectos:", err));
+      });
     }
 
     selectAlcance.addEventListener("change", () => {
       containerProyectos.style.display = selectAlcance.value === "asignado" ? "block" : "none";
     });
 
-    // 2. Inyección de Usuario en Auth y Firestore
+    // 2. Creación en Auth y Firestore
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -344,16 +343,15 @@
       btnSubmit.disabled = true;
       btnSubmit.textContent = "Inyectando en Firebase...";
 
-      // Instancia de Auth secundaria en memoria para no desloguear al admin
-      const secondaryAppName = "SecondaryAuth-" + Date.now();
-      const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
+      const secondaryAppName = "SecAuthDirect-" + Date.now();
+      const secondaryApp = initializeApp(firebaseConfigSecondary, secondaryAppName);
       const secondaryAuth = getAuth(secondaryApp);
 
       try {
         const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
         const newUid = cred.user.uid;
 
-        // Estructura sincronizada con la Pestaña 4 de admin.html
+        // Estructura sincronizada con admin.html
         const nuevoUsuarioPayload = {
           uid: newUid,
           nombre,
@@ -370,10 +368,10 @@
         };
 
         await setDoc(doc(db, "usuarios", newUid), nuevoUsuarioPayload);
-        await logEvento("usuarios", "alta", `Colaborador creado: ${nombre} (${email})`);
+        await logEvento("usuarios", "alta", `Colaborador creado desde módulo: ${nombre} (${email})`);
         await signOut(secondaryAuth);
 
-        showToast(`¡Usuario ${nombre} sincronizado con éxito!`);
+        showToast(`¡Colaborador ${nombre} registrado con éxito!`);
         form.reset();
         selectAlcance.value = "global";
         containerProyectos.style.display = "none";
