@@ -109,7 +109,6 @@
     .btn-success { background: var(--success); color: #fff; }
     .btn-success:hover { background: #059669; }
 
-    /* Tabla de Prenómina */
     .table-container { overflow-x: auto; margin-top: 1rem; border: 1px solid var(--border); border-radius: 8px; }
     .prenomina-table {
       width: 100%;
@@ -147,7 +146,6 @@
       color: var(--accent);
     }
 
-    /* Resumen Financiero */
     .summary-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -183,11 +181,11 @@
   <header>
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-      <span>Prenómina de Mano de Obra (M.O.)</span>
+      <span>Prenómina de Mano de Obra</span>
     </div>
     <div class="header-actions">
       <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
-      <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
+      <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
       <a href="./checador.html" class="btn-nav">Checador</a>
       <a href="./estimaciones.html" class="btn-nav">Estimaciones</a>
     </div>
@@ -195,11 +193,10 @@
 
   <div class="container">
 
-    <!-- Filtros de Período y Frente -->
     <div class="card">
       <div class="card-title">
         <span>Filtro de Asistencia y Liquidación</span>
-        <button class="btn btn-success" id="btn-exportar-csv" style="font-size: 0.8rem;">📥 Exportar Sábana a Excel (CSV)</button>
+        <button class="btn btn-success" id="btn-exportar-csv" style="font-size: 0.8rem;">📥 Exportar Sábana a CSV</button>
       </div>
 
       <div class="filters-bar">
@@ -221,7 +218,6 @@
       </div>
     </div>
 
-    <!-- Tabla de Nómina Consolidada -->
     <div class="card">
       <div class="card-title">
         <span>Consolidado Semanal de Mano de Obra</span>
@@ -234,7 +230,7 @@
             <tr>
               <th>Colaborador</th>
               <th>Puesto / Rol</th>
-              <th>Empresa / Obra</th>
+              <th>Titular / Obra</th>
               <th style="text-align: center;">Jornales (Días)</th>
               <th style="width: 110px;">Salario Diario ($)</th>
               <th style="width: 100px;">Horas Extra ($)</th>
@@ -246,14 +242,13 @@
           <tbody id="prenomina-body">
             <tr>
               <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
-                Selecciona un rango de fechas y presiona "Consultar Asistencias" para cruzar los datos del checador.
+                Selecciona un rango de fechas y presiona "Consultar Asistencias".
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Tarjetas de Resumen -->
       <div class="summary-cards">
         <div class="stat-card">
           <div class="stat-title">Total Jornales Computados</div>
@@ -320,11 +315,11 @@
           detalle
         });
       } catch (err) {
-        console.warn("Fallo log:", err);
+        console.warn("Fallo log auditoría:", err);
       }
     }
 
-    // Configurar fechas por defecto: semana actual (Lunes a Sábado)
+    // Configurar fechas de la semana actual por defecto
     const hoy = new Date();
     const diaSemana = hoy.getDay();
     const diffLunes = hoy.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
@@ -334,7 +329,7 @@
     inputFechaInicio.value = primerDia.toISOString().split("T")[0];
     inputFechaFin.value = ultimoDia.toISOString().split("T")[0];
 
-    // 1. Proteger Vista (RBAC - Ver / Consultar)
+    // 1. Proteger Vista (RBAC - Ver)
     protegerVista("prenomina", "r").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
@@ -359,14 +354,14 @@
             proyectosDisponibles.push(p);
             const opt = document.createElement("option");
             opt.value = p.id;
-            opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            opt.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
             selectProyecto.appendChild(opt);
           }
         });
       });
     }
 
-    // 3. Procesar Marcajes del Checador vs Usuarios
+    // 3. Procesar Marcajes del Checador vs Asistencias
     btnProcesar.addEventListener("click", async () => {
       const fInicio = inputFechaInicio.value;
       const fFin = inputFechaFin.value;
@@ -379,7 +374,6 @@
       btnProcesar.textContent = "Procesando...";
 
       try {
-        // Consultar asistencias en Firestore
         const snapAsistencias = await getDocs(collection(db, "asistencias"));
         const trabajadoresMap = new Map();
 
@@ -399,11 +393,11 @@
                 trabajadoresMap.set(key, {
                   uid: a.uid,
                   nombre: a.usuarioNombre || a.usuarioEmail,
-                  rol: a.rol || "Oficial de Obra",
-                  empresaNombre: a.empresaNombre || "Empresa General",
+                  rol: a.rol || "Colaborador",
+                  cliente: a.cliente || "Sin Titular",
                   proyectoNombre: a.proyectoNombre || "Obra",
                   diasChecados: new Set(),
-                  salarioDiario: 450, // Cuota base
+                  salarioDiario: 450,
                   horasExtra: 0,
                   bonos: 0,
                   deducciones: 0
@@ -416,7 +410,7 @@
 
         nominaFiltrada = Array.from(trabajadoresMap.values());
         renderizarTabla();
-        await logEvento("consulta_prenomina", `Filtro: ${fInicio} al ${fFin} (${nominaFiltrada.length} personas)`);
+        await logEvento("consulta_prenomina", `Filtro del ${fInicio} al ${fFin} (${nominaFiltrada.length} personas)`);
       } catch (err) {
         console.error("Error al procesar prenómina:", err);
         alert("Fallo al consultar asistencias: " + err.message);
@@ -435,7 +429,7 @@
         prenominaBody.innerHTML = `
           <tr>
             <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
-              No se encontraron marcajes de asistencia válidos en el rango de fechas seleccionado.
+              No se encontraron marcajes de asistencia válidos en el rango seleccionado.
             </td>
           </tr>
         `;
@@ -449,7 +443,7 @@
         tr.innerHTML = `
           <td><strong>${t.nombre}</strong></td>
           <td><span class="badge-pill">${t.rol}</span></td>
-          <td><small>${t.empresaNombre}<br><span style="color:var(--text-muted);">${t.proyectoNombre}</span></small></td>
+          <td><small><b>${t.cliente}</b><br><span style="color:var(--text-muted);">${t.proyectoNombre}</span></small></td>
           <td style="text-align: center; font-weight: 700;">${dias} d</td>
           <td><input type="number" class="inp-sd" min="0" step="10" value="${t.salarioDiario}" data-idx="${index}"></td>
           <td><input type="number" class="inp-he" min="0" step="50" value="${t.horasExtra}" data-idx="${index}"></td>
@@ -484,7 +478,7 @@
       tr.querySelector(".col-neto").textContent = formatoMoneda.format(neto);
     }
 
-    // 5. Cálculos Globales de Liquidación
+    // 5. Cálculos Globales
     function recalcularTotalesGenerales() {
       let totalJornales = 0;
       let totalExtras = 0;
@@ -509,17 +503,17 @@
       statTotalNomina.textContent = formatoMoneda.format(granTotal);
     }
 
-    // 6. Exportación a Excel (CSV)
+    // 6. Exportación a CSV
     btnExportar.addEventListener("click", async () => {
       if (nominaFiltrada.length === 0) return alert("No hay datos en pantalla para exportar.");
 
-      let csv = "Colaborador,Puesto,Empresa,Obra,Dias Trabajados,Salario Diario,Horas Extras,Bonos,Deducciones,Total Neto\n";
+      let csv = "Colaborador,Puesto,Cliente Titular,Obra,Dias Trabajados,Salario Diario,Horas Extras,Bonos,Deducciones,Total Neto\n";
 
       nominaFiltrada.forEach(t => {
         const dias = t.diasChecados.size;
         const base = dias * t.salarioDiario;
         const neto = base + t.horasExtra + t.bonos - t.deducciones;
-        csv += `"${t.nombre}","${t.rol}","${t.empresaNombre}","${t.proyectoNombre}",${dias},${t.salarioDiario},${t.horasExtra},${t.bonos},${t.deducciones},${neto}\n`;
+        csv += `"${t.nombre}","${t.rol}","${t.cliente}","${t.proyectoNombre}",${dias},${t.salarioDiario},${t.horasExtra},${t.bonos},${t.deducciones},${neto}\n`;
       });
 
       const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
