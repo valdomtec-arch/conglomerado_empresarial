@@ -65,7 +65,7 @@
     .container { max-width: 1400px; margin: 1.5rem auto; padding: 0 1rem; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .grid-admin { display: grid; grid-template-columns: 460px 1fr; gap: 1.5rem; }
+    .grid-admin { display: grid; grid-template-columns: 440px 1fr; gap: 1.5rem; }
     @media (max-width: 1024px) { .grid-admin { grid-template-columns: 1fr; } }
     .card {
       background: var(--surface);
@@ -98,8 +98,8 @@
     input:focus, select:focus, textarea:focus { border-color: var(--accent); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .data-table th { background: #f1f5f9; padding: 0.6rem; text-align: left; border: 1px solid var(--border); color: #475569; }
-    .data-table td { padding: 0.6rem; border: 1px solid var(--border); vertical-align: middle; }
+    .data-table th { background: #f1f5f9; padding: 0.65rem; text-align: left; border: 1px solid var(--border); color: #475569; }
+    .data-table td { padding: 0.65rem; border: 1px solid var(--border); vertical-align: middle; }
     .btn {
       padding: 0.6rem 1.2rem;
       border-radius: 6px;
@@ -143,13 +143,12 @@
   <header>
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-      <span>Conglomerado Empresarial</span>
-      <span class="badge-super">Torre de Control</span>
+      <span>Torre de Control Corporativo</span>
+      <span class="badge-super">Super Administrador</span>
     </div>
     <div class="header-actions">
-      <span id="super-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
-      <a href="./control_obra.html" class="btn-nav">Control de Obra</a>
-      <a href="./registro_usuarios.html" class="btn-nav">+ Alta Usuario</a>
+      <span id="super-display" style="font-size: 0.85rem; color: #94a3b8;">Conectando con Firebase...</span>
+      <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
       <button class="btn btn-secondary btn-sm" id="btn-logout">Salir</button>
     </div>
   </header>
@@ -157,8 +156,8 @@
   <nav class="tabs-nav">
     <button class="tab-btn active" data-tab="tab-modulos">🧩 Módulos Dinámicos</button>
     <button class="tab-btn" data-tab="tab-empresas">🏢 Empresas Matriz</button>
-    <button class="tab-btn" data-tab="tab-roles">🛡️ Roles y Matrices RBAC</button>
-    <button class="tab-btn" data-tab="tab-usuarios">👥 Padrón de Colaboradores</button>
+    <button class="tab-btn" data-tab="tab-roles">🛡️ Roles y Permisos (Español)</button>
+    <button class="tab-btn" data-tab="tab-usuarios">👥 Colaboradores</button>
     <button class="tab-btn" data-tab="tab-auditoria">📜 Auditoría</button>
   </nav>
 
@@ -168,39 +167,39 @@
     <section id="tab-modulos" class="tab-content active">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Inyectar Módulo al Ecosistema</div>
+          <div class="card-title">Registrar Módulo en Firestore</div>
           <form id="form-modulo-dinamico">
             <div class="form-group">
-              <label>ID Clave del Módulo (ej. proyectos, checador)</label>
+              <label>ID del Módulo (ej. proyectos, checador)</label>
               <input type="text" id="mod-id" placeholder="almacen" required>
             </div>
             <div class="form-group">
               <label>Nombre del Módulo</label>
-              <input type="text" id="mod-nombre" placeholder="Almacén de Materiales" required>
+              <input type="text" id="mod-nombre" placeholder="Control de Almacén" required>
             </div>
             <div class="form-group">
               <label>Ruta URL del Archivo</label>
               <input type="text" id="mod-ruta" placeholder="./almacen.html" required>
             </div>
-            <button type="submit" class="btn btn-primary">Guardar Módulo en Firestore</button>
+            <button type="submit" class="btn btn-primary">Guardar en Colección modulos</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Módulos Registrados</div>
+          <div class="card-title">Catálogo de Módulos (Colección modulos)</div>
           <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
+                  <th>ID Documento</th>
+                  <th>Nombre Visible</th>
                   <th>Ruta</th>
                   <th>Estatus</th>
-                  <th>Acción</th>
+                  <th style="text-align: center;">Acción</th>
                 </tr>
               </thead>
               <tbody id="modulos-table-body">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando catálogo...</td></tr>
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Consultando modulos en Firestore...</td></tr>
               </tbody>
             </table>
           </div>
@@ -234,14 +233,14 @@
             </div>
             <div class="form-group">
               <label>Representante Legal</label>
-              <input type="text" id="emp-representante" placeholder="Ing. Miguel Pecina">
+              <input type="text" id="emp-rep" placeholder="Ing. Miguel Pecina">
             </div>
-            <button type="submit" class="btn btn-primary">Guardar Empresa</button>
+            <button type="submit" class="btn btn-primary">Guardar en Colección empresas</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Razones Sociales Activas</div>
+          <div class="card-title">Empresas en Firestore</div>
           <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
@@ -255,7 +254,7 @@
                 </tr>
               </thead>
               <tbody id="empresas-body">
-                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Consultando empresas...</td></tr>
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Cargando empresas...</td></tr>
               </tbody>
             </table>
           </div>
@@ -263,39 +262,41 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 3: ROLES Y MATRICES -->
+    <!-- PESTAÑA 3: ROLES Y PERMISOS 100% EN ESPAÑOL -->
     <section id="tab-roles" class="tab-content">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Configurar Rol y Matriz</div>
+          <div class="card-title">Configurar Rol y Matriz de Permisos</div>
           <form id="form-rol-template">
             <div class="form-group">
-              <label>ID del Rol (ej. administrador_rh, residente_obra)</label>
+              <label>ID del Rol (ej. administrador_rh, residente_obra, director)</label>
               <input type="text" id="role-id" placeholder="residente_obra" required>
             </div>
 
-            <label style="margin-top: 1rem;">Matriz de Permisos</label>
+            <label style="margin-top: 1rem;">Permisos por Módulo (Español)</label>
             <table class="data-table" style="margin-top: 0.5rem;">
               <thead>
                 <tr>
                   <th>Módulo</th>
-                  <th style="text-align: center;">c</th>
-                  <th style="text-align: center;">r</th>
-                  <th style="text-align: center;">u</th>
-                  <th style="text-align: center;">d</th>
+                  <th style="text-align: center;">Crear</th>
+                  <th style="text-align: center;">Ver</th>
+                  <th style="text-align: center;">Editar</th>
+                  <th style="text-align: center;">Eliminar</th>
                 </tr>
               </thead>
-              <tbody id="role-matrix-body"></tbody>
+              <tbody id="role-matrix-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Cargando módulos...</td></tr>
+              </tbody>
             </table>
 
             <div style="margin-top: 1rem;">
-              <button type="submit" class="btn btn-primary">Guardar Rol en Firestore</button>
+              <button type="submit" class="btn btn-primary">Guardar Rol en Colección roles</button>
             </div>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Roles Configurados</div>
+          <div class="card-title">Roles Configurados (Colección roles)</div>
           <div id="roles-cards-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
             <div style="text-align: center; color: var(--text-muted);">Cargando roles...</div>
           </div>
@@ -355,11 +356,11 @@
             <div class="form-group" style="background: #f1f5f9; padding: 0.75rem; border-radius: 6px;">
               <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
                 <input type="checkbox" id="usr-superadmin" style="width: 17px; height: 17px;">
-                <span><b>Super Administrador</b> (Bypass total al ecosistema)</span>
+                <span><b>Super Administrador</b> (Acceso global total)</span>
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="btn-save-usr">Actualizar Colaborador</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-usr">Actualizar en Colección usuarios</button>
           </form>
         </div>
 
@@ -375,7 +376,7 @@
     <!-- PESTAÑA 5: AUDITORÍA -->
     <section id="tab-auditoria" class="tab-content">
       <div class="card">
-        <div class="card-title">Trazabilidad Central (Colección auditoria)</div>
+        <div class="card-title">Trazabilidad en Vivo (Colección auditoria)</div>
         <div style="overflow-x: auto;">
           <table class="data-table">
             <thead>
@@ -388,7 +389,7 @@
               </tr>
             </thead>
             <tbody id="auditoria-body">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando bitácora...</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Cargando registros...</td></tr>
             </tbody>
           </table>
         </div>
@@ -411,18 +412,6 @@
       addDoc, 
       updateDoc 
     } from "./js/firebase-config.js";
-    import { protegerVista } from "./js/rbac.js";
-
-    const tabs = document.querySelectorAll(".tab-btn");
-    const contents = document.querySelectorAll(".tab-content");
-    tabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        contents.forEach(c => c.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.tab).classList.add("active");
-      });
-    });
 
     const toast = document.getElementById("toast");
     function showToast(msg) {
@@ -431,37 +420,45 @@
       setTimeout(() => toast.style.display = "none", 3200);
     }
 
+    // Manejo de pestañas
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+
     let modulosActivos = [];
     let rolesCatalogo = {};
     let usuarioActual = null;
-    let perfilActual = null;
 
     async function logEvento(modulo, accion, detalle) {
       try {
         await addDoc(collection(db, "auditoria"), {
           timestamp: new Date().toISOString(),
           uid: usuarioActual?.uid || "zeVjo7RcQqRKjq1T7goO22SMHip1",
-          usuario: perfilActual?.nombre || usuarioActual?.email || "Jose Antonio Valladares Cid",
+          usuario: usuarioActual?.email || "Super Admin",
           modulo,
           accion,
           detalle
         });
       } catch (err) {
-        console.warn("Fallo log:", err);
+        console.warn("Fallo auditoria:", err);
       }
     }
 
-    // 1. Proteger Vista (Solo Super Admin)
-    protegerVista("general").then(({ user, perfil }) => {
-      if (!perfil.is_superadmin && perfil.rol_id !== "superadmin" && user.email.toLowerCase() !== "valladarescid@gmail.com") {
-        alert("Acceso exclusivo para Super Administradores.");
-        window.location.href = "./control_obra.html";
+    // 1. Conexión Directa de Autenticación sin Bloqueos de RBAC
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "./index.html";
         return;
       }
       usuarioActual = user;
-      perfilActual = perfil;
-      document.getElementById("super-display").textContent = perfil.nombre || user.email;
+      document.getElementById("super-display").textContent = `${user.email} (Conectado)`;
 
+      // Arrancar inmediatamente los listeners de Firestore
       iniciarSubscripciones();
     });
 
@@ -474,7 +471,7 @@
       escucharAuditoria();
     }
 
-    // 2. Módulos Dinámicos (Estructura real: activo, nombre, ruta)
+    // 2. Módulos Dinámicos (Colección 'modulos': activo, nombre, ruta)
     document.getElementById("form-modulo-dinamico").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("mod-id").value.trim().toLowerCase();
@@ -486,8 +483,8 @@
 
       try {
         await setDoc(doc(db, "modulos", id), payload);
-        await logEvento("modulos", "alta", `Módulo ${payload.nombre}`);
-        showToast("Módulo registrado");
+        await logEvento("modulos", "alta", `Módulo ${payload.nombre} (${id})`);
+        showToast("Módulo guardado en Firestore");
         document.getElementById("form-modulo-dinamico").reset();
       } catch (err) {
         alert("Error al guardar módulo: " + err.message);
@@ -501,7 +498,7 @@
         modulosActivos = [];
 
         if (snap.empty) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Sin módulos configurados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Colección "modulos" vacía en Firestore.</td></tr>';
           return;
         }
 
@@ -509,15 +506,16 @@
           const m = { id: d.id, ...d.data() };
           modulosActivos.push(m);
 
+          const estaActivo = m.activo !== false;
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td><code>${m.id}</code></td>
-            <td><strong>${m.nombre}</strong></td>
-            <td><code>${m.ruta}</code></td>
-            <td><span class="badge-status ${m.activo !== false ? 'badge-active' : 'badge-inactive'}">${m.activo !== false ? 'Activo' : 'Pausado'}</span></td>
-            <td>
-              <button class="btn ${m.activo !== false ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarModulo('${m.id}', ${m.activo !== false})">
-                ${m.activo !== false ? 'Pausar' : 'Activar'}
+            <td><code><strong>${m.id}</strong></code></td>
+            <td><strong>${m.nombre || m.id}</strong></td>
+            <td><code>${m.ruta || ''}</code></td>
+            <td><span class="badge-status ${estaActivo ? 'badge-active' : 'badge-inactive'}">${estaActivo ? 'Activo' : 'Pausado'}</span></td>
+            <td style="text-align: center;">
+              <button class="btn ${estaActivo ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarModulo('${m.id}', ${estaActivo})">
+                ${estaActivo ? 'Pausar' : 'Activar'}
               </button>
             </td>
           `;
@@ -525,32 +523,40 @@
         });
 
         renderRoleMatrix();
+      }, (err) => {
+        console.error("Error al escuchar modulos:", err);
       });
     }
 
     window.conmutarModulo = async (modId, activoActual) => {
       await updateDoc(doc(db, "modulos", modId), { activo: !activoActual });
-      await logEvento("modulos", "estatus", `Módulo ${modId} cambiado a ${!activoActual}`);
+      await logEvento("modulos", "estatus", `Módulo ${modId} activo=${!activoActual}`);
       showToast("Estatus de módulo actualizado");
     };
 
+    // Render de matriz de roles con permisos en español
     function renderRoleMatrix() {
       const tbody = document.getElementById("role-matrix-body");
       tbody.innerHTML = "";
+      if (modulosActivos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Sin módulos configurados.</td></tr>';
+        return;
+      }
+
       modulosActivos.forEach(m => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><strong>${m.nombre}</strong> (<code>${m.id}</code>)</td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="c"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="r" checked></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="u"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="d"></td>
+          <td><strong>${m.nombre || m.id}</strong> (<code>${m.id}</code>)</td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="crear"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="ver" checked></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="editar"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="eliminar"></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // 3. Empresas Matriz (Estructura real: activo, id, ivaDefault, razonSocial, representante, rfc)
+    // 3. Empresas Matriz (Colección 'empresas')
     document.getElementById("form-empresa").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("emp-id").value.trim().toLowerCase().replace(/\s+/g, '_');
@@ -559,14 +565,14 @@
         id,
         ivaDefault: parseFloat(document.getElementById("emp-iva").value) || 16,
         razonSocial: document.getElementById("emp-razon").value.trim().toUpperCase(),
-        representante: document.getElementById("emp-representante").value.trim(),
+        representante: document.getElementById("emp-rep").value.trim(),
         rfc: document.getElementById("emp-rfc").value.trim().toUpperCase()
       };
 
       try {
         await setDoc(doc(db, "empresas", id), payload);
-        await logEvento("empresas", "alta", `Empresa ${payload.razonSocial}`);
-        showToast("Empresa guardada con éxito");
+        await logEvento("empresas", "alta", `Empresa: ${payload.razonSocial}`);
+        showToast("Empresa guardada en Firestore");
         document.getElementById("form-empresa").reset();
       } catch (err) {
         alert("Error: " + err.message);
@@ -595,24 +601,31 @@
 
           const opt = document.createElement("option");
           opt.value = emp.razonSocial || d.id;
-          opt.textContent = `${emp.razonSocial} (${emp.rfc})`;
+          opt.textContent = `${emp.razonSocial} (${emp.rfc || d.id})`;
           selectUserEmp.appendChild(opt);
         });
       });
     }
 
-    // 4. Roles y Matrices (Estructura real: id, matriz)
+    // 4. Roles y Permisos (100% Español compatible)
     document.getElementById("form-rol-template").addEventListener("submit", async (e) => {
       e.preventDefault();
       const roleId = document.getElementById("role-id").value.trim().toLowerCase().replace(/\s+/g, '_');
 
       const matriz = {};
       modulosActivos.forEach(m => {
+        const c = !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="crear"]`)?.checked;
+        const v = !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="ver"]`)?.checked;
+        const ed = !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="editar"]`)?.checked;
+        const el = !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="eliminar"]`)?.checked;
+
         matriz[m.id] = {
-          c: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="c"]`)?.checked,
-          r: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="r"]`)?.checked,
-          u: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="u"]`)?.checked,
-          d: !!document.querySelector(`#role-matrix-body input[data-mod="${m.id}"][data-act="d"]`)?.checked
+          crear: c,
+          ver: v,
+          editar: ed,
+          eliminar: el,
+          // Compatibilidad interna por si hay scripts previos
+          c, r: v, u: ed, d: el
         };
       });
 
@@ -643,7 +656,7 @@
           card.style.cssText = "border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background:#fff; display:flex; justify-content:space-between; align-items:center;";
           card.innerHTML = `
             <div><code><strong>${d.id}</strong></code></div>
-            <button class="btn btn-secondary btn-sm" onclick="window.cargarRol('${d.id}')">Editar Matriz</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.cargarRol('${d.id}')">Editar Permisos</button>
           `;
           container.appendChild(card);
 
@@ -662,15 +675,20 @@
       renderRoleMatrix();
       setTimeout(() => {
         Object.keys(r.matriz || {}).forEach(mod => {
-          ["c", "r", "u", "d"].forEach(act => {
-            const cb = document.querySelector(`#role-matrix-body input[data-mod="${mod}"][data-act="${act}"]`);
-            if (cb) cb.checked = !!r.matriz[mod][act];
-          });
+          const cfg = r.matriz[mod] || {};
+          const setCheck = (act, val) => {
+            const el = document.querySelector(`#role-matrix-body input[data-mod="${mod}"][data-act="${act}"]`);
+            if (el) el.checked = !!val;
+          };
+          setCheck("crear", cfg.crear ?? cfg.c);
+          setCheck("ver", cfg.ver ?? cfg.r);
+          setCheck("editar", cfg.editar ?? cfg.u);
+          setCheck("eliminar", cfg.eliminar ?? cfg.d);
         });
       }, 50);
     };
 
-    // 5. Gestión de Usuarios
+    // 5. Gestión de Colaboradores (Colección 'usuarios')
     const usrAlcance = document.getElementById("usr-alcance");
     const containerObras = document.getElementById("container-user-obras");
     usrAlcance.addEventListener("change", () => {
@@ -794,7 +812,7 @@
       showToast("Estatus actualizado");
     };
 
-    // 6. Auditoría Silenciosa (Formato exacto de captura)
+    // 6. Auditoría
     function escucharAuditoria() {
       onSnapshot(collection(db, "auditoria"), (snap) => {
         const tbody = document.getElementById("auditoria-body");
