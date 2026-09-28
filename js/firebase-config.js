@@ -9,7 +9,7 @@ import {
   updateDoc, 
   deleteDoc, 
   getDoc, 
-  getDocs,
+  getDocs, 
   onSnapshot, 
   query, 
   where 
@@ -28,16 +28,13 @@ const firebaseConfig = {
   projectId: "conglomerado-empresarial",
   storageBucket: "conglomerado-empresarial.firebasestorage.app",
   messagingSenderId: "36848994870",
-  appId: "1:36848994870:web:2fa267a5e1d35ce1baa697",
-  measurementId: "G-1LPLVQJ8G0"
+  appId: "1:36848994870:web:2fa267a5e1d35ce1baa697"
 };
 
-// 1. Inicialización limpia de la App
 const app = initializeApp(firebaseConfig);
 
-// 2. Conexión directa a Firestore
-// Nota: getFirestore(app) conecta automáticamente a la base de datos predeterminada del proyecto sin errores de ruta
-const db = getFirestore(app);
+// Conexión explícita a la base 'default' para evitar el 404 de Google Cloud
+const db = getFirestore(app, "default");
 
 const auth = getAuth(app);
 const storage = getStorage(app);
