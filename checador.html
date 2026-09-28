@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Checador de Asistencia PWA - Conglomerado Empresarial</title>
+  <title>Checador Móvil de Asistencia - Conglomerado Empresarial</title>
   <style>
     :root {
       --primary: #0f172a;
@@ -76,29 +76,25 @@
     }
     select:focus, input:focus { border-color: var(--accent); }
 
-    .camera-container {
-      position: relative;
-      width: 100%;
-      height: 240px;
-      background: #000;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    video, #captured-preview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    #captured-preview { display: none; }
-    
-    .camera-actions {
-      display: flex;
+    .tipo-marcado {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .radio-card {
+      border: 1px solid var(--border);
+      padding: 0.65rem;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .radio-card.selected {
+      background: #eff6ff;
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     .geo-status {
@@ -125,25 +121,29 @@
     .badge-fail { background: #fee2e2; color: #b91c1c; }
     .badge-checking { background: #fef3c7; color: #b45309; }
 
-    .tipo-marcado {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-bottom: 0.85rem;
-    }
-    .radio-card {
-      border: 1px solid var(--border);
-      padding: 0.65rem;
+    .camera-container {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: #000;
       border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 0.88rem;
-      font-weight: 600;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .radio-card.selected {
-      background: #eff6ff;
-      border-color: var(--accent);
-      color: var(--accent);
+    video, #captured-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #captured-preview { display: none; }
+    
+    .camera-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .btn {
@@ -196,8 +196,8 @@
 
   <header>
     <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-      <span>Checador Móvil PWA</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span>Checador Móvil en Sitio</span>
     </div>
     <a href="./control_obra.html" class="btn-exit">Menú</a>
   </header>
@@ -206,11 +206,10 @@
 
     <div class="card">
       <div class="card-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        <span>Registro de Presencia en Sitio</span>
+        <span>Registro de Presencia</span>
       </div>
 
-      <!-- Obra / Frente -->
+      <!-- Selección de Obra -->
       <div class="form-group">
         <label for="select-proyecto">Obra / Frente de Trabajo</label>
         <select id="select-proyecto">
@@ -225,7 +224,7 @@
         <div class="radio-card" data-tipo="salida" id="btn-tipo-salida">🔴 Salida</div>
       </div>
 
-      <!-- Validación Geocerca GPS -->
+      <!-- Estado Geocerca GPS -->
       <div class="geo-status" id="geo-box">
         <div>
           <div>Ubicación Geocerca:</div>
@@ -234,7 +233,7 @@
         <span class="status-badge badge-checking" id="geo-badge">Obteniendo GPS...</span>
       </div>
 
-      <!-- Evidencia Fotográfica Facial -->
+      <!-- Cámara para Evidencia Facial -->
       <label>Evidencia Fotográfica Facial</label>
       <div class="camera-container">
         <video id="camera-stream" autoplay playsinline></video>
@@ -251,10 +250,9 @@
       </button>
     </div>
 
-    <!-- Feed de Asistencias del Día -->
+    <!-- Feed de Marcajes de Hoy -->
     <div class="card">
       <div class="card-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
         <span>Mis Marcajes de Hoy</span>
       </div>
       <div id="history-container">
@@ -302,7 +300,7 @@
       setTimeout(() => toast.style.display = "none", 3200);
     }
 
-    // 1. Proteger Vista (RBAC - Crear / Registrar)
+    // 1. Proteger Vista (RBAC - Acción Crear / Registrar)
     protegerVista("checador", "c").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
@@ -315,7 +313,7 @@
       escucharHistorialHoy();
     }
 
-    // 2. Selección Entrada / Salida
+    // 2. Conmutar Entrada / Salida
     btnEntrada.addEventListener("click", () => {
       tipoMarcaje = "entrada";
       btnEntrada.classList.add("selected");
@@ -327,7 +325,7 @@
       btnEntrada.classList.remove("selected");
     });
 
-    // 3. Cargar Proyectos Autorizados
+    // 3. Cargar Proyectos Autorizados desde Firestore
     function cargarProyectos() {
       return new Promise((resolve) => {
         onSnapshot(collection(db, "proyectos"), (snap) => {
@@ -345,7 +343,7 @@
               proyectosList.push(p);
               const opt = document.createElement("option");
               opt.value = p.id;
-              opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
+              opt.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
               selectProyecto.appendChild(opt);
             }
           });
@@ -361,7 +359,7 @@
 
     selectProyecto.addEventListener("change", evaluarGeocerca);
 
-    // 4. Cálculo de Distancia GPS (Fórmula de Haversine)
+    // 4. Fórmula de Haversine para Distancia Perimetral
     function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
       const rad = Math.PI / 180;
@@ -374,6 +372,7 @@
       return Math.round(R * c);
     }
 
+    // 5. Evaluación de Geocerca contra Campos Planos de Firestore
     function evaluarGeocerca() {
       const proyectoId = selectProyecto.value;
       if (!proyectoId) {
@@ -386,12 +385,12 @@
       }
 
       const pSel = proyectosList.find(p => p.id === proyectoId);
-      
-      // Sincronización exacta con proyectos.html: pSel.geocerca
-      if (!pSel || !pSel.geocerca || !pSel.geocerca.lat || !pSel.geocerca.lng) {
+
+      // Lectura directa de los campos planos: lat, lng, radio_metros
+      if (!pSel || pSel.lat == null || pSel.lng == null) {
         geoBadge.className = "status-badge badge-ok";
         geoBadge.textContent = "Geocerca Abierta";
-        geoDistanciaLabel.textContent = "Obra sin perímetro restringido";
+        geoDistanciaLabel.textContent = "Obra sin coordenadas restrictivas";
         gpsValido = true;
         distanciaActualMts = 0;
         verificarHabilitacionEnvio();
@@ -418,12 +417,12 @@
             precision: pos.coords.accuracy
           };
 
-          const radioTolerancia = pSel.geocerca.radio || 150;
+          const radioTolerancia = Number(pSel.radio_metros) || 150;
           const dist = calcularDistanciaMetros(
             userCoords.lat,
             userCoords.lng,
-            pSel.geocerca.lat,
-            pSel.geocerca.lng
+            Number(pSel.lat),
+            Number(pSel.lng)
           );
 
           distanciaActualMts = dist;
@@ -432,12 +431,12 @@
             gpsValido = true;
             geoBadge.className = "status-badge badge-ok";
             geoBadge.textContent = `En Perímetro (${dist}m)`;
-            geoDistanciaLabel.textContent = `A ${dist}m del centro (tolerancia: ${radioTolerancia}m)`;
+            geoDistanciaLabel.textContent = `A ${dist}m de la obra (tolerancia: ${radioTolerancia}m)`;
           } else {
             gpsValido = false;
             geoBadge.className = "status-badge badge-fail";
             geoBadge.textContent = `Fuera (${dist}m)`;
-            geoDistanciaLabel.textContent = `Estás a ${dist}m de la obra (máx. permitido ${radioTolerancia}m)`;
+            geoDistanciaLabel.textContent = `A ${dist}m del centro (máx. permitido ${radioTolerancia}m)`;
           }
           verificarHabilitacionEnvio();
         },
@@ -453,7 +452,7 @@
       );
     }
 
-    // 5. Cámara
+    // 6. Cámara y Compresión Facial
     async function iniciarCamara() {
       try {
         mediaStreamObj = await navigator.mediaDevices.getUserMedia({
@@ -506,10 +505,10 @@
       btnRegistrar.disabled = !(proyectoSeleccionado && fotoCapturada && gpsValido);
     }
 
-    // 6. Registro de Asistencia en Firestore
+    // 7. Registro de Asistencia en Firestore
     btnRegistrar.addEventListener("click", async () => {
       btnRegistrar.disabled = true;
-      btnRegistrar.textContent = "Registrando asistencia...";
+      btnRegistrar.textContent = "Registrando...";
 
       const proyectoId = selectProyecto.value;
       const pSel = proyectosList.find(p => p.id === proyectoId);
@@ -518,12 +517,11 @@
         uid: usuarioActual.uid,
         usuarioNombre: perfilActual.nombre || usuarioActual.email,
         usuarioEmail: usuarioActual.email,
-        rol: perfilActual.rol || "Oficial de Obra",
-        empresaId: pSel?.empresaId || perfilActual.empresaId || "sin_asignar",
-        empresaNombre: pSel?.empresaNombre || "Empresa General",
+        rol: perfilActual.rol || "Colaborador",
         proyectoId: proyectoId,
         proyectoNombre: pSel?.nombre || "Obra",
         proyectoCodigo: pSel?.codigo || "",
+        cliente: pSel?.cliente || "Sin Titular",
         tipo: tipoMarcaje,
         distanciaMts: distanciaActualMts ?? 0,
         coordenadas: userCoords || { lat: 0, lng: 0 },
@@ -547,7 +545,7 @@
       }
     });
 
-    // 7. Historial Reactivo de Asistencias del Día
+    // 8. Historial Reactivo de Asistencias del Día
     function escucharHistorialHoy() {
       const hoy = new Date().toISOString().split("T")[0];
       const q = query(
@@ -574,7 +572,7 @@
           item.innerHTML = `
             <div>
               <strong>${a.proyectoNombre}</strong>
-              <div style="color: var(--text-muted); font-size: 0.75rem;">${a.empresaNombre} (${a.distanciaMts}m)</div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">${a.cliente} (${a.distanciaMts}m)</div>
             </div>
             <div style="text-align: right;">
               <span class="status-badge ${a.tipo === 'entrada' ? 'badge-ok' : 'badge-fail'}">
