@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prenómina y Liquidación M.O. - Conglomerado Empresarial</title>
+  <title>Prenómina y Dispersión Bancaria - Conglomerado Empresarial</title>
   <style>
     :root {
       --primary: #0f172a;
@@ -17,7 +17,7 @@
       --danger: #ef4444;
       --success: #10b981;
       --warning: #f59e0b;
-      --radius: 10px;
+      --radius: 12px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
 
@@ -41,7 +41,7 @@
     .btn-nav:hover { background: #475569; }
 
     .container {
-      max-width: 1400px;
+      max-width: 1540px;
       margin: 1.5rem auto;
       padding: 0 1rem;
     }
@@ -72,7 +72,7 @@
       gap: 0.75rem;
       align-items: end;
     }
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
       .filters-bar { grid-template-columns: 1fr; }
     }
 
@@ -108,6 +108,7 @@
     .btn-secondary:hover { background: #cbd5e1; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-success:hover { background: #059669; }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.78rem; }
 
     .table-container { overflow-x: auto; margin-top: 1rem; border: 1px solid var(--border); border-radius: 8px; }
     .prenomina-table {
@@ -134,7 +135,7 @@
     .prenomina-table input[type="number"] {
       padding: 0.35rem 0.5rem;
       font-size: 0.85rem;
-      width: 95px;
+      width: 90px;
     }
 
     .badge-pill {
@@ -145,6 +146,8 @@
       background: #eff6ff;
       color: var(--accent);
     }
+    .badge-bank-ok { background: #dcfce7; color: #15803d; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+    .badge-bank-missing { background: #fee2e2; color: #b91c1c; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
 
     .summary-cards {
       display: grid;
@@ -161,6 +164,27 @@
     .stat-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
     .stat-value { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 4px; }
 
+    /* Modal Bancario */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2);
+    }
+    .modal-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .modal-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+
     #toast {
       position: fixed;
       bottom: 20px;
@@ -171,7 +195,7 @@
       border-radius: 6px;
       font-size: 0.85rem;
       display: none;
-      z-index: 999;
+      z-index: 9999;
       box-shadow: var(--shadow);
     }
   </style>
@@ -181,7 +205,7 @@
   <header>
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-      <span>Prenómina de Mano de Obra</span>
+      <span>Prenómina y Dispersión Bancaria de Obra</span>
     </div>
     <div class="header-actions">
       <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
@@ -196,14 +220,14 @@
     <div class="card">
       <div class="card-title">
         <span>Filtro de Asistencia y Liquidación</span>
-        <button class="btn btn-success" id="btn-exportar-csv" style="font-size: 0.8rem;">📥 Exportar Sábana a CSV</button>
+        <button class="btn btn-success" id="btn-exportar-csv" style="font-size: 0.82rem;">📥 Exportar Layout Bancario a CSV</button>
       </div>
 
       <div class="filters-bar">
         <div class="form-group">
-          <label for="select-proyecto">Obra / Frente de Trabajo</label>
+          <label for="select-proyecto">Frente de Obra / Proyecto</label>
           <select id="select-proyecto">
-            <option value="">Cargando obras autorizadas...</option>
+            <option value="todos">Todos los frentes autorizados</option>
           </select>
         </div>
         <div class="form-group">
@@ -214,13 +238,13 @@
           <label for="input-fecha-fin">Fecha Fin</label>
           <input type="date" id="input-fecha-fin">
         </div>
-        <button class="btn btn-primary" id="btn-procesar">Consultar Asistencias</button>
+        <button class="btn btn-primary" id="btn-procesar">Consultar y Calcular Nómina</button>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">
-        <span>Consolidado Semanal de Mano de Obra</span>
+        <span>Padrón de Colaboradores y Jornales Computados</span>
         <span id="count-colaboradores" class="badge-pill">0 Colaboradores</span>
       </div>
 
@@ -229,20 +253,21 @@
           <thead>
             <tr>
               <th>Colaborador</th>
-              <th>Puesto / Rol</th>
-              <th>Titular / Obra</th>
-              <th style="text-align: center;">Jornales (Días)</th>
-              <th style="width: 110px;">Salario Diario ($)</th>
-              <th style="width: 100px;">Horas Extra ($)</th>
-              <th style="width: 100px;">Bonos ($)</th>
-              <th style="width: 100px;">Deducciones ($)</th>
-              <th style="text-align: right; width: 130px;">Total Neto ($)</th>
+              <th>Puesto / Adscripción</th>
+              <th>Datos Bancarios (Pago)</th>
+              <th style="text-align: center;">Jornales</th>
+              <th style="width: 105px;">Salario Diario ($)</th>
+              <th style="width: 95px;">H. Extra ($)</th>
+              <th style="width: 95px;">Bonos ($)</th>
+              <th style="width: 95px;">Deducciones ($)</th>
+              <th style="text-align: right; width: 125px;">Total Neto ($)</th>
+              <th style="text-align: center; width: 85px;">Acción</th>
             </tr>
           </thead>
           <tbody id="prenomina-body">
             <tr>
-              <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
-                Selecciona un rango de fechas y presiona "Consultar Asistencias".
+              <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
+                Cargando colaboradores del sistema...
               </td>
             </tr>
           </tbody>
@@ -252,7 +277,7 @@
       <div class="summary-cards">
         <div class="stat-card">
           <div class="stat-title">Total Jornales Computados</div>
-          <div class="stat-value" id="stat-jornales">0</div>
+          <div class="stat-value" id="stat-jornales">0 días</div>
         </div>
         <div class="stat-card">
           <div class="stat-title">Total Percepciones Extras</div>
@@ -271,10 +296,60 @@
 
   </div>
 
+  <!-- Modal para Configurar Datos Bancarios -->
+  <div class="modal-backdrop" id="modal-bancario">
+    <div class="modal-content">
+      <div class="modal-title">Configuración de Cuenta Bancaria</div>
+      <div class="modal-subtitle" id="modal-sub-nombre">Asigna la cuenta de depósito del colaborador.</div>
+      
+      <form id="form-datos-bancarios">
+        <input type="hidden" id="modal-uid">
+        
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label for="banco-select">Institución Bancaria</label>
+          <select id="banco-select" required>
+            <option value="">-- Selecciona Banco --</option>
+            <option value="BBVA">BBVA México</option>
+            <option value="BANORTE">Banorte</option>
+            <option value="SANTANDER">Santander</option>
+            <option value="CITIBANAMEX">Citibanamex</option>
+            <option value="HSBC">HSBC</option>
+            <option value="SCOTIABANK">Scotiabank</option>
+            <option value="BANBAJIO">BanBajío</option>
+            <option value="AZTECA">Banco Azteca</option>
+            <option value="INBURSA">Inbursa</option>
+            <option value="BANCOPPEL">BanCoppel</option>
+            <option value="OTRO">Otro / Efectivo</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label for="clabe-input">CLABE Interbancaria (18 dígitos)</label>
+          <input type="text" id="clabe-input" placeholder="012180001234567890" maxlength="18">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label for="cuenta-input">Número de Cuenta / Tarjeta</label>
+          <input type="text" id="cuenta-input" placeholder="Opcional si tiene CLABE">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label for="sd-base-input">Salario Diario Base por Contrato ($)</label>
+          <input type="number" id="sd-base-input" min="0" step="10" placeholder="450">
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" id="btn-cancelar-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-guardar-banco">Guardar en Perfil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="toast"></div>
 
   <script type="module">
-    import { db, collection, onSnapshot, getDocs, addDoc } from "./js/firebase-config.js";
+    import { db, collection, onSnapshot, getDocs, addDoc, doc, updateDoc } from "./js/firebase-config.js";
     import { protegerVista } from "./js/rbac.js";
 
     const selectProyecto = document.getElementById("select-proyecto");
@@ -291,9 +366,22 @@
     const statTotalNomina = document.getElementById("stat-total-nomina");
     const toast = document.getElementById("toast");
 
+    // Modal
+    const modalBancario = document.getElementById("modal-bancario");
+    const modalUid = document.getElementById("modal-uid");
+    const modalSubNombre = document.getElementById("modal-sub-nombre");
+    const bancoSelect = document.getElementById("banco-select");
+    const clabeInput = document.getElementById("clabe-input");
+    const cuentaInput = document.getElementById("cuenta-input");
+    const sdBaseInput = document.getElementById("sd-base-input");
+    const formDatosBancarios = document.getElementById("form-datos-bancarios");
+    const btnCancelarModal = document.getElementById("btn-cancelar-modal");
+
     let usuarioActual = null;
     let perfilActual = null;
     let proyectosDisponibles = [];
+    let colaboradoresSistema = [];
+    let asistenciasMap = new Map(); // uid -> Set(fechas)
     let nominaFiltrada = [];
 
     const formatoMoneda = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" });
@@ -319,7 +407,7 @@
       }
     }
 
-    // Configurar fechas de la semana actual por defecto
+    // Semana actual de lunes a sábado por defecto
     const hoy = new Date();
     const diaSemana = hoy.getDay();
     const diffLunes = hoy.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
@@ -329,15 +417,16 @@
     inputFechaInicio.value = primerDia.toISOString().split("T")[0];
     inputFechaFin.value = ultimoDia.toISOString().split("T")[0];
 
-    // 1. Proteger Vista (RBAC - Ver)
-    protegerVista("prenomina", "r").then(({ user, perfil }) => {
+    // 1. Proteger Vista (RBAC)
+    protegerVista("prenomina", "ver").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
       document.getElementById("user-display").textContent = perfil.nombre || user.email;
       cargarProyectos();
+      cargarColaboradores();
     });
 
-    // 2. Cargar Obras Autorizadas
+    // 2. Cargar Obras
     function cargarProyectos() {
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyecto.innerHTML = '<option value="todos">Todos los frentes autorizados</option>';
@@ -361,66 +450,94 @@
       });
     }
 
-    // 3. Procesar Marcajes del Checador vs Asistencias
-    btnProcesar.addEventListener("click", async () => {
+    // 3. Cargar el padrón directo de la colección 'usuarios'
+    function cargarColaboradores() {
+      onSnapshot(collection(db, "usuarios"), (snap) => {
+        colaboradoresSistema = [];
+        snap.forEach(d => {
+          const u = { uid: d.id, ...d.data() };
+          if (u.activo !== false) {
+            colaboradoresSistema.push(u);
+          }
+        });
+        procesarNomina();
+      });
+    }
+
+    // 4. Procesar Cruzando Usuarios y Asistencias del Checador
+    async function procesarNomina() {
       const fInicio = inputFechaInicio.value;
       const fFin = inputFechaFin.value;
       const pId = selectProyecto.value;
 
-      if (!fInicio || !fFin) return alert("Selecciona fecha de inicio y fin.");
-      if (fInicio > fFin) return alert("La fecha inicial no puede ser posterior a la fecha final.");
-
-      btnProcesar.disabled = true;
-      btnProcesar.textContent = "Procesando...";
+      if (!fInicio || !fFin) return;
 
       try {
         const snapAsistencias = await getDocs(collection(db, "asistencias"));
-        const trabajadoresMap = new Map();
+        asistenciasMap.clear();
 
         snapAsistencias.forEach(d => {
           const a = d.data();
           const fechaMarcaje = a.fechaCorta || (a.timestamp ? a.timestamp.split("T")[0] : "");
 
-          if (fechaMarcaje >= fInicio && fechaMarcaje <= fFin) {
+          if (fechaMarcaje >= fInicio && fechaMarcaje <= fFin && a.tipo === "entrada") {
             const coincideProyecto = pId === "todos" ? true : a.proyectoId === pId;
-            const permitido = perfilActual.is_superadmin || 
-                              perfilActual.alcance === "global" || 
-                              proyectosDisponibles.some(p => p.id === a.proyectoId);
-
-            if (coincideProyecto && permitido) {
-              const key = a.uid || a.usuarioEmail;
-              if (!trabajadoresMap.has(key)) {
-                trabajadoresMap.set(key, {
-                  uid: a.uid,
-                  nombre: a.usuarioNombre || a.usuarioEmail,
-                  rol: a.rol || "Colaborador",
-                  cliente: a.cliente || "Sin Titular",
-                  proyectoNombre: a.proyectoNombre || "Obra",
-                  diasChecados: new Set(),
-                  salarioDiario: 450,
-                  horasExtra: 0,
-                  bonos: 0,
-                  deducciones: 0
-                });
+            if (coincideProyecto && a.uid) {
+              if (!asistenciasMap.has(a.uid)) {
+                asistenciasMap.set(a.uid, new Set());
               }
-              trabajadoresMap.get(key).diasChecados.add(fechaMarcaje);
+              asistenciasMap.get(a.uid).add(fechaMarcaje);
             }
           }
         });
 
-        nominaFiltrada = Array.from(trabajadoresMap.values());
+        // Filtrar y preparar la prenómina con TODOS los colaboradores del sistema
+        nominaFiltrada = colaboradoresSistema.map((colab, idx) => {
+          const diasChecados = asistenciasMap.get(colab.uid) || new Set();
+          return {
+            uid: colab.uid,
+            nombre: colab.nombre || colab.email || "Sin Nombre",
+            email: colab.email || "",
+            rol: colab.rol || "Operativo",
+            empresa: colab.empresaId || colab.empresa || "Sin Asignar",
+            banco: colab.banco || "",
+            clabe: colab.clabe || "",
+            cuentaBancaria: colab.cuentaBancaria || "",
+            diasTrabajados: diasChecados.size,
+            salarioDiario: Number(colab.salarioDiarioBase) || 450,
+            horasExtra: 0,
+            bonos: 0,
+            deducciones: 0
+          };
+        });
+
+        // Si se seleccionó una obra específica, filtrar colaboradores asignados a ella
+        if (pId !== "todos") {
+          nominaFiltrada = nominaFiltrada.filter(c => {
+            const colabOriginal = colaboradoresSistema.find(u => u.uid === c.uid);
+            return colabOriginal?.alcance === "global" || 
+                   colabOriginal?.is_superadmin || 
+                   colabOriginal?.proyectos_asignados?.includes(pId) || 
+                   c.diasTrabajados > 0;
+          });
+        }
+
         renderizarTabla();
-        await logEvento("consulta_prenomina", `Filtro del ${fInicio} al ${fFin} (${nominaFiltrada.length} personas)`);
       } catch (err) {
-        console.error("Error al procesar prenómina:", err);
-        alert("Fallo al consultar asistencias: " + err.message);
-      } finally {
-        btnProcesar.disabled = false;
-        btnProcesar.textContent = "Consultar Asistencias";
+        console.error("Fallo al procesar prenómina:", err);
       }
+    }
+
+    btnProcesar.addEventListener("click", async () => {
+      btnProcesar.disabled = true;
+      btnProcesar.textContent = "Procesando...";
+      await procesarNomina();
+      await logEvento("consulta_prenomina", `Filtro del ${inputFechaInicio.value} al ${inputFechaFin.value}`);
+      btnProcesar.disabled = false;
+      btnProcesar.textContent = "Consultar y Calcular Nómina";
     });
 
-    // 4. Renderizado Dinámico de la Nómina
+    // 5. Renderizado de la Sábana de Nómina
     function renderizarTabla() {
       prenominaBody.innerHTML = "";
       countColaboradores.textContent = `${nominaFiltrada.length} Colaboradores`;
@@ -428,8 +545,8 @@
       if (nominaFiltrada.length === 0) {
         prenominaBody.innerHTML = `
           <tr>
-            <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
-              No se encontraron marcajes de asistencia válidos en el rango seleccionado.
+            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
+              No hay colaboradores registrados en el sistema para los criterios seleccionados.
             </td>
           </tr>
         `;
@@ -438,18 +555,31 @@
       }
 
       nominaFiltrada.forEach((t, index) => {
-        const dias = t.diasChecados.size;
         const tr = document.createElement("tr");
+        const tieneBanco = t.clabe || t.cuentaBancaria;
+
         tr.innerHTML = `
-          <td><strong>${t.nombre}</strong></td>
-          <td><span class="badge-pill">${t.rol}</span></td>
-          <td><small><b>${t.cliente}</b><br><span style="color:var(--text-muted);">${t.proyectoNombre}</span></small></td>
-          <td style="text-align: center; font-weight: 700;">${dias} d</td>
+          <td><strong>${t.nombre}</strong><div style="font-size:0.75rem; color:var(--text-muted);">${t.email}</div></td>
+          <td><span class="badge-pill">${t.rol}</span><div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${t.empresa}</div></td>
+          <td>
+            ${tieneBanco 
+              ? `<div><span class="badge-bank-ok">${t.banco || 'BANCO'}</span></div><small style="font-family:monospace; color:#334155;">${t.clabe || t.cuentaBancaria}</small>`
+              : `<span class="badge-bank-missing">Sin cuenta bancaria</span>`
+            }
+          </td>
+          <td style="text-align: center; font-weight: 700; color: ${t.diasTrabajados > 0 ? 'var(--primary)' : 'var(--text-muted)'};">
+            ${t.diasTrabajados} d
+          </td>
           <td><input type="number" class="inp-sd" min="0" step="10" value="${t.salarioDiario}" data-idx="${index}"></td>
           <td><input type="number" class="inp-he" min="0" step="50" value="${t.horasExtra}" data-idx="${index}"></td>
           <td><input type="number" class="inp-bono" min="0" step="50" value="${t.bonos}" data-idx="${index}"></td>
           <td><input type="number" class="inp-ded" min="0" step="50" value="${t.deducciones}" data-idx="${index}"></td>
-          <td style="text-align: right; font-weight: 700; color: var(--primary);" class="col-neto">$0.00</td>
+          <td style="text-align: right; font-weight: 800; color: var(--accent);" class="col-neto">$0.00</td>
+          <td style="text-align: center;">
+            <button class="btn btn-secondary btn-sm" onclick="window.abrirModalBancario('${t.uid}', '${t.nombre}', '${t.banco}', '${t.clabe}', '${t.cuentaBancaria}', ${t.salarioDiario})">
+              💳 Banco
+            </button>
+          </td>
         `;
 
         tr.querySelectorAll("input").forEach(inp => {
@@ -472,13 +602,11 @@
     }
 
     function actualizarFilaNeto(tr, t) {
-      const dias = t.diasChecados.size;
-      const base = dias * t.salarioDiario;
+      const base = t.diasTrabajados * t.salarioDiario;
       const neto = base + t.horasExtra + t.bonos - t.deducciones;
       tr.querySelector(".col-neto").textContent = formatoMoneda.format(neto);
     }
 
-    // 5. Cálculos Globales
     function recalcularTotalesGenerales() {
       let totalJornales = 0;
       let totalExtras = 0;
@@ -486,12 +614,11 @@
       let granTotal = 0;
 
       nominaFiltrada.forEach(t => {
-        const dias = t.diasChecados.size;
-        const base = dias * t.salarioDiario;
+        const base = t.diasTrabajados * t.salarioDiario;
         const extras = t.horasExtra + t.bonos;
         const neto = base + extras - t.deducciones;
 
-        totalJornales += dias;
+        totalJornales += t.diasTrabajados;
         totalExtras += extras;
         totalDeducciones += t.deducciones;
         granTotal += neto;
@@ -503,30 +630,64 @@
       statTotalNomina.textContent = formatoMoneda.format(granTotal);
     }
 
-    // 6. Exportación a CSV
-    btnExportar.addEventListener("click", async () => {
-      if (nominaFiltrada.length === 0) return alert("No hay datos en pantalla para exportar.");
+    // 6. Modal y Guardado de Datos Bancarios en Firestore
+    window.abrirModalBancario = (uid, nombre, banco, clabe, cuenta, sd) => {
+      modalUid.value = uid;
+      modalSubNombre.textContent = `Colaborador: ${nombre}`;
+      bancoSelect.value = banco || "";
+      clabeInput.value = clabe || "";
+      cuentaInput.value = cuenta || "";
+      sdBaseInput.value = sd || 450;
+      modalBancario.style.display = "flex";
+    };
 
-      let csv = "Colaborador,Puesto,Cliente Titular,Obra,Dias Trabajados,Salario Diario,Horas Extras,Bonos,Deducciones,Total Neto\n";
+    btnCancelarModal.addEventListener("click", () => {
+      modalBancario.style.display = "none";
+    });
+
+    formDatosBancarios.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const uid = modalUid.value;
+      const payloadBanco = {
+        banco: bancoSelect.value,
+        clabe: clabeInput.value.trim(),
+        cuentaBancaria: cuentaInput.value.trim(),
+        salarioDiarioBase: parseFloat(sdBaseInput.value) || 450
+      };
+
+      try {
+        await updateDoc(doc(db, "usuarios", uid), payloadBanco);
+        await logEvento("actualizar_datos_bancarios", `Datos bancarios actualizados para ${modalSubNombre.textContent}`);
+        showToast("Datos bancarios guardados en Firestore");
+        modalBancario.style.display = "none";
+      } catch (err) {
+        alert("Error al guardar datos bancarios: " + err.message);
+      }
+    });
+
+    // 7. Exportación a Layout Bancario CSV
+    btnExportar.addEventListener("click", async () => {
+      if (nominaFiltrada.length === 0) return alert("No hay datos para exportar.");
+
+      let csv = "Colaborador,Email,Puesto,Empresa,Banco_Receptor,CLABE_Interbancaria,Cuenta_Bancaria,Dias_Trabajados,Salario_Diario,Horas_Extras,Bonos,Deducciones,Total_Neto_A_Pagar\n";
 
       nominaFiltrada.forEach(t => {
-        const dias = t.diasChecados.size;
-        const base = dias * t.salarioDiario;
+        const base = t.diasTrabajados * t.salarioDiario;
         const neto = base + t.horasExtra + t.bonos - t.deducciones;
-        csv += `"${t.nombre}","${t.rol}","${t.cliente}","${t.proyectoNombre}",${dias},${t.salarioDiario},${t.horasExtra},${t.bonos},${t.deducciones},${neto}\n`;
+        csv += `"${t.nombre}","${t.email}","${t.rol}","${t.empresa}","${t.banco}","${t.clabe}","${t.cuentaBancaria}",${t.diasTrabajados},${t.salarioDiario},${t.horasExtra},${t.bonos},${t.deducciones},${neto}\n`;
       });
 
       const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `prenomina_${inputFechaInicio.value}_al_${inputFechaFin.value}.csv`);
+      link.setAttribute("download", `dispersion_nomina_${inputFechaInicio.value}_al_${inputFechaFin.value}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      await logEvento("exportar_prenomina", `CSV generado del ${inputFechaInicio.value} al ${inputFechaFin.value}`);
-      showToast("Archivo CSV descargado con éxito");
+      await logEvento("exportar_dispersion_bancaria", `CSV generado del ${inputFechaInicio.value} al ${inputFechaFin.value}`);
+      showToast("Layout bancario exportado exitosamente");
     });
   </script>
 </body>
