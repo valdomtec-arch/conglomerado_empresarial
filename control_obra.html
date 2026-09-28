@@ -76,7 +76,7 @@
     .welcome-title { font-size: 1.45rem; font-weight: 800; color: var(--primary); }
     .welcome-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
 
-    /* Barra de KPIs en Vivo */
+    /* Barra de KPIs */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -106,7 +106,7 @@
     .kpi-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
     .kpi-val { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
 
-    /* Grid de Módulos */
+    /* Grid de Módulos Dinámicos */
     .modules-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -231,7 +231,7 @@
   </main>
 
   <script type="module">
-    import { auth, db, signOut, collection, onSnapshot, query, where, doc, getDoc } from "./js/firebase-config.js";
+    import { auth, db, signOut, collection, onSnapshot, query, where, doc, getDoc, setDoc } from "./js/firebase-config.js";
 
     const SUPER_UID = "zeVjo7RcQqRKjq1T7goO22SMHip1";
     const SUPER_EMAIL = "valladarescid@gmail.com";
@@ -246,13 +246,15 @@
     const kpiAsistencias = document.getElementById("kpi-asistencias");
     const kpiEstimaciones = document.getElementById("kpi-estimaciones");
 
+    // Catálogo con registro_usuarios integrado
     const ICONOS_DEFAULT = {
       proyectos: "📍",
       checador: "⏱️",
       bitacora: "📓",
       estimaciones: "📊",
       prenomina: "👥",
-      usuarios: "👤"
+      registro_usuarios: "👤",
+      usuarios: "⚙️"
     };
 
     const DESCRIPCIONES_DEFAULT = {
@@ -261,6 +263,7 @@
       bitacora: "Asientos diarios de obra, cuadrillas y supervisión.",
       estimaciones: "Carátulas de cobro financiero y retenciones de ley.",
       prenomina: "Liquidación semanal de mano de obra y exportación a CSV.",
+      registro_usuarios: "Alta directa de colaboradores y credenciales de acceso.",
       usuarios: "Directorio de colaboradores y matriz de gobernanza."
     };
 
@@ -292,6 +295,11 @@
         console.warn("Fallo lectura de usuario en Firestore:", err);
       }
 
+      // Si es Super Admin, garantizamos que el módulo registro_usuarios exista en Firestore
+      if (esRaiz || perfil.is_superadmin) {
+        asegurarModuloRegistroUsuarios();
+      }
+
       // Si es colaborador operativo, obtenemos la matriz del rol asignado
       if (!perfil.is_superadmin && perfil.rol_id) {
         try {
@@ -306,6 +314,26 @@
 
       iniciarInterfaz(user, perfil);
     });
+
+    // Auto-registro para que nunca falte la tarjeta en el tablero
+    async function asegurarModuloRegistroUsuarios() {
+      try {
+        const modRef = doc(db, "modulos", "registro_usuarios");
+        const modSnap = await getDoc(modRef);
+        if (!modSnap.exists()) {
+          await setDoc(modRef, {
+            id: "registro_usuarios",
+            nombre: "Alta de Colaboradores",
+            ruta: "./registro_usuarios.html",
+            activo: true,
+            icono: "👤",
+            descripcion: "Alta directa de colaboradores y credenciales de acceso."
+          }, { merge: true });
+        }
+      } catch (e) {
+        console.warn("Auto-registro del módulo:", e);
+      }
+    }
 
     function iniciarInterfaz(user, perfil) {
       userNameDisplay.textContent = perfil.nombre || user.email;
@@ -326,7 +354,7 @@
       escucharModulos(perfil, esSuper);
     }
 
-    // 2. Evaluación de Acceso: Tolera tanto permisos en español ('ver') como en inglés ('r')
+    // 2. Evaluación de Acceso
     function evaluarAccesoModulo(perfil, moduloId, esSuper) {
       if (esSuper) return true;
       if (!perfil.matriz) return false;
@@ -383,13 +411,11 @@
         }
       }, (err) => {
         console.error("Error al escuchar módulos:", err);
-        modulesContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--danger);">Error de conexión: ${err.message}</div>`;
       });
     }
 
     // 4. KPIs en Vivo
     function escucharKPIs(perfil, esSuper) {
-      // Obras activas
       onSnapshot(collection(db, "proyectos"), (snap) => {
         let total = 0;
         snap.forEach(d => {
@@ -400,7 +426,6 @@
         kpiObras.textContent = total;
       });
 
-      // Personal checado hoy
       const hoy = new Date().toISOString().split("T")[0];
       const qAsist = query(
         collection(db, "asistencias"),
@@ -413,7 +438,6 @@
         kpiAsistencias.textContent = uids.size;
       });
 
-      // Estimaciones en revisión
       onSnapshot(collection(db, "estimaciones"), (snap) => {
         let countRev = 0;
         snap.forEach(d => {
