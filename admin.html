@@ -16,14 +16,11 @@
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
-      --warning: #f59e0b;
       --radius: 10px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
-
     header {
       background: var(--primary);
       color: #fff;
@@ -37,11 +34,9 @@
     }
     .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .badge-super { background: #dc2626; color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-    
     .header-actions { display: flex; align-items: center; gap: 10px; }
     .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
     .btn-nav:hover { background: #475569; }
-
     .tabs-nav {
       background: #fff;
       border-bottom: 1px solid var(--border);
@@ -66,29 +61,12 @@
       white-space: nowrap;
     }
     .tab-btn:hover { color: var(--accent); }
-    .tab-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 1.5rem auto;
-      padding: 0 1rem;
-    }
-
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .container { max-width: 1400px; margin: 1.5rem auto; padding: 0 1rem; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-
-    .grid-admin {
-      display: grid;
-      grid-template-columns: 460px 1fr;
-      gap: 1.5rem;
-    }
-    @media (max-width: 1024px) {
-      .grid-admin { grid-template-columns: 1fr; }
-    }
-
+    .grid-admin { display: grid; grid-template-columns: 460px 1fr; gap: 1.5rem; }
+    @media (max-width: 1024px) { .grid-admin { grid-template-columns: 1fr; } }
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -106,7 +84,6 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .form-group { margin-bottom: 0.9rem; }
     label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
     input, select, textarea {
@@ -120,25 +97,9 @@
     }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-    .data-table th {
-      background: #f1f5f9;
-      padding: 0.6rem;
-      text-align: left;
-      border: 1px solid var(--border);
-      color: #475569;
-    }
-    .data-table td {
-      padding: 0.6rem;
-      border: 1px solid var(--border);
-      vertical-align: middle;
-    }
-
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th { background: #f1f5f9; padding: 0.6rem; text-align: left; border: 1px solid var(--border); color: #475569; }
+    .data-table td { padding: 0.6rem; border: 1px solid var(--border); vertical-align: middle; }
     .btn {
       padding: 0.6rem 1.2rem;
       border-radius: 6px;
@@ -159,16 +120,9 @@
     .btn-danger { background: #fee2e2; color: #b91c1c; }
     .btn-danger:hover { background: #fca5a5; }
     .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
-
-    .badge-status {
-      font-size: 0.75rem;
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
+    .badge-status { font-size: 0.75rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
     .badge-active { background: #dcfce7; color: #15803d; }
     .badge-inactive { background: #fee2e2; color: #b91c1c; }
-
     #toast {
       position: fixed;
       bottom: 20px;
@@ -203,52 +157,41 @@
   <nav class="tabs-nav">
     <button class="tab-btn active" data-tab="tab-modulos">🧩 Módulos Dinámicos</button>
     <button class="tab-btn" data-tab="tab-empresas">🏢 Empresas Matriz</button>
-    <button class="tab-btn" data-tab="tab-roles">🛡️ Roles y Matrices de Permisos</button>
+    <button class="tab-btn" data-tab="tab-roles">🛡️ Roles y Matrices RBAC</button>
     <button class="tab-btn" data-tab="tab-usuarios">👥 Padrón de Colaboradores</button>
     <button class="tab-btn" data-tab="tab-auditoria">📜 Auditoría</button>
   </nav>
 
   <div class="container">
 
-    <!-- PESTAÑA 1: MÓDULOS DINÁMICOS -->
+    <!-- PESTAÑA 1: MÓDULOS -->
     <section id="tab-modulos" class="tab-content active">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Inyectar Nuevo Módulo al Ecosistema</div>
+          <div class="card-title">Inyectar Módulo al Ecosistema</div>
           <form id="form-modulo-dinamico">
             <div class="form-group">
-              <label>ID Clave del Módulo (ej. almacenes, maquinaria)</label>
-              <input type="text" id="mod-id" placeholder="almacen_obra" required>
+              <label>ID Clave del Módulo (ej. proyectos, checador)</label>
+              <input type="text" id="mod-id" placeholder="almacen" required>
             </div>
             <div class="form-group">
-              <label>Título Visible en Tablero</label>
-              <input type="text" id="mod-nombre" placeholder="Almacén y Suministros" required>
-            </div>
-            <div class="grid-2">
-              <div class="form-group">
-                <label>Ruta URL del Archivo</label>
-                <input type="text" id="mod-ruta" placeholder="./almacen.html" required>
-              </div>
-              <div class="form-group">
-                <label>Emoji / Ícono</label>
-                <input type="text" id="mod-icono" placeholder="📦" value="📦" required>
-              </div>
+              <label>Nombre del Módulo</label>
+              <input type="text" id="mod-nombre" placeholder="Almacén de Materiales" required>
             </div>
             <div class="form-group">
-              <label>Descripción Operacional</label>
-              <textarea id="mod-desc" placeholder="Control de inventarios, vales de salida y recepción..." rows="2"></textarea>
+              <label>Ruta URL del Archivo</label>
+              <input type="text" id="mod-ruta" placeholder="./almacen.html" required>
             </div>
-            <button type="submit" class="btn btn-primary">Registrar Módulo en Firestore</button>
+            <button type="submit" class="btn btn-primary">Guardar Módulo en Firestore</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Módulos en el Tablero Central</div>
+          <div class="card-title">Módulos Registrados</div>
           <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Ícono</th>
                   <th>ID</th>
                   <th>Nombre</th>
                   <th>Ruta</th>
@@ -257,7 +200,7 @@
                 </tr>
               </thead>
               <tbody id="modulos-table-body">
-                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Consultando catálogo...</td></tr>
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando catálogo...</td></tr>
               </tbody>
             </table>
           </div>
@@ -272,29 +215,26 @@
           <div class="card-title">Registrar Razón Social</div>
           <form id="form-empresa">
             <div class="form-group">
-              <label>ID Clave (ej. construred, edificaciones)</label>
-              <input type="text" id="emp-id" placeholder="razon_clave" required>
+              <label>ID Documento (ej. grupo_carse)</label>
+              <input type="text" id="emp-id" placeholder="grupo_carse" required>
             </div>
             <div class="form-group">
               <label>Razón Social Oficial</label>
-              <input type="text" id="emp-razon" placeholder="Constructora del Valle S.A. de C.V." required>
+              <input type="text" id="emp-razon" placeholder="GRUPO CARSE" required>
             </div>
             <div class="grid-2">
               <div class="form-group">
                 <label>R.F.C.</label>
-                <input type="text" id="emp-rfc" placeholder="CDV123456789" required>
+                <input type="text" id="emp-rfc" placeholder="GRC1701134F1" required>
               </div>
               <div class="form-group">
-                <label>Tasa de I.V.A. Predeterminada</label>
-                <select id="emp-iva">
-                  <option value="16">16% - Régimen General</option>
-                  <option value="8">8% - Estímulo Fronterizo</option>
-                </select>
+                <label>IVA (%)</label>
+                <input type="number" id="emp-iva" value="16" min="0" max="100">
               </div>
             </div>
             <div class="form-group">
-              <label>Representante Legal / Titular</label>
-              <input type="text" id="emp-representante" placeholder="Ing. Director General">
+              <label>Representante Legal</label>
+              <input type="text" id="emp-representante" placeholder="Ing. Miguel Pecina">
             </div>
             <button type="submit" class="btn btn-primary">Guardar Empresa</button>
           </form>
@@ -306,15 +246,16 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Clave</th>
+                  <th>ID</th>
                   <th>Razón Social</th>
                   <th>RFC</th>
                   <th>IVA</th>
+                  <th>Representante</th>
                   <th>Estatus</th>
                 </tr>
               </thead>
               <tbody id="empresas-body">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando empresas...</td></tr>
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Consultando empresas...</td></tr>
               </tbody>
             </table>
           </div>
@@ -322,37 +263,33 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 3: ROLES Y MATRICES (EN ESPAÑOL CLARO) -->
+    <!-- PESTAÑA 3: ROLES Y MATRICES -->
     <section id="tab-roles" class="tab-content">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Crear / Configurar Plantilla de Rol</div>
+          <div class="card-title">Configurar Rol y Matriz</div>
           <form id="form-rol-template">
             <div class="form-group">
-              <label>ID del Rol (ej. residente_frente)</label>
+              <label>ID del Rol (ej. administrador_rh, residente_obra)</label>
               <input type="text" id="role-id" placeholder="residente_obra" required>
             </div>
-            <div class="form-group">
-              <label>Puesto Oficial</label>
-              <input type="text" id="role-nombre" placeholder="Residente General de Obra" required>
-            </div>
-            
-            <label style="margin-top: 1rem;">Matriz de Permisos Predeterminada</label>
+
+            <label style="margin-top: 1rem;">Matriz de Permisos</label>
             <table class="data-table" style="margin-top: 0.5rem;">
               <thead>
                 <tr>
-                  <th>Módulo Operativo</th>
-                  <th style="text-align: center;">Crear / Registrar</th>
-                  <th style="text-align: center;">Ver / Consultar</th>
-                  <th style="text-align: center;">Editar / Modificar</th>
-                  <th style="text-align: center;">Eliminar / Suprimir</th>
+                  <th>Módulo</th>
+                  <th style="text-align: center;">c</th>
+                  <th style="text-align: center;">r</th>
+                  <th style="text-align: center;">u</th>
+                  <th style="text-align: center;">d</th>
                 </tr>
               </thead>
               <tbody id="role-matrix-body"></tbody>
             </table>
 
             <div style="margin-top: 1rem;">
-              <button type="submit" class="btn btn-primary">Guardar Plantilla de Rol</button>
+              <button type="submit" class="btn btn-primary">Guardar Rol en Firestore</button>
             </div>
           </form>
         </div>
@@ -366,7 +303,7 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 4: PADRÓN DE COLABORADORES -->
+    <!-- PESTAÑA 4: USUARIOS -->
     <section id="tab-usuarios" class="tab-content">
       <div class="grid-admin">
         <div class="card">
@@ -403,14 +340,14 @@
 
             <div class="grid-2">
               <div class="form-group">
-                <label>Alcance Operativo</label>
+                <label>Alcance Territorial</label>
                 <select id="usr-alcance">
                   <option value="global">Global (Todas las Obras)</option>
                   <option value="asignado">Obras Asignadas Específicas</option>
                 </select>
               </div>
               <div class="form-group" id="container-user-obras" style="display: none;">
-                <label>Obras Autorizadas (Ctrl para seleccionar varias)</label>
+                <label>Obras Asignadas</label>
                 <select id="usr-obras" multiple style="height: 80px;"></select>
               </div>
             </div>
@@ -422,12 +359,12 @@
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="btn-save-usr">Actualizar Gobernanza</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-usr">Actualizar Colaborador</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Colaboradores en Ecosistema</div>
+          <div class="card-title">Padrón de Colaboradores</div>
           <div id="usuarios-list-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
             <div style="text-align: center; color: var(--text-muted);">Consultando usuarios...</div>
           </div>
@@ -438,20 +375,20 @@
     <!-- PESTAÑA 5: AUDITORÍA -->
     <section id="tab-auditoria" class="tab-content">
       <div class="card">
-        <div class="card-title">Trazabilidad Central de Eventos y Cambios</div>
+        <div class="card-title">Trazabilidad Central (Colección auditoria)</div>
         <div style="overflow-x: auto;">
           <table class="data-table">
             <thead>
               <tr>
-                <th style="width: 160px;">Fecha / Hora</th>
-                <th>Usuario Responsable</th>
+                <th style="width: 180px;">Fecha / Hora</th>
+                <th>Usuario</th>
                 <th>Módulo</th>
                 <th>Acción</th>
-                <th>Detalles Técnicos</th>
+                <th>Detalle</th>
               </tr>
             </thead>
             <tbody id="auditoria-body">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando bitácora de auditoría...</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Consultando bitácora...</td></tr>
             </tbody>
           </table>
         </div>
@@ -503,8 +440,8 @@
       try {
         await addDoc(collection(db, "auditoria"), {
           timestamp: new Date().toISOString(),
-          uid: usuarioActual?.uid || "root",
-          usuario: perfilActual?.nombre || usuarioActual?.email || "Super Admin",
+          uid: usuarioActual?.uid || "zeVjo7RcQqRKjq1T7goO22SMHip1",
+          usuario: perfilActual?.nombre || usuarioActual?.email || "Jose Antonio Valladares Cid",
           modulo,
           accion,
           detalle
@@ -514,11 +451,17 @@
       }
     }
 
-    // 1. Proteger Vista (RBAC)
-    protegerVista("usuarios", "u").then(({ user, perfil }) => {
+    // 1. Proteger Vista (Solo Super Admin)
+    protegerVista("general").then(({ user, perfil }) => {
+      if (!perfil.is_superadmin && perfil.rol_id !== "superadmin" && user.email.toLowerCase() !== "valladarescid@gmail.com") {
+        alert("Acceso exclusivo para Super Administradores.");
+        window.location.href = "./control_obra.html";
+        return;
+      }
       usuarioActual = user;
       perfilActual = perfil;
       document.getElementById("super-display").textContent = perfil.nombre || user.email;
+
       iniciarSubscripciones();
     });
 
@@ -531,24 +474,20 @@
       escucharAuditoria();
     }
 
-    // 2. Módulos Dinámicos
+    // 2. Módulos Dinámicos (Estructura real: activo, nombre, ruta)
     document.getElementById("form-modulo-dinamico").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("mod-id").value.trim().toLowerCase();
       const payload = {
-        id,
-        nombre: document.getElementById("mod-nombre").value.trim(),
-        ruta: document.getElementById("mod-ruta").value.trim(),
-        icono: document.getElementById("mod-icono").value.trim() || "📁",
-        descripcion: document.getElementById("mod-desc").value.trim(),
         activo: true,
-        actualizadoEn: new Date().toISOString()
+        nombre: document.getElementById("mod-nombre").value.trim(),
+        ruta: document.getElementById("mod-ruta").value.trim()
       };
 
       try {
-        await setDoc(doc(db, "modulos", id), payload, { merge: true });
-        await logEvento("modulos", "alta/edicion", `Módulo ${payload.nombre} (${id})`);
-        showToast("Módulo guardado en Firestore");
+        await setDoc(doc(db, "modulos", id), payload);
+        await logEvento("modulos", "alta", `Módulo ${payload.nombre}`);
+        showToast("Módulo registrado");
         document.getElementById("form-modulo-dinamico").reset();
       } catch (err) {
         alert("Error al guardar módulo: " + err.message);
@@ -562,7 +501,7 @@
         modulosActivos = [];
 
         if (snap.empty) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin módulos configurados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Sin módulos configurados.</td></tr>';
           return;
         }
 
@@ -572,14 +511,13 @@
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td style="font-size: 1.3rem; text-align: center;">${m.icono || '📁'}</td>
             <td><code>${m.id}</code></td>
-            <td><strong>${m.nombre}</strong><br><small style="color:var(--text-muted);">${m.descripcion || ''}</small></td>
+            <td><strong>${m.nombre}</strong></td>
             <td><code>${m.ruta}</code></td>
-            <td><span class="badge-status ${m.activo ? 'badge-active' : 'badge-inactive'}">${m.activo ? 'Activo' : 'Pausado'}</span></td>
+            <td><span class="badge-status ${m.activo !== false ? 'badge-active' : 'badge-inactive'}">${m.activo !== false ? 'Activo' : 'Pausado'}</span></td>
             <td>
-              <button class="btn ${m.activo ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarModulo('${m.id}', ${m.activo})">
-                ${m.activo ? 'Pausar' : 'Activar'}
+              <button class="btn ${m.activo !== false ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarModulo('${m.id}', ${m.activo !== false})">
+                ${m.activo !== false ? 'Pausar' : 'Activar'}
               </button>
             </td>
           `;
@@ -602,34 +540,33 @@
       modulosActivos.forEach(m => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${m.icono || '📁'} <strong>${m.nombre}</strong></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="c" title="Permiso para Crear / Registrar"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="r" title="Permiso para Ver / Consultar"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="u" title="Permiso para Editar / Modificar"></td>
-          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="d" title="Permiso para Eliminar / Suprimir"></td>
+          <td><strong>${m.nombre}</strong> (<code>${m.id}</code>)</td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="c"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="r" checked></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="u"></td>
+          <td style="text-align:center;"><input type="checkbox" data-mod="${m.id}" data-act="d"></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // 3. Empresas Matriz
+    // 3. Empresas Matriz (Estructura real: activo, id, ivaDefault, razonSocial, representante, rfc)
     document.getElementById("form-empresa").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const id = document.getElementById("emp-id").value.trim().toLowerCase();
+      const id = document.getElementById("emp-id").value.trim().toLowerCase().replace(/\s+/g, '_');
       const payload = {
-        id,
-        razonSocial: document.getElementById("emp-razon").value.trim(),
-        rfc: document.getElementById("emp-rfc").value.trim().toUpperCase(),
-        ivaDefault: parseFloat(document.getElementById("emp-iva").value) || 16,
-        representante: document.getElementById("emp-representante").value.trim(),
         activo: true,
-        actualizadoEn: new Date().toISOString()
+        id,
+        ivaDefault: parseFloat(document.getElementById("emp-iva").value) || 16,
+        razonSocial: document.getElementById("emp-razon").value.trim().toUpperCase(),
+        representante: document.getElementById("emp-representante").value.trim(),
+        rfc: document.getElementById("emp-rfc").value.trim().toUpperCase()
       };
 
       try {
-        await setDoc(doc(db, "empresas", id), payload, { merge: true });
-        await logEvento("empresas", "alta/edicion", `Empresa: ${payload.razonSocial}`);
-        showToast("Empresa guardada");
+        await setDoc(doc(db, "empresas", id), payload);
+        await logEvento("empresas", "alta", `Empresa ${payload.razonSocial}`);
+        showToast("Empresa guardada con éxito");
         document.getElementById("form-empresa").reset();
       } catch (err) {
         alert("Error: " + err.message);
@@ -651,23 +588,23 @@
             <td><strong>${emp.razonSocial}</strong></td>
             <td>${emp.rfc}</td>
             <td>${emp.ivaDefault}%</td>
-            <td><span class="badge-status ${emp.activo ? 'badge-active' : 'badge-inactive'}">${emp.activo ? 'Activa' : 'Inactiva'}</span></td>
+            <td>${emp.representante || '-'}</td>
+            <td><span class="badge-status ${emp.activo !== false ? 'badge-active' : 'badge-inactive'}">${emp.activo !== false ? 'Activa' : 'Inactiva'}</span></td>
           `;
           tbody.appendChild(tr);
 
           const opt = document.createElement("option");
-          opt.value = d.id;
-          opt.textContent = `${emp.rfc} - ${emp.razonSocial}`;
+          opt.value = emp.razonSocial || d.id;
+          opt.textContent = `${emp.razonSocial} (${emp.rfc})`;
           selectUserEmp.appendChild(opt);
         });
       });
     }
 
-    // 4. Roles y Matrices
+    // 4. Roles y Matrices (Estructura real: id, matriz)
     document.getElementById("form-rol-template").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const roleId = document.getElementById("role-id").value.trim().toLowerCase();
-      const roleNombre = document.getElementById("role-nombre").value.trim();
+      const roleId = document.getElementById("role-id").value.trim().toLowerCase().replace(/\s+/g, '_');
 
       const matriz = {};
       modulosActivos.forEach(m => {
@@ -680,9 +617,9 @@
       });
 
       try {
-        await setDoc(doc(db, "roles", roleId), { id: roleId, nombre: roleNombre, matriz }, { merge: true });
-        await logEvento("roles", "alta/edicion", `Rol configurado: ${roleNombre}`);
-        showToast("Plantilla de rol guardada");
+        await setDoc(doc(db, "roles", roleId), { id: roleId, matriz });
+        await logEvento("roles", "alta/edicion", `Rol ${roleId}`);
+        showToast("Rol guardado exitosamente");
         document.getElementById("form-rol-template").reset();
         renderRoleMatrix();
       } catch (err) {
@@ -695,7 +632,7 @@
         const container = document.getElementById("roles-cards-container");
         const selectUserRol = document.getElementById("usr-rol-template");
         container.innerHTML = "";
-        selectUserRol.innerHTML = '<option value="">-- Selecciona Rol Plantilla --</option>';
+        selectUserRol.innerHTML = '<option value="">-- Selecciona Rol --</option>';
         rolesCatalogo = {};
 
         snap.forEach(d => {
@@ -705,14 +642,14 @@
           const card = document.createElement("div");
           card.style.cssText = "border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background:#fff; display:flex; justify-content:space-between; align-items:center;";
           card.innerHTML = `
-            <div><strong>${r.nombre}</strong> <code style="font-size:0.75rem;">(${d.id})</code></div>
+            <div><code><strong>${d.id}</strong></code></div>
             <button class="btn btn-secondary btn-sm" onclick="window.cargarRol('${d.id}')">Editar Matriz</button>
           `;
           container.appendChild(card);
 
           const opt = document.createElement("option");
           opt.value = d.id;
-          opt.textContent = r.nombre;
+          opt.textContent = d.id;
           selectUserRol.appendChild(opt);
         });
       });
@@ -722,7 +659,6 @@
       const r = rolesCatalogo[roleId];
       if (!r) return;
       document.getElementById("role-id").value = r.id;
-      document.getElementById("role-nombre").value = r.nombre;
       renderRoleMatrix();
       setTimeout(() => {
         Object.keys(r.matriz || {}).forEach(mod => {
@@ -734,7 +670,7 @@
       }, 50);
     };
 
-    // 5. Directorio de Colaboradores
+    // 5. Gestión de Usuarios
     const usrAlcance = document.getElementById("usr-alcance");
     const containerObras = document.getElementById("container-user-obras");
     usrAlcance.addEventListener("change", () => {
@@ -760,17 +696,6 @@
       const uid = document.getElementById("usr-uid").value.trim();
       const isSuper = document.getElementById("usr-superadmin").checked;
       const rolSeleccionadoId = document.getElementById("usr-rol-template").value;
-      const plantillaRol = rolesCatalogo[rolSeleccionadoId];
-
-      const matrizEfectiva = {};
-      modulosActivos.forEach(m => {
-        matrizEfectiva[m.id] = {
-          c: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.c,
-          r: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.r,
-          u: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.u,
-          d: isSuper ? true : !!plantillaRol?.matriz?.[m.id]?.d
-        };
-      });
 
       const proyectos = isSuper || usrAlcance.value === "global"
         ? ["*"]
@@ -782,19 +707,17 @@
         email: document.getElementById("usr-email").value.trim(),
         empresaId: document.getElementById("usr-empresa").value,
         rol_id: isSuper ? "superadmin" : rolSeleccionadoId,
-        rol: isSuper ? "Super Administrador" : (plantillaRol?.nombre || "Colaborador"),
+        rol: isSuper ? "Super Administrador" : rolSeleccionadoId,
         is_superadmin: isSuper,
         alcance: usrAlcance.value,
         proyectos_asignados: proyectos,
-        matriz_efectiva: matrizEfectiva,
-        activo: true,
-        actualizadoEn: new Date().toISOString()
+        activo: true
       };
 
       try {
         await setDoc(doc(db, "usuarios", uid), payload, { merge: true });
-        await logEvento("usuarios", "actualizar", `Gobernanza actualizada: ${payload.nombre}`);
-        showToast("Colaborador sincronizado con éxito");
+        await logEvento("usuarios", "actualizar", `Colaborador: ${payload.nombre}`);
+        showToast("Colaborador guardado con éxito");
         resetUserForm();
       } catch (err) {
         alert("Error: " + err.message);
@@ -823,7 +746,7 @@
             <div>
               <strong>${u.nombre || "Usuario"}</strong>
               <span class="badge-status ${u.is_superadmin ? 'badge-super' : 'badge-active'}">
-                ${u.is_superadmin ? 'Super Admin' : (u.rol || 'Operativo')}
+                ${u.is_superadmin ? 'Super Admin' : (u.rol_id || u.rol || 'Operativo')}
               </span>
               <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
                 ${u.email} | Empresa: <b>${u.empresaId || 'Sin asignar'}</b>
@@ -831,8 +754,8 @@
             </div>
             <div style="display:flex; gap:6px;">
               <button class="btn btn-secondary btn-sm" onclick="window.editarUsuario('${d.id}')">Editar</button>
-              <button class="btn ${u.activo ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarUsuario('${d.id}', ${u.activo})">
-                ${u.activo ? 'Desactivar' : 'Activar'}
+              <button class="btn ${u.activo !== false ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="window.conmutarUsuario('${d.id}', ${u.activo !== false})">
+                ${u.activo !== false ? 'Desactivar' : 'Activar'}
               </button>
             </div>
           `;
@@ -867,11 +790,11 @@
 
     window.conmutarUsuario = async (uid, activoActual) => {
       await updateDoc(doc(db, "usuarios", uid), { activo: !activoActual });
-      await logEvento("usuarios", "estatus", `Usuario ${uid} conmutado a ${!activoActual}`);
+      await logEvento("usuarios", "estatus", `Usuario ${uid} estatus=${!activoActual}`);
       showToast("Estatus actualizado");
     };
 
-    // 6. Trazabilidad en Auditoría
+    // 6. Auditoría Silenciosa (Formato exacto de captura)
     function escucharAuditoria() {
       onSnapshot(collection(db, "auditoria"), (snap) => {
         const tbody = document.getElementById("auditoria-body");
