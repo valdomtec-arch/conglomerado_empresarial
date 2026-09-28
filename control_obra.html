@@ -20,10 +20,9 @@
       --radius: 12px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-
+    
     header {
       background: var(--primary);
       color: #fff;
@@ -44,7 +43,6 @@
       background: #334155;
       color: #93c5fd;
     }
-
     .header-actions { display: flex; align-items: center; gap: 12px; }
     .btn-nav {
       background: #1e293b;
@@ -78,7 +76,7 @@
     .welcome-title { font-size: 1.45rem; font-weight: 800; color: var(--primary); }
     .welcome-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
 
-    /* Barra de KPIs en Tiempo Real */
+    /* Barra de KPIs en Vivo */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -108,13 +106,12 @@
     .kpi-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
     .kpi-val { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
 
-    /* Grid de Módulos Dinámicos */
+    /* Grid de Módulos */
     .modules-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
       gap: 1.5rem;
     }
-
     .module-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -133,7 +130,6 @@
       box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
       border-color: var(--accent);
     }
-
     .card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
     .module-icon {
       font-size: 2rem;
@@ -181,7 +177,7 @@
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
       <span>Conglomerado Empresarial</span>
-      <span class="badge-role" id="user-badge-role">Cargando...</span>
+      <span class="badge-role" id="user-badge-role">Verificando...</span>
     </div>
     <div class="header-actions">
       <span id="user-name-display" style="font-size: 0.85rem; color: #94a3b8;"></span>
@@ -229,27 +225,27 @@
     <!-- Módulos Dinámicos desde Firestore -->
     <div class="modules-grid" id="modules-container">
       <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 0;">
-        Consultando módulos autorizados...
+        Consultando módulos autorizados en Firestore...
       </div>
     </div>
   </main>
 
   <script type="module">
-    import { auth, db, signOut, collection, onSnapshot, query, where } from "./js/firebase-config.js";
-    import { obtenerPerfilActual, escucharModulosSistema, tienePermiso } from "./js/rbac.js";
+    import { auth, db, signOut, collection, onSnapshot, query, where, doc, getDoc } from "./js/firebase-config.js";
+
+    const SUPER_UID = "zeVjo7RcQqRKjq1T7goO22SMHip1";
+    const SUPER_EMAIL = "valladarescid@gmail.com";
 
     const modulesContainer = document.getElementById("modules-container");
     const userNameDisplay = document.getElementById("user-name-display");
     const userBadgeRole = document.getElementById("user-badge-role");
     const linkAdmin = document.getElementById("link-admin");
     const obrasScopeBadge = document.getElementById("obras-scope-badge");
-    const welcomeSub = document.getElementById("welcome-sub");
 
     const kpiObras = document.getElementById("kpi-obras");
     const kpiAsistencias = document.getElementById("kpi-asistencias");
     const kpiEstimaciones = document.getElementById("kpi-estimaciones");
 
-    // Iconos de fallback por si el módulo no tiene icono en el documento
     const ICONOS_DEFAULT = {
       proyectos: "📍",
       checador: "⏱️",
@@ -259,90 +255,152 @@
       usuarios: "👤"
     };
 
-    async function inicializarDashboard() {
-      try {
-        const { user, perfil } = await obtenerPerfilActual();
+    const DESCRIPCIONES_DEFAULT = {
+      proyectos: "Frentes de obra, geocercas GPS y empresas titulares.",
+      checador: "Control de asistencia facial y verificación de perímetro.",
+      bitacora: "Asientos diarios de obra, cuadrillas y supervisión.",
+      estimaciones: "Carátulas de cobro financiero y retenciones de ley.",
+      prenomina: "Liquidación semanal de mano de obra y exportación a CSV.",
+      usuarios: "Directorio de colaboradores y matriz de gobernanza."
+    };
 
-        userNameDisplay.textContent = perfil.nombre || user.email;
-        userBadgeRole.textContent = perfil.is_superadmin ? "SUPER ADMIN" : (perfil.rol || "COLABORADOR");
-
-        if (perfil.is_superadmin) {
-          linkAdmin.style.display = "inline-block";
-          userBadgeRole.style.background = "#dc2626";
-          userBadgeRole.style.color = "#fff";
-        }
-
-        obrasScopeBadge.textContent = perfil.is_superadmin || perfil.alcance === "global"
-          ? "Alcance: Global (Todas las Obras)"
-          : `Alcance: ${perfil.proyectos_asignados?.length || 0} Obra(s) Asignada(s)`;
-
-        escucharKPIs(perfil);
-
-        // Render reactivo de la colección 'modulos' tal como existe en tu base
-        escucharModulosSistema((modulos) => {
-          modulesContainer.innerHTML = "";
-
-          if (!modulos || modulos.length === 0) {
-            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Sin módulos configurados en Firestore.</div>';
-            return;
-          }
-
-          let modulosVisibles = 0;
-
-          modulos.forEach(m => {
-            const tieneAcceso = perfil.is_superadmin || (m.activo !== false && tienePermiso(perfil, m.id, "r"));
-
-            if (tieneAcceso) {
-              modulosVisibles++;
-              const icono = m.icono || ICONOS_DEFAULT[m.id] || "📁";
-              const card = document.createElement("a");
-              card.href = m.ruta;
-              card.className = "module-card";
-              card.innerHTML = `
-                <div class="card-top">
-                  <div class="module-icon">${icono}</div>
-                  <div class="module-info">
-                    <h3>${m.nombre}</h3>
-                    <p>${m.descripcion || 'Acceso al módulo operativo del sistema.'}</p>
-                  </div>
-                </div>
-                <div class="card-footer">
-                  <span>Acceder al módulo</span>
-                  <span>→</span>
-                </div>
-              `;
-              modulesContainer.appendChild(card);
-            }
-          });
-
-          if (modulosVisibles === 0) {
-            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No cuentas con módulos autorizados para tu puesto actual.</div>';
-          }
-        });
-
-      } catch (err) {
-        console.error("Acceso restringido o error de sesión:", err);
+    // 1. Verificación de sesión y resolución de perfil
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
         window.location.href = "./index.html";
+        return;
       }
+
+      const esRaiz = user.uid === SUPER_UID || (user.email && user.email.toLowerCase() === SUPER_EMAIL.toLowerCase());
+      
+      let perfil = {
+        uid: user.uid,
+        email: user.email,
+        nombre: user.displayName || user.email,
+        rol: "Colaborador",
+        is_superadmin: esRaiz,
+        alcance: esRaiz ? "global" : "asignado",
+        proyectos_asignados: esRaiz ? ["*"] : []
+      };
+
+      try {
+        const snap = await getDoc(doc(db, "usuarios", user.uid));
+        if (snap.exists()) {
+          perfil = { ...perfil, ...snap.data() };
+        }
+      } catch (err) {
+        console.warn("Fallo lectura de usuario en Firestore:", err);
+      }
+
+      // Si es colaborador operativo, obtenemos la matriz del rol asignado
+      if (!perfil.is_superadmin && perfil.rol_id) {
+        try {
+          const rolSnap = await getDoc(doc(db, "roles", perfil.rol_id));
+          if (rolSnap.exists()) {
+            perfil.matriz = rolSnap.data().matriz || {};
+          }
+        } catch (e) {
+          console.warn("Fallo lectura del rol:", e);
+        }
+      }
+
+      iniciarInterfaz(user, perfil);
+    });
+
+    function iniciarInterfaz(user, perfil) {
+      userNameDisplay.textContent = perfil.nombre || user.email;
+      const esSuper = perfil.is_superadmin || perfil.rol_id === "superadmin" || perfil.rol === "superadmin";
+
+      userBadgeRole.textContent = esSuper ? "SUPER ADMIN" : (perfil.rol || "COLABORADOR");
+      if (esSuper) {
+        linkAdmin.style.display = "inline-block";
+        userBadgeRole.style.background = "#dc2626";
+        userBadgeRole.style.color = "#fff";
+      }
+
+      obrasScopeBadge.textContent = esSuper || perfil.alcance === "global"
+        ? "Alcance: Global (Todas las Obras)"
+        : `Alcance: ${perfil.proyectos_asignados?.length || 0} Obra(s) Asignada(s)`;
+
+      escucharKPIs(perfil, esSuper);
+      escucharModulos(perfil, esSuper);
     }
 
-    // Escucha en tiempo real de métricas operacionales
-    function escucharKPIs(perfil) {
-      // 1. Obras activas
+    // 2. Evaluación de Acceso: Tolera tanto permisos en español ('ver') como en inglés ('r')
+    function evaluarAccesoModulo(perfil, moduloId, esSuper) {
+      if (esSuper) return true;
+      if (!perfil.matriz) return false;
+
+      const perm = perfil.matriz[moduloId];
+      if (!perm) return false;
+
+      return perm.ver === true || perm.r === true;
+    }
+
+    // 3. Render reactivo de módulos desde Firestore
+    function escucharModulos(perfil, esSuper) {
+      onSnapshot(collection(db, "modulos"), (snap) => {
+        modulesContainer.innerHTML = "";
+
+        if (snap.empty) {
+          modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Sin módulos configurados en Firestore.</div>';
+          return;
+        }
+
+        let visibles = 0;
+        snap.forEach(d => {
+          const m = { id: d.id, ...d.data() };
+          const activo = m.activo !== false;
+          const tienePermiso = evaluarAccesoModulo(perfil, m.id, esSuper);
+
+          if (activo && tienePermiso) {
+            visibles++;
+            const icono = m.icono || ICONOS_DEFAULT[m.id] || "📁";
+            const desc = m.descripcion || DESCRIPCIONES_DEFAULT[m.id] || "Acceso operacional al módulo.";
+
+            const card = document.createElement("a");
+            card.href = m.ruta;
+            card.className = "module-card";
+            card.innerHTML = `
+              <div class="card-top">
+                <div class="module-icon">${icono}</div>
+                <div class="module-info">
+                  <h3>${m.nombre || m.id}</h3>
+                  <p>${desc}</p>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span>Acceder al módulo</span>
+                <span>→</span>
+              </div>
+            `;
+            modulesContainer.appendChild(card);
+          }
+        });
+
+        if (visibles === 0) {
+          modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem 0;">No cuentas con módulos autorizados para tu rol actual.</div>';
+        }
+      }, (err) => {
+        console.error("Error al escuchar módulos:", err);
+        modulesContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--danger);">Error de conexión: ${err.message}</div>`;
+      });
+    }
+
+    // 4. KPIs en Vivo
+    function escucharKPIs(perfil, esSuper) {
+      // Obras activas
       onSnapshot(collection(db, "proyectos"), (snap) => {
-        let count = 0;
+        let total = 0;
         snap.forEach(d => {
           const p = d.data();
-          const permitido = perfil.is_superadmin || 
-                            perfil.alcance === "global" || 
-                            perfil.proyectos_asignados?.includes(d.id) || 
-                            perfil.proyectos_asignados?.includes("*");
-          if (permitido && p.activo !== false) count++;
+          const permitido = esSuper || perfil.alcance === "global" || perfil.proyectos_asignados?.includes(d.id) || perfil.proyectos_asignados?.includes("*");
+          if (permitido && p.activo !== false) total++;
         });
-        kpiObras.textContent = count;
+        kpiObras.textContent = total;
       });
 
-      // 2. Personal checado hoy
+      // Personal checado hoy
       const hoy = new Date().toISOString().split("T")[0];
       const qAsist = query(
         collection(db, "asistencias"),
@@ -355,7 +413,7 @@
         kpiAsistencias.textContent = uids.size;
       });
 
-      // 3. Estimaciones en revisión
+      // Estimaciones en revisión
       onSnapshot(collection(db, "estimaciones"), (snap) => {
         let countRev = 0;
         snap.forEach(d => {
@@ -369,8 +427,6 @@
       await signOut(auth);
       window.location.href = "./index.html";
     });
-
-    inicializarDashboard();
   </script>
 </body>
 </html>

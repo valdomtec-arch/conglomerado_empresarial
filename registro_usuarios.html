@@ -21,6 +21,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+    
     header {
       background: var(--primary);
       color: #fff;
@@ -36,6 +37,7 @@
     .header-actions { display: flex; gap: 10px; align-items: center; }
     .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
     .btn-nav:hover { background: #475569; }
+
     .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
     .card {
       background: var(--surface);
@@ -46,6 +48,7 @@
     }
     .card-title { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; }
     .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
     .form-group { margin-bottom: 1rem; }
     label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
     input, select {
@@ -60,6 +63,7 @@
     input:focus, select:focus { border-color: var(--accent); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 650px) { .grid-2 { grid-template-columns: 1fr; } }
+
     .btn {
       padding: 0.75rem 1.5rem;
       border-radius: 6px;
@@ -76,6 +80,7 @@
     .btn-primary { background: var(--accent); color: #fff; width: 100%; }
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+
     .superadmin-box {
       background: #fef2f2;
       border: 1px solid #fecaca;
@@ -91,6 +96,7 @@
       cursor: pointer;
       color: #991b1b;
     }
+
     #toast {
       position: fixed;
       bottom: 20px;
@@ -116,7 +122,7 @@
     <div class="header-actions">
       <span id="admin-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
       <a href="./admin.html" class="btn-nav">Torre de Control</a>
-      <a href="./control_obra.html" class="btn-nav">Menú</a>
+      <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
     </div>
   </header>
 
@@ -124,7 +130,7 @@
     <div class="card">
       <div class="card-title">Registrar Nuevo Colaborador</div>
       <div class="card-subtitle">
-        Crea la cuenta en Firebase Authentication y genera automáticamente su ficha en la colección <code>usuarios</code> sin cerrar tu sesión actual.
+        Crea la cuenta en Authentication y genera de forma automática su ficha en la colección <code>usuarios</code> sin cerrar tu sesión actual.
       </div>
 
       <form id="form-crear-usuario">
@@ -176,7 +182,7 @@
         <div class="superadmin-box">
           <label>
             <input type="checkbox" id="new-superadmin" style="width: 17px; height: 17px;">
-            <span><strong>Otorgar Privilegios de Super Administrador</strong> (Control total de módulos y empresas)</span>
+            <span><strong>Otorgar Privilegios de Super Administrador</strong> (Acceso total a todos los módulos y empresas)</span>
           </label>
         </div>
 
@@ -192,8 +198,10 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { db, doc, setDoc, onSnapshot, collection, addDoc } from "./js/firebase-config.js";
-    import { protegerVista } from "./js/rbac.js";
+    import { auth, db, doc, setDoc, onSnapshot, collection, addDoc, getDoc } from "./js/firebase-config.js";
+
+    const SUPER_UID = "zeVjo7RcQqRKjq1T7goO22SMHip1";
+    const SUPER_EMAIL = "valladarescid@gmail.com";
 
     const form = document.getElementById("form-crear-usuario");
     const btnSubmit = document.getElementById("btn-submit");
@@ -206,8 +214,8 @@
     const toast = document.getElementById("toast");
 
     let usuarioActual = null;
-    let perfilActual = null;
 
+    // Configuración directa y explícita
     const firebaseConfig = {
       apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevrofFk",
       authDomain: "conglomerado-empresarial.firebaseapp.com",
@@ -227,8 +235,8 @@
       try {
         await addDoc(collection(db, "auditoria"), {
           timestamp: new Date().toISOString(),
-          uid: usuarioActual?.uid || "zeVjo7RcQqRKjq1T7goO22SMHip1",
-          usuario: perfilActual?.nombre || usuarioActual?.email || "Jose Antonio Valladares Cid",
+          uid: usuarioActual?.uid || SUPER_UID,
+          usuario: usuarioActual?.email || "Super Admin",
           modulo,
           accion,
           detalle
@@ -238,46 +246,67 @@
       }
     }
 
-    // 1. Validar que quien crea usuarios sea Super Admin
-    protegerVista("general").then(({ user, perfil }) => {
-      if (!perfil.is_superadmin && perfil.rol_id !== "superadmin" && user.email.toLowerCase() !== "valladarescid@gmail.com") {
+    // 1. Verificación directa de que el operador sea Super Admin
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "./index.html";
+        return;
+      }
+
+      usuarioActual = user;
+      const esRaiz = user.uid === SUPER_UID || (user.email && user.email.toLowerCase() === SUPER_EMAIL.toLowerCase());
+
+      let esSuper = esRaiz;
+      if (!esSuper) {
+        try {
+          const snap = await getDoc(doc(db, "usuarios", user.uid));
+          if (snap.exists()) {
+            const data = snap.data();
+            esSuper = !!(data.is_superadmin || data.rol_id === "superadmin" || data.rol === "superadmin");
+          }
+        } catch (e) {
+          console.warn("Error validando permisos de admin:", e);
+        }
+      }
+
+      if (!esSuper) {
         alert("Acceso exclusivo para Super Administradores.");
         window.location.href = "./control_obra.html";
         return;
       }
-      usuarioActual = user;
-      perfilActual = perfil;
-      document.getElementById("admin-display").textContent = perfil.nombre || user.email;
+
+      document.getElementById("admin-display").textContent = `${user.email} (Admin)`;
       iniciarSubscripciones();
     });
 
     function iniciarSubscripciones() {
-      // Escuchar Empresas
+      // 1. Cargar Empresas normalizando el nombre / razón social
       onSnapshot(collection(db, "empresas"), (snap) => {
         selectEmpresa.innerHTML = '<option value="">-- Selecciona Empresa --</option>';
         snap.forEach(d => {
           const emp = d.data();
           if (emp.activo !== false) {
             const opt = document.createElement("option");
-            opt.value = emp.razonSocial || d.id;
-            opt.textContent = `${emp.razonSocial} (${emp.rfc || d.id})`;
+            const nombreEmpresa = emp.razonSocial || d.id;
+            opt.value = nombreEmpresa;
+            opt.textContent = `${nombreEmpresa} (${emp.rfc || d.id})`;
             selectEmpresa.appendChild(opt);
           }
         });
-      });
+      }, (err) => console.error("Error empresas:", err));
 
-      // Escuchar Roles respetando los IDs reales de tu Firestore
+      // 2. Cargar Roles mostrando el ID real de Firestore
       onSnapshot(collection(db, "roles"), (snap) => {
         selectRol.innerHTML = '<option value="">-- Selecciona Rol --</option>';
         snap.forEach(d => {
           const opt = document.createElement("option");
           opt.value = d.id;
-          opt.textContent = d.id; // administrador_rh, residente_obra, director
+          opt.textContent = d.id.replace(/_/g, ' ').toUpperCase(); // ej. "ADMINISTRADOR RH"
           selectRol.appendChild(opt);
         });
-      });
+      }, (err) => console.error("Error roles:", err));
 
-      // Escuchar Obras
+      // 3. Cargar Obras
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyectos.innerHTML = "";
         snap.forEach(d => {
@@ -289,21 +318,21 @@
             selectProyectos.appendChild(opt);
           }
         });
-      });
+      }, (err) => console.error("Error proyectos:", err));
     }
 
     selectAlcance.addEventListener("change", () => {
       containerProyectos.style.display = selectAlcance.value === "asignado" ? "block" : "none";
     });
 
-    // 2. Registro con instancia aislada de Auth
+    // 2. Registro con instancia secundaria en memoria (sin desloguear)
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const nombre = document.getElementById("new-nombre").value.trim();
       const email = document.getElementById("new-email").value.trim();
       const password = document.getElementById("new-password").value;
-      const empresaId = selectEmpresa.value;
+      const empresaSeleccionada = selectEmpresa.value;
       const rolId = selectRol.value;
       const isSuper = checkSuperAdmin.checked;
       const alcance = selectAlcance.value;
@@ -327,17 +356,19 @@
           uid: newUid,
           nombre,
           email,
-          empresaId,
+          empresaId: empresaSeleccionada,
+          empresa: empresaSeleccionada,
           rol_id: isSuper ? "superadmin" : rolId,
-          rol: isSuper ? "Super Administrador" : rolId,
+          rol: isSuper ? "Super Administrador" : rolId.replace(/_/g, ' ').toUpperCase(),
           is_superadmin: isSuper,
           alcance: isSuper ? "global" : alcance,
           proyectos_asignados: proyectos,
-          activo: true
+          activo: true,
+          creadoEn: new Date().toISOString()
         };
 
         await setDoc(doc(db, "usuarios", newUid), nuevoUsuarioPayload);
-        await logEvento("usuarios", "alta", `Colaborador: ${nombre} (${email})`);
+        await logEvento("usuarios", "alta", `Colaborador creado: ${nombre} (${email})`);
         await signOut(secondaryAuth);
 
         showToast(`¡Usuario ${nombre} dado de alta con éxito!`);
@@ -345,7 +376,7 @@
         selectAlcance.value = "global";
         containerProyectos.style.display = "none";
       } catch (err) {
-        console.error("Error al registrar:", err);
+        console.error("Error al registrar colaborador:", err);
         alert("Error de Firebase: " + err.message);
       } finally {
         btnSubmit.disabled = false;
