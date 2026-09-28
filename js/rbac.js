@@ -1,73 +1,83 @@
-// js/rbac.js
+// js/rbac.js - Núcleo de Gobernanza y Control de Acceso RBAC (Blindado)
 import { auth, db, doc, getDoc, onSnapshot, collection } from "./firebase-config.js";
 
-/**
- * Mapeo integral para resolver equivalencias en español y claves internas.
- */
-const DICCIONARIO_ACCIONES = {
-  // Crear / Registrar
-  c: "c", crear: "c", registrar: "c", alta: "c",
-  // Ver / Consultar
-  r: "r", leer: "r", ver: "r", consultar: "r",
-  // Editar / Modificar
-  u: "u", actualizar: "u", editar: "u", modificar: "u",
-  // Eliminar / Suprimir
-  d: "d", eliminar: "d", suprimir: "d", borrar: "d", baja: "d"
+const SUPER_UID = "zeVjo7RcQqRKjq1T7goO22SMHip1";
+const SUPER_EMAIL = "valladarescid@gmail.com";
+
+// Diccionario de equivalencias canónicas
+const DICCIONARIO_CANONICO = {
+  // Verbos en español a siglas
+  crear: "c",
+  ver: "r",
+  editar: "u",
+  eliminar: "d",
+  alta: "c",
+  registrar: "c",
+  leer: "r",
+  consultar: "r",
+  actualizar: "u",
+  modificar: "u",
+  baja: "d",
+  borrar: "d",
+  suprimir: "d",
+  // Siglas a verbos en español
+  c: "crear",
+  r: "ver",
+  u: "editar",
+  d: "eliminar"
 };
 
 /**
- * Normaliza cualquier entrada de acción a su representación canónica.
+ * Comprueba si un usuario cuenta con privilegios de Super Administrador
  */
-function normalizarAccion(accion) {
-  if (!accion) return "r";
-  const str = accion.toString().trim().toLowerCase();
-  return DICCIONARIO_ACCIONES[str] || str;
+export function esSuperAdmin(user, perfil = null) {
+  if (!user && !perfil) return false;
+
+  const uid = perfil?.uid || user?.uid;
+  const email = (perfil?.email || user?.email || "").toLowerCase().trim();
+
+  if (uid === SUPER_UID || email === SUPER_EMAIL.toLowerCase()) {
+    return true;
+  }
+
+  if (perfil) {
+    return (
+      perfil.is_superadmin === true ||
+      perfil.rol_id === "superadmin" ||
+      perfil.rol === "superadmin" ||
+      perfil.rol === "Super Administrador"
+    );
+  }
+
+  return false;
 }
 
 /**
- * Valida si un perfil cuenta con la autorización requerida para un módulo.
- */
-export function tienePermiso(perfil, moduloId, accionRequerida = "r") {
-  if (!perfil) return false;
-
-  // 1. Bypass total para Super Administradores
-  const esSuperAdmin = perfil.is_superadmin === true || 
-                       perfil.rol_id === "superadmin" || 
-                       perfil.rol === "superadmin" ||
-                       perfil.uid === "zeVjo7RcQqRKjq1T7goO22SMHip1" ||
-                       (perfil.email && perfil.email.toLowerCase() === "valladarescid@gmail.com");
-
-  if (esSuperAdmin) return true;
-
-  // 2. Normalizar acción
-  const accionClave = normalizarAccion(accionRequerida);
-
-  // 3. Buscar en matriz (como está en tu Firestore) o matriz_efectiva por compatibilidad
-  const permisosModulo = perfil.matriz?.[moduloId] || perfil.matriz_efectiva?.[moduloId];
-  if (!permisosModulo) return false;
-
-  return !!(permisosModulo[accionClave] || permisosModulo[accionRequerida]);
-}
-
-/**
- * Obtiene el usuario autenticado y su perfil en Firestore.
+ * Obtiene el usuario autenticado y su perfil sincronizado en Firestore
  */
 export function obtenerPerfilActual() {
   return new Promise((resolve, reject) => {
-    auth.onAuthStateChanged(async (user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      unsubscribe();
+
       if (!user) {
-        window.location.href = "./index.html";
-        return reject("No autenticado");
+        if (!window.location.pathname.endsWith("index.html") && !window.location.pathname.endsWith("/")) {
+          window.location.href = "./index.html";
+        }
+        return reject(new Error("Sesión no iniciada."));
       }
 
+      const esRaiz = esSuperAdmin(user);
+
       try {
-        const snap = await getDoc(doc(db, "usuarios", user.uid));
+        const userRef = doc(db, "usuarios", user.uid);
+        const snap = await getDoc(userRef);
         let perfil = null;
 
         if (snap.exists()) {
           perfil = { uid: user.uid, ...snap.data() };
-        } else if (user.email.toLowerCase() === "valladarescid@gmail.com" || user.uid === "zeVjo7RcQqRKjq1T7goO22SMHip1") {
-          // Perfil de rescate para el Super Administrador raíz
+        } else if (esRaiz) {
+          // Perfil de rescate autónomo para el Super Administrador
           perfil = {
             uid: user.uid,
             email: user.email,
@@ -81,32 +91,40 @@ export function obtenerPerfilActual() {
             creadoEn: new Date().toISOString()
           };
         } else {
-          alert("Tu usuario no cuenta con un perfil asignado en la base de datos.");
+          alert("Acceso denegado: Tu colaborador no tiene ficha asignada en Firestore.");
+          await auth.signOut();
           window.location.href = "./index.html";
-          return reject("Perfil no encontrado en Firestore");
+          return reject(new Error("Usuario sin ficha en Firestore"));
         }
 
-        if (perfil.activo === false) {
-          alert("Tu cuenta se encuentra inactiva. Contacta al administrador.");
+        // Verificación de estatus activo
+        if (perfil.activo === false && !esRaiz) {
+          alert("Tu cuenta se encuentra pausada o dada de baja.");
+          await auth.signOut();
           window.location.href = "./index.html";
-          return reject("Usuario inactivo");
+          return reject(new Error("Usuario inactivo"));
         }
 
-        // Si el usuario no tiene matriz cargada pero tiene rol_id, traerla de la colección 'roles'
-        if (!perfil.is_superadmin && perfil.rol_id && !perfil.matriz && !perfil.matriz_efectiva) {
+        if (esRaiz) {
+          perfil.is_superadmin = true;
+          return resolve({ user, perfil });
+        }
+
+        // Cargar matriz de la colección 'roles' si el usuario solo tiene rol_id
+        if (perfil.rol_id && !perfil.matriz && !perfil.matriz_efectiva) {
           try {
             const snapRol = await getDoc(doc(db, "roles", perfil.rol_id));
             if (snapRol.exists()) {
               perfil.matriz = snapRol.data().matriz || {};
             }
-          } catch (e) {
-            console.warn("No se pudo cargar la matriz del rol:", e);
+          } catch (errRol) {
+            console.warn("Advertencia: No se pudo enlazar la matriz de roles:", errRol);
           }
         }
 
         resolve({ user, perfil });
       } catch (err) {
-        console.error("Error al obtener perfil RBAC:", err);
+        console.error("Error crítico al obtener perfil RBAC:", err);
         reject(err);
       }
     });
@@ -114,37 +132,69 @@ export function obtenerPerfilActual() {
 }
 
 /**
- * Protege vistas completas redirigiendo si no cumple con la regla RBAC.
+ * Valida un permiso de forma tolerante a español y siglas CRUD
  */
-export async function protegerVista(moduloId, accionRequerida = "r") {
+export function tienePermiso(perfil, moduloId, accionRequerida = "ver") {
+  if (!perfil) return false;
+  if (esSuperAdmin(null, perfil)) return true;
+
+  const matriz = perfil.matriz || perfil.matriz_efectiva;
+  if (!matriz) return false;
+
+  const configModulo = matriz[moduloId];
+  if (!configModulo) return false;
+
+  const accionOriginal = accionRequerida.toString().trim().toLowerCase();
+  const accionEquivalente = DICCIONARIO_CANONICO[accionOriginal];
+
+  // Evaluación de 4 vías
+  return (
+    configModulo[accionOriginal] === true ||
+    (accionEquivalente && configModulo[accionEquivalente] === true) ||
+    configModulo[accionRequerida] === true
+  );
+}
+
+/**
+ * Blindaje y protección de vista completa con control de bucle de redirección
+ */
+export async function protegerVista(moduloId, accionRequerida = "ver") {
   try {
     const { user, perfil } = await obtenerPerfilActual();
 
-    // Bypass de sesión general
-    if (moduloId === "general") {
+    // Bypass para Super Admin o comprobación de sesión general
+    if (moduloId === "general" || esSuperAdmin(user, perfil)) {
       return { user, perfil };
     }
 
     if (!tienePermiso(perfil, moduloId, accionRequerida)) {
-      alert(`Acceso denegado: No cuentas con privilegios para consultar o modificar el módulo "${moduloId}".`);
-      window.location.href = "./control_obra.html";
-      return Promise.reject("Sin permisos suficientes");
+      alert(`Acceso Restringido: No tienes privilegios para '${accionRequerida}' en el módulo '${moduloId}'.`);
+      if (!window.location.pathname.endsWith("control_obra.html")) {
+        window.location.href = "./control_obra.html";
+      }
+      return Promise.reject(new Error("Permisos insuficientes"));
     }
 
     return { user, perfil };
   } catch (err) {
-    window.location.href = "./index.html";
+    if (!window.location.pathname.endsWith("index.html")) {
+      window.location.href = "./index.html";
+    }
     return Promise.reject(err);
   }
 }
 
 /**
- * Escucha reactivamente los módulos activos registrados en el sistema.
+ * Escucha reactiva a la colección de módulos del sistema
  */
 export function escucharModulosSistema(callback) {
   return onSnapshot(collection(db, "modulos"), (snap) => {
     const modulos = [];
-    snap.forEach((d) => modulos.push({ id: d.id, ...d.data() }));
+    snap.forEach((d) => {
+      modulos.push({ id: d.id, ...d.data() });
+    });
     callback(modulos);
-  }, (err) => console.warn("Error al escuchar módulos:", err));
+  }, (err) => {
+    console.warn("Fallo reactivo al consultar modulos:", err);
+  });
 }
