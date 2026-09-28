@@ -173,7 +173,6 @@
       border-radius: 4px;
       font-weight: 700;
     }
-    .badge-draft { background: #e2e8f0; color: #475569; }
     .badge-review { background: #fef3c7; color: #b45309; }
     .badge-approved { background: #dcfce7; color: #15803d; }
     .badge-paid { background: #dbeafe; color: #1e40af; }
@@ -198,23 +197,23 @@
   <header>
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-      <span>Estimaciones de Cobro y Generadores</span>
+      <span>Estimaciones de Cobro</span>
     </div>
     <div class="header-actions">
-      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando...</span>
-      <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
+      <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
       <a href="./bitacora.html" class="btn-nav">Bitácora</a>
     </div>
   </header>
 
   <div class="container">
 
-    <!-- COLUMNA 1: Formulario y Generador de Partidas -->
+    <!-- COLUMNA 1: Formulario y Generador de Conceptos -->
     <div>
       <div class="card" id="card-estimacion">
         <div class="card-title">
-          <span>Generar Nueva Estimación</span>
-          <span id="lbl-empresa-titular" style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;"></span>
+          <span>Generar Estimación de Cobro</span>
+          <span id="lbl-cliente-titular" style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;"></span>
         </div>
 
         <form id="form-estimacion">
@@ -249,17 +248,15 @@
               <select id="select-tasa-iva">
                 <option value="16">16% - Régimen General</option>
                 <option value="8">8% - Estímulo Fronterizo</option>
+                <option value="0">0% - Exento</option>
               </select>
             </div>
           </div>
 
-          <!-- Selector de Partidas Contractuales Pre-cargadas -->
-          <div style="background: #f1f5f9; padding: 0.75rem; border-radius: 6px; margin-top: 0.5rem; display: flex; gap: 8px; align-items: center;">
-            <select id="select-partida-contrato" style="margin: 0;">
-              <option value="">-- Cargar concepto del catálogo contractual --</option>
-            </select>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-importar-concepto" style="white-space: nowrap;">+ Insertar</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-row" style="white-space: nowrap;">+ Renglón Libre</button>
+          <!-- Barra de Renglones -->
+          <div style="background: #f1f5f9; padding: 0.75rem; border-radius: 6px; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Desglose de Conceptos Generadores</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-row">+ Agregar Concepto</button>
           </div>
 
           <div class="table-container">
@@ -271,7 +268,7 @@
                   <th style="width: 70px;">Unidad</th>
                   <th style="width: 100px;">P.U. ($)</th>
                   <th style="width: 90px;">Vol. Estim.</th>
-                  <th style="width: 110px;">Importe ($)</th>
+                  <th style="width: 110px; text-align: right;">Importe ($)</th>
                   <th style="width: 40px;"></th>
                 </tr>
               </thead>
@@ -279,7 +276,7 @@
             </table>
           </div>
 
-          <!-- Resumen Numérico -->
+          <!-- Resumen Financiero -->
           <div class="financial-summary">
             <div class="summary-row">
               <span>Subtotal Conceptos:</span>
@@ -338,14 +335,12 @@
   <div id="toast"></div>
 
   <script type="module">
-    import { db, collection, addDoc, onSnapshot, doc, updateDoc, query, where, getDocs } from "./js/firebase-config.js";
+    import { db, collection, addDoc, onSnapshot, doc, updateDoc } from "./js/firebase-config.js";
     import { protegerVista, tienePermiso } from "./js/rbac.js";
 
     const selectProyecto = document.getElementById("select-proyecto");
     const filtroProyectoHist = document.getElementById("filtro-proyecto-hist");
-    const selectPartidaContrato = document.getElementById("select-partida-contrato");
-    const btnImportarConcepto = document.getElementById("btn-importar-concepto");
-    const lblEmpresaTitular = document.getElementById("lbl-empresa-titular");
+    const lblClienteTitular = document.getElementById("lbl-cliente-titular");
     const inputFechaCorte = document.getElementById("input-fecha-corte");
     const inputAmort = document.getElementById("input-amortizacion");
     const inputGarantia = document.getElementById("input-garantia");
@@ -368,7 +363,7 @@
     let usuarioActual = null;
     let perfilActual = null;
     let proyectosDisponibles = [];
-    let catalogoPartidasObra = [];
+    let empresasMap = new Map();
     let unsubscribeHist = null;
 
     inputFechaCorte.value = new Date().toISOString().split("T")[0];
@@ -396,7 +391,7 @@
       }
     }
 
-    // 1. Proteger Vista (RBAC - Ver / Consultar)
+    // 1. Proteger Vista (RBAC - Ver / Consultar estimaciones)
     protegerVista("estimaciones", "r").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
@@ -406,11 +401,26 @@
         document.getElementById("card-estimacion").style.display = "none";
       }
 
+      cargarEmpresas();
       cargarProyectos();
-      agregarFilaConcepto(); // Renglón inicial
+      agregarFilaConcepto(); // Renglón inicial vacío
     });
 
-    // 2. Cargar Obras Autorizadas
+    // 2. Cargar Empresas Matriz para heredar tasa de IVA
+    function cargarEmpresas() {
+      onSnapshot(collection(db, "empresas"), (snap) => {
+        empresasMap.clear();
+        snap.forEach(d => {
+          const emp = d.data();
+          // Mapear por razón social
+          if (emp.razonSocial) {
+            empresasMap.set(emp.razonSocial.trim().toLowerCase(), emp);
+          }
+        });
+      });
+    }
+
+    // 3. Cargar Obras Autorizadas
     function cargarProyectos() {
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyecto.innerHTML = '<option value="">-- Selecciona una Obra --</option>';
@@ -429,12 +439,12 @@
 
             const opt1 = document.createElement("option");
             opt1.value = p.id;
-            opt1.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            opt1.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
             selectProyecto.appendChild(opt1);
 
             const opt2 = document.createElement("option");
             opt2.value = p.id;
-            opt2.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            opt2.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
             filtroProyectoHist.appendChild(opt2);
           }
         });
@@ -448,59 +458,33 @@
       });
     }
 
-    // 3. Sincronizar Catálogo Contractual y Tasa de IVA según la Obra
-    async function sincronizarParametrosObra() {
+    // 4. Sincronizar Parámetros según la Obra y Cliente Titular
+    function sincronizarParametrosObra() {
       const pId = selectProyecto.value;
       if (!pId) {
-        lblEmpresaTitular.textContent = "";
-        selectPartidaContrato.innerHTML = '<option value="">-- Cargar concepto del catálogo contractual --</option>';
+        lblClienteTitular.textContent = "";
         return;
       }
 
       const pSel = proyectosDisponibles.find(p => p.id === pId);
       if (pSel) {
-        lblEmpresaTitular.textContent = `Titular: ${pSel.empresaNombre || 'Matriz'} (${pSel.empresaRfc || ''})`;
-        // Heredar tasa de IVA predeterminada de la empresa matriz
-        selectTasaIva.value = (pSel.tasaIvaDefault || 16).toString();
+        lblClienteTitular.textContent = `Cliente Titular: ${pSel.cliente || 'Sin asignar'}`;
+
+        // Buscar si existe la empresa para heredar tasa de IVA
+        if (pSel.cliente) {
+          const empMatch = empresasMap.get(pSel.cliente.trim().toLowerCase());
+          if (empMatch && empMatch.ivaDefault != null) {
+            selectTasaIva.value = empMatch.ivaDefault.toString();
+          }
+        }
         recalcularTotales();
-      }
-
-      // Consultar partidas contractuales dadas de alta en proyectos.html
-      try {
-        const qPartidas = query(collection(db, "partidas"), where("proyecto_id", "==", pId));
-        const snap = await getDocs(qPartidas);
-
-        selectPartidaContrato.innerHTML = '<option value="">-- Cargar concepto del catálogo contractual --</option>';
-        catalogoPartidasObra = [];
-
-        snap.forEach(d => {
-          const itm = { id: d.id, ...d.data() };
-          catalogoPartidasObra.push(itm);
-          const opt = document.createElement("option");
-          opt.value = itm.id;
-          opt.textContent = `${itm.clave} - ${itm.concepto} ($${itm.precio_unitario}/${itm.unidad})`;
-          selectPartidaContrato.appendChild(opt);
-        });
-      } catch (err) {
-        console.warn("Fallo al consultar partidas:", err);
       }
     }
 
     selectProyecto.addEventListener("change", sincronizarParametrosObra);
 
-    // 4. Inserción de Conceptos Contractuales en la Tabla
-    btnImportarConcepto.addEventListener("click", () => {
-      const itmId = selectPartidaContrato.value;
-      if (!itmId) return showToast("Selecciona un concepto del catálogo");
-
-      const itm = catalogoPartidasObra.find(p => p.id === itmId);
-      if (itm) {
-        agregarFilaConcepto(itm.clave, itm.concepto, itm.unidad, itm.precio_unitario, 1);
-        showToast(`Concepto ${itm.clave} insertado`);
-      }
-    });
-
-    function agregarFilaConcepto(clave = "", desc = "", unidad = "pza", pu = 0, vol = 0) {
+    // 5. Inserción Dinámica de Renglones
+    function agregarFilaConcepto(clave = "", desc = "", unidad = "PZA", pu = 0, vol = 0) {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td><input type="text" class="inp-clave" placeholder="C-01" value="${clave}" required></td>
@@ -524,7 +508,7 @@
 
     btnAddRow.addEventListener("click", () => agregarFilaConcepto());
 
-    // 5. Motor de Cálculo Financiero
+    // 6. Motor Financiero
     function recalcularTotales() {
       let subtotal = 0;
       const rows = itemsBody.querySelectorAll("tr");
@@ -539,7 +523,7 @@
 
       const pAmort = (parseFloat(inputAmort.value) || 0) / 100;
       const pGarantia = (parseFloat(inputGarantia.value) || 0) / 100;
-      const tasaIvaNum = parseFloat(selectTasaIva.value) || 16;
+      const tasaIvaNum = parseFloat(selectTasaIva.value) || 0;
       const pIva = tasaIvaNum / 100;
 
       const deduccionAmort = subtotal * pAmort;
@@ -563,7 +547,7 @@
     inputGarantia.addEventListener("input", recalcularTotales);
     selectTasaIva.addEventListener("change", recalcularTotales);
 
-    // 6. Inyección de Estimación a Firestore
+    // 7. Inyección de Estimación a Firestore
     formEstimacion.addEventListener("submit", async (e) => {
       e.preventDefault();
       const pId = selectProyecto.value;
@@ -593,8 +577,7 @@
         proyectoId: pId,
         proyectoNombre: proyectoObj ? proyectoObj.nombre : "Obra",
         proyectoCodigo: proyectoObj?.codigo || "",
-        empresaId: proyectoObj?.empresaId || "sin_asignar",
-        empresaNombre: proyectoObj?.empresaNombre || "Empresa General",
+        cliente: proyectoObj?.cliente || "Sin Titular",
         numeroEstimacion: document.getElementById("input-numero-est").value.trim().toUpperCase(),
         fechaCorte: inputFechaCorte.value,
         porcentajeAmortizacion: parseFloat(inputAmort.value) || 0,
@@ -611,7 +594,8 @@
       try {
         await addDoc(collection(db, "estimaciones"), payload);
         await logEvento("crear_estimacion", `Estimación ${payload.numeroEstimacion} para ${payload.proyectoNombre}`);
-        showToast("¡Estimación guardada en Firestore!");
+        showToast("¡Estimación guardada con éxito!");
+
         formEstimacion.reset();
         itemsBody.innerHTML = "";
         inputFechaCorte.value = new Date().toISOString().split("T")[0];
@@ -623,7 +607,7 @@
       }
     });
 
-    // 7. Historial y Flujo de Aprobación
+    // 8. Historial Reactivo de Estimaciones
     function escucharHistorial() {
       if (unsubscribeHist) unsubscribeHist();
       const filtroId = filtroProyectoHist.value;
@@ -661,14 +645,14 @@
           if (est.estado === "aprobada") { badgeClass = "badge-approved"; badgeText = "Aprobada"; }
           if (est.estado === "pagada") { badgeClass = "badge-paid"; badgeText = "Pagada"; }
 
-          const tasaAplicada = est.tasaIva || est.resumenFinanciero?.tasaIva || 16;
+          const tasaAplicada = est.tasaIva != null ? est.tasaIva : (est.resumenFinanciero?.tasaIva || 16);
 
           item.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.4rem;">
               <div>
                 <strong>${est.numeroEstimacion}</strong> - <small style="color: var(--text-muted);">${est.proyectoNombre}</small>
                 <div style="font-size: 0.78rem; color: var(--text-muted);">
-                  ${est.empresaNombre || 'Matriz'} | Corte: ${est.fechaCorte} | IVA: ${tasaAplicada}%
+                  ${est.cliente || 'Titular'} | Corte: ${est.fechaCorte} | IVA: ${tasaAplicada}%
                 </div>
               </div>
               <span class="badge-status ${badgeClass}">${badgeText}</span>
