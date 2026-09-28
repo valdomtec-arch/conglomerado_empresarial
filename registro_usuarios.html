@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alta Directa de Usuarios - Conglomerado Empresarial</title>
+  <title>Alta Directa de Colaboradores - Conglomerado Empresarial</title>
   <style>
     :root {
       --primary: #0f172a;
@@ -117,7 +117,7 @@
   <header>
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-      <span>Alta Directa de Usuarios</span>
+      <span>Alta Directa de Colaboradores</span>
     </div>
     <div class="header-actions">
       <span id="admin-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
@@ -130,13 +130,13 @@
     <div class="card">
       <div class="card-title">Registrar Nuevo Colaborador</div>
       <div class="card-subtitle">
-        Crea la cuenta en Authentication y genera de forma automática su ficha en la colección <code>usuarios</code> sin cerrar tu sesión actual.
+        Crea las credenciales de acceso e inyecta la ficha de gobernanza en la colección <code>usuarios</code>, apareciendo de inmediato en la Torre de Control sin cerrar tu sesión actual.
       </div>
 
       <form id="form-crear-usuario">
         <div class="grid-2">
           <div class="form-group">
-            <label for="new-nombre">Nombre Completo</label>
+            <label for="new-nombre">Nombre Completo del Colaborador</label>
             <input type="text" id="new-nombre" placeholder="Ej. Ing. Carlos Mendoza" required>
           </div>
           <div class="form-group">
@@ -160,7 +160,7 @@
 
         <div class="grid-2">
           <div class="form-group">
-            <label for="new-rol-template">Rol / Puesto Operativo</label>
+            <label for="new-rol-template">Rol / Puesto Asignado</label>
             <select id="new-rol-template" required>
               <option value="">Cargando roles...</option>
             </select>
@@ -169,25 +169,25 @@
             <label for="new-alcance">Alcance Territorial</label>
             <select id="new-alcance">
               <option value="global">Global (Todas las Obras)</option>
-              <option value="asignado">Obras Específicas Asignadas</option>
+              <option value="asignado">Obras Asignadas Específicas</option>
             </select>
           </div>
         </div>
 
         <div class="form-group" id="container-proyectos" style="display: none;">
-          <label for="new-proyectos">Obras Autorizadas (mantén Ctrl para seleccionar varias)</label>
+          <label for="new-proyectos">Obras Autorizadas (mantén presionado Ctrl para seleccionar varias)</label>
           <select id="new-proyectos" multiple style="height: 90px;"></select>
         </div>
 
         <div class="superadmin-box">
           <label>
             <input type="checkbox" id="new-superadmin" style="width: 17px; height: 17px;">
-            <span><strong>Otorgar Privilegios de Super Administrador</strong> (Acceso total a todos los módulos y empresas)</span>
+            <span><strong>Otorgar Privilegios de Super Administrador</strong> (Control total de módulos y empresas)</span>
           </label>
         </div>
 
         <button type="submit" class="btn btn-primary" id="btn-submit">
-          Registrar Colaborador en Firebase
+          Registrar e Inyectar Colaborador en Firebase
         </button>
       </form>
     </div>
@@ -215,7 +215,7 @@
 
     let usuarioActual = null;
 
-    // Configuración directa y explícita
+    // Configuración oficial del proyecto
     const firebaseConfig = {
       apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevrofFk",
       authDomain: "conglomerado-empresarial.firebaseapp.com",
@@ -246,7 +246,7 @@
       }
     }
 
-    // 1. Verificación directa de que el operador sea Super Admin
+    // 1. Verificación de permisos de Super Administrador
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
         window.location.href = "./index.html";
@@ -265,7 +265,7 @@
             esSuper = !!(data.is_superadmin || data.rol_id === "superadmin" || data.rol === "superadmin");
           }
         } catch (e) {
-          console.warn("Error validando permisos de admin:", e);
+          console.warn("Error comprobando usuario:", e);
         }
       }
 
@@ -275,38 +275,38 @@
         return;
       }
 
-      document.getElementById("admin-display").textContent = `${user.email} (Admin)`;
+      document.getElementById("admin-display").textContent = `${user.email} (En Línea)`;
       iniciarSubscripciones();
     });
 
     function iniciarSubscripciones() {
-      // 1. Cargar Empresas normalizando el nombre / razón social
+      // 1. Cargar Empresas sincronizadas con admin.html
       onSnapshot(collection(db, "empresas"), (snap) => {
         selectEmpresa.innerHTML = '<option value="">-- Selecciona Empresa --</option>';
         snap.forEach(d => {
           const emp = d.data();
           if (emp.activo !== false) {
             const opt = document.createElement("option");
-            const nombreEmpresa = emp.razonSocial || d.id;
-            opt.value = nombreEmpresa;
-            opt.textContent = `${nombreEmpresa} (${emp.rfc || d.id})`;
+            const valorEmpresa = emp.razonSocial || d.id;
+            opt.value = valorEmpresa;
+            opt.textContent = `${valorEmpresa} (${emp.rfc || d.id})`;
             selectEmpresa.appendChild(opt);
           }
         });
-      }, (err) => console.error("Error empresas:", err));
+      }, (err) => console.error("Error al escuchar empresas:", err));
 
-      // 2. Cargar Roles mostrando el ID real de Firestore
+      // 2. Cargar Roles registrados en Firestore
       onSnapshot(collection(db, "roles"), (snap) => {
         selectRol.innerHTML = '<option value="">-- Selecciona Rol --</option>';
         snap.forEach(d => {
           const opt = document.createElement("option");
           opt.value = d.id;
-          opt.textContent = d.id.replace(/_/g, ' ').toUpperCase(); // ej. "ADMINISTRADOR RH"
+          opt.textContent = d.id.replace(/_/g, ' ').toUpperCase();
           selectRol.appendChild(opt);
         });
-      }, (err) => console.error("Error roles:", err));
+      }, (err) => console.error("Error al escuchar roles:", err));
 
-      // 3. Cargar Obras
+      // 3. Cargar Obras para asignación territorial
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyectos.innerHTML = "";
         snap.forEach(d => {
@@ -318,14 +318,14 @@
             selectProyectos.appendChild(opt);
           }
         });
-      }, (err) => console.error("Error proyectos:", err));
+      }, (err) => console.error("Error al escuchar proyectos:", err));
     }
 
     selectAlcance.addEventListener("change", () => {
       containerProyectos.style.display = selectAlcance.value === "asignado" ? "block" : "none";
     });
 
-    // 2. Registro con instancia secundaria en memoria (sin desloguear)
+    // 2. Inyección de Usuario en Auth y Firestore
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -344,6 +344,7 @@
       btnSubmit.disabled = true;
       btnSubmit.textContent = "Inyectando en Firebase...";
 
+      // Instancia de Auth secundaria en memoria para no desloguear al admin
       const secondaryAppName = "SecondaryAuth-" + Date.now();
       const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
       const secondaryAuth = getAuth(secondaryApp);
@@ -352,6 +353,7 @@
         const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
         const newUid = cred.user.uid;
 
+        // Estructura sincronizada con la Pestaña 4 de admin.html
         const nuevoUsuarioPayload = {
           uid: newUid,
           nombre,
@@ -371,7 +373,7 @@
         await logEvento("usuarios", "alta", `Colaborador creado: ${nombre} (${email})`);
         await signOut(secondaryAuth);
 
-        showToast(`¡Usuario ${nombre} dado de alta con éxito!`);
+        showToast(`¡Usuario ${nombre} sincronizado con éxito!`);
         form.reset();
         selectAlcance.value = "global";
         containerProyectos.style.display = "none";
@@ -380,7 +382,7 @@
         alert("Error de Firebase: " + err.message);
       } finally {
         btnSubmit.disabled = false;
-        btnSubmit.textContent = "Registrar Colaborador en Firebase";
+        btnSubmit.textContent = "Registrar e Inyectar Colaborador en Firebase";
       }
     });
   </script>
