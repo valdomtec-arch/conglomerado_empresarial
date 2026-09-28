@@ -19,10 +19,8 @@
       --radius: 10px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
-
     header {
       background: var(--primary);
       color: #fff;
@@ -38,13 +36,7 @@
     .header-actions { display: flex; gap: 10px; align-items: center; }
     .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
     .btn-nav:hover { background: #475569; }
-
-    .container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
+    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -54,7 +46,6 @@
     }
     .card-title { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; }
     .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
-
     .form-group { margin-bottom: 1rem; }
     label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
     input, select {
@@ -67,12 +58,8 @@
       background: #fff;
     }
     input:focus, select:focus { border-color: var(--accent); }
-
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 650px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-
+    @media (max-width: 650px) { .grid-2 { grid-template-columns: 1fr; } }
     .btn {
       padding: 0.75rem 1.5rem;
       border-radius: 6px;
@@ -89,7 +76,6 @@
     .btn-primary { background: var(--accent); color: #fff; width: 100%; }
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-
     .superadmin-box {
       background: #fef2f2;
       border: 1px solid #fecaca;
@@ -105,7 +91,6 @@
       cursor: pointer;
       color: #991b1b;
     }
-
     #toast {
       position: fixed;
       bottom: 20px;
@@ -139,7 +124,7 @@
     <div class="card">
       <div class="card-title">Registrar Nuevo Colaborador</div>
       <div class="card-subtitle">
-        Crea la cuenta en Firebase Authentication y genera automáticamente su ficha de perfil y gobernanza RBAC sin cerrar tu sesión actual.
+        Crea la cuenta en Firebase Authentication y genera automáticamente su ficha en la colección <code>usuarios</code> sin cerrar tu sesión actual.
       </div>
 
       <form id="form-crear-usuario">
@@ -175,7 +160,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="new-alcance">Alcance Geográfico</label>
+            <label for="new-alcance">Alcance Territorial</label>
             <select id="new-alcance">
               <option value="global">Global (Todas las Obras)</option>
               <option value="asignado">Obras Específicas Asignadas</option>
@@ -196,7 +181,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary" id="btn-submit">
-          Registrar e Inyectar Colaborador en Firebase
+          Registrar Colaborador en Firebase
         </button>
       </form>
     </div>
@@ -220,8 +205,6 @@
     const checkSuperAdmin = document.getElementById("new-superadmin");
     const toast = document.getElementById("toast");
 
-    let rolesCatalogo = {};
-    let modulosActivos = [];
     let usuarioActual = null;
     let perfilActual = null;
 
@@ -244,8 +227,8 @@
       try {
         await addDoc(collection(db, "auditoria"), {
           timestamp: new Date().toISOString(),
-          uid: usuarioActual?.uid || "root",
-          usuario: perfilActual?.nombre || usuarioActual?.email || "Super Admin",
+          uid: usuarioActual?.uid || "zeVjo7RcQqRKjq1T7goO22SMHip1",
+          usuario: perfilActual?.nombre || usuarioActual?.email || "Jose Antonio Valladares Cid",
           modulo,
           accion,
           detalle
@@ -255,8 +238,13 @@
       }
     }
 
-    // 1. Validar RBAC
-    protegerVista("usuarios", "c").then(({ user, perfil }) => {
+    // 1. Validar que quien crea usuarios sea Super Admin
+    protegerVista("general").then(({ user, perfil }) => {
+      if (!perfil.is_superadmin && perfil.rol_id !== "superadmin" && user.email.toLowerCase() !== "valladarescid@gmail.com") {
+        alert("Acceso exclusivo para Super Administradores.");
+        window.location.href = "./control_obra.html";
+        return;
+      }
       usuarioActual = user;
       perfilActual = perfil;
       document.getElementById("admin-display").textContent = perfil.nombre || user.email;
@@ -266,36 +254,27 @@
     function iniciarSubscripciones() {
       // Escuchar Empresas
       onSnapshot(collection(db, "empresas"), (snap) => {
-        selectEmpresa.innerHTML = '<option value="">-- Selecciona Empresa Titular --</option>';
+        selectEmpresa.innerHTML = '<option value="">-- Selecciona Empresa --</option>';
         snap.forEach(d => {
           const emp = d.data();
           if (emp.activo !== false) {
             const opt = document.createElement("option");
-            opt.value = d.id;
-            opt.textContent = `${emp.rfc} - ${emp.razonSocial}`;
+            opt.value = emp.razonSocial || d.id;
+            opt.textContent = `${emp.razonSocial} (${emp.rfc || d.id})`;
             selectEmpresa.appendChild(opt);
           }
         });
       });
 
-      // Escuchar Roles
+      // Escuchar Roles respetando los IDs reales de tu Firestore
       onSnapshot(collection(db, "roles"), (snap) => {
-        selectRol.innerHTML = '<option value="">-- Selecciona Plantilla de Rol --</option>';
-        rolesCatalogo = {};
+        selectRol.innerHTML = '<option value="">-- Selecciona Rol --</option>';
         snap.forEach(d => {
-          const r = d.data();
-          rolesCatalogo[d.id] = r;
           const opt = document.createElement("option");
           opt.value = d.id;
-          opt.textContent = r.nombre;
+          opt.textContent = d.id; // administrador_rh, residente_obra, director
           selectRol.appendChild(opt);
         });
-      });
-
-      // Escuchar Módulos para herencia
-      onSnapshot(collection(db, "modulos"), (snap) => {
-        modulosActivos = [];
-        snap.forEach(d => modulosActivos.push({ id: d.id, ...d.data() }));
       });
 
       // Escuchar Obras
@@ -303,10 +282,12 @@
         selectProyectos.innerHTML = "";
         snap.forEach(d => {
           const p = d.data();
-          const opt = document.createElement("option");
-          opt.value = d.id;
-          opt.textContent = `${p.codigo || ''} - ${p.nombre}`;
-          selectProyectos.appendChild(opt);
+          if (p.activo !== false) {
+            const opt = document.createElement("option");
+            opt.value = d.id;
+            opt.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
+            selectProyectos.appendChild(opt);
+          }
         });
       });
     }
@@ -315,7 +296,7 @@
       containerProyectos.style.display = selectAlcance.value === "asignado" ? "block" : "none";
     });
 
-    // 2. Registro transparente con App secundaria en memoria
+    // 2. Registro con instancia aislada de Auth
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -331,8 +312,6 @@
         ? ["*"]
         : Array.from(selectProyectos.selectedOptions).map(opt => opt.value);
 
-      const rolTemplate = rolesCatalogo[rolId];
-
       btnSubmit.disabled = true;
       btnSubmit.textContent = "Inyectando en Firebase...";
 
@@ -341,20 +320,8 @@
       const secondaryAuth = getAuth(secondaryApp);
 
       try {
-        // Crear credencial en Firebase Auth
         const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
         const newUid = cred.user.uid;
-
-        // Construir matriz de permisos efectiva heredada del rol plantilla
-        const matrizEfectiva = {};
-        modulosActivos.forEach(m => {
-          matrizEfectiva[m.id] = {
-            c: isSuper ? true : !!rolTemplate?.matriz?.[m.id]?.c,
-            r: isSuper ? true : !!rolTemplate?.matriz?.[m.id]?.r,
-            u: isSuper ? true : !!rolTemplate?.matriz?.[m.id]?.u,
-            d: isSuper ? true : !!rolTemplate?.matriz?.[m.id]?.d
-          };
-        });
 
         const nuevoUsuarioPayload = {
           uid: newUid,
@@ -362,17 +329,15 @@
           email,
           empresaId,
           rol_id: isSuper ? "superadmin" : rolId,
-          rol: isSuper ? "Super Administrador" : (rolTemplate?.nombre || "Colaborador"),
+          rol: isSuper ? "Super Administrador" : rolId,
           is_superadmin: isSuper,
           alcance: isSuper ? "global" : alcance,
           proyectos_asignados: proyectos,
-          matriz_efectiva: matrizEfectiva,
-          activo: true,
-          creadoEn: new Date().toISOString()
+          activo: true
         };
 
         await setDoc(doc(db, "usuarios", newUid), nuevoUsuarioPayload);
-        await logEvento("usuarios", "alta", `Colaborador creado: ${nombre} (${email})`);
+        await logEvento("usuarios", "alta", `Colaborador: ${nombre} (${email})`);
         await signOut(secondaryAuth);
 
         showToast(`¡Usuario ${nombre} dado de alta con éxito!`);
@@ -384,7 +349,7 @@
         alert("Error de Firebase: " + err.message);
       } finally {
         btnSubmit.disabled = false;
-        btnSubmit.textContent = "Registrar e Inyectar Colaborador en Firebase";
+        btnSubmit.textContent = "Registrar Colaborador en Firebase";
       }
     });
   </script>
