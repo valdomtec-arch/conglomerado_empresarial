@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control de Obra - Tablero de Módulos</title>
+  <title>Control de Obra - Tablero Central</title>
   <style>
     :root {
       --primary: #0f172a;
@@ -127,7 +127,6 @@
       text-decoration: none;
       color: inherit;
       transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-      position: relative;
     }
     .module-card:hover {
       transform: translateY(-3px);
@@ -137,10 +136,10 @@
 
     .card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
     .module-icon {
-      font-size: 2.2rem;
+      font-size: 2rem;
       background: #f8fafc;
-      width: 58px;
-      height: 58px;
+      width: 54px;
+      height: 54px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -202,7 +201,7 @@
       </div>
     </div>
 
-    <!-- KPIs en Tiempo Real -->
+    <!-- Indicadores Clave en Vivo -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-icon">🏗️</div>
@@ -227,10 +226,10 @@
       </div>
     </div>
 
-    <!-- Contenedor Reactivo a Firestore -->
+    <!-- Módulos Dinámicos desde Firestore -->
     <div class="modules-grid" id="modules-container">
       <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 0;">
-        Sincronizando módulos desde Firestore...
+        Consultando módulos autorizados...
       </div>
     </div>
   </main>
@@ -250,6 +249,16 @@
     const kpiAsistencias = document.getElementById("kpi-asistencias");
     const kpiEstimaciones = document.getElementById("kpi-estimaciones");
 
+    // Iconos de fallback por si el módulo no tiene icono en el documento
+    const ICONOS_DEFAULT = {
+      proyectos: "📍",
+      checador: "⏱️",
+      bitacora: "📓",
+      estimaciones: "📊",
+      prenomina: "👥",
+      usuarios: "👤"
+    };
+
     async function inicializarDashboard() {
       try {
         const { user, perfil } = await obtenerPerfilActual();
@@ -263,43 +272,38 @@
           userBadgeRole.style.color = "#fff";
         }
 
-        if (perfil.empresaId) {
-          welcomeSub.textContent = `Adscrito a empresa matriz [${perfil.empresaId}] | Módulos activos según gobernanza.`;
-        }
-
         obrasScopeBadge.textContent = perfil.is_superadmin || perfil.alcance === "global"
           ? "Alcance: Global (Todas las Obras)"
           : `Alcance: ${perfil.proyectos_asignados?.length || 0} Obra(s) Asignada(s)`;
 
-        // Iniciar métricas en vivo
         escucharKPIs(perfil);
 
-        // Render Dinámico de Módulos (Reacciona a creación/pausa en admin.html)
+        // Render reactivo de la colección 'modulos' tal como existe en tu base
         escucharModulosSistema((modulos) => {
           modulesContainer.innerHTML = "";
 
           if (!modulos || modulos.length === 0) {
-            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Sin módulos configurados en la base de datos.</div>';
+            modulesContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Sin módulos configurados en Firestore.</div>';
             return;
           }
 
           let modulosVisibles = 0;
 
           modulos.forEach(m => {
-            // El módulo debe estar activo en la base y el colaborador debe tener permiso de lectura ('r' o 'ver')
             const tieneAcceso = perfil.is_superadmin || (m.activo !== false && tienePermiso(perfil, m.id, "r"));
 
             if (tieneAcceso) {
               modulosVisibles++;
+              const icono = m.icono || ICONOS_DEFAULT[m.id] || "📁";
               const card = document.createElement("a");
               card.href = m.ruta;
               card.className = "module-card";
               card.innerHTML = `
                 <div class="card-top">
-                  <div class="module-icon">${m.icono || '📁'}</div>
+                  <div class="module-icon">${icono}</div>
                   <div class="module-info">
                     <h3>${m.nombre}</h3>
-                    <p>${m.descripcion || 'Acceso al módulo operativo de obra.'}</p>
+                    <p>${m.descripcion || 'Acceso al módulo operativo del sistema.'}</p>
                   </div>
                 </div>
                 <div class="card-footer">
@@ -322,7 +326,7 @@
       }
     }
 
-    // Escucha de métricas en tiempo real
+    // Escucha en tiempo real de métricas operacionales
     function escucharKPIs(perfil) {
       // 1. Obras activas
       onSnapshot(collection(db, "proyectos"), (snap) => {
@@ -338,18 +342,20 @@
         kpiObras.textContent = count;
       });
 
-      // 2. Personal presente hoy
+      // 2. Personal checado hoy
       const hoy = new Date().toISOString().split("T")[0];
-      const qAsist = query(collection(db, "asistencias"), where("fechaCorta", "==", hoy));
+      const qAsist = query(
+        collection(db, "asistencias"),
+        where("fechaCorta", "==", hoy),
+        where("tipo", "==", "entrada")
+      );
       onSnapshot(qAsist, (snap) => {
         const uids = new Set();
-        snap.forEach(d => {
-          if (d.data().tipo === "entrada") uids.add(d.data().uid);
-        });
+        snap.forEach(d => uids.add(d.data().uid));
         kpiAsistencias.textContent = uids.size;
       });
 
-      // 3. Estimaciones en proceso
+      // 3. Estimaciones en revisión
       onSnapshot(collection(db, "estimaciones"), (snap) => {
         let countRev = 0;
         snap.forEach(d => {

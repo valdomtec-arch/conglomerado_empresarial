@@ -131,35 +131,6 @@
       color: var(--text-muted);
       margin-top: 1rem;
     }
-
-    /* Modal Recuperación */
-    .modal-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      z-index: 1000;
-    }
-    .modal-box {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 2rem;
-      width: 100%;
-      max-width: 390px;
-      box-shadow: var(--shadow);
-      text-align: left;
-    }
-    .modal-box h2 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text); }
-    .modal-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4; }
-    .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
-    .btn-cancel { background: #e2e8f0; color: #334155; }
-    .btn-cancel:hover { background: #cbd5e1; }
   </style>
 </head>
 <body>
@@ -198,34 +169,9 @@
         </div>
       </div>
 
-      <div class="actions-row">
-        <span class="link-forgot" id="link-forgot-modal">¿Olvidaste tu contraseña?</span>
-      </div>
-
       <button type="submit" class="btn" id="btn-submit">Ingresar al Sistema</button>
-      <div id="loading" class="loading-spinner">Verificando credenciales corporativas...</div>
+      <div id="loading" class="loading-spinner">Verificando sesión...</div>
     </form>
-  </div>
-
-  <!-- Modal Recuperar Contraseña -->
-  <div class="modal-backdrop" id="modal-forgot">
-    <div class="modal-box">
-      <h2>Restablecer Clave</h2>
-      <p>Ingresa tu correo corporativo y te enviaremos un enlace oficial de recuperación.</p>
-      
-      <div id="modal-status" class="status-msg"></div>
-
-      <form id="form-forgot">
-        <div class="form-group">
-          <label for="forgot-email">Correo Electrónico</label>
-          <input type="email" id="forgot-email" required placeholder="usuario@conglomerado.com">
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-cancel" id="btn-close-modal">Cancelar</button>
-          <button type="submit" class="btn" id="btn-send-reset">Enviar Enlace</button>
-        </div>
-      </form>
-    </div>
   </div>
 
   <script type="module">
@@ -235,14 +181,11 @@
       signInWithEmailAndPassword, 
       onAuthStateChanged, 
       doc, 
-      getDoc, 
-      setDoc,
-      collection,
-      getDocs
+      getDoc 
     } from "./js/firebase-config.js";
-    import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const SUPERADMIN_ROOT = "valladarescid@gmail.com";
+    const SUPER_UID = "zeVjo7RcQqRKjq1T7goO22SMHip1";
+    const SUPER_EMAIL = "valladarescid@gmail.com";
 
     const form = document.getElementById('login-form');
     const pwdInput = document.getElementById('password');
@@ -251,14 +194,6 @@
     const statusBox = document.getElementById('status-box');
     const loading = document.getElementById('loading');
     const btnSubmit = document.getElementById('btn-submit');
-
-    const modalForgot = document.getElementById('modal-forgot');
-    const linkForgot = document.getElementById('link-forgot-modal');
-    const btnCloseModal = document.getElementById('btn-close-modal');
-    const formForgot = document.getElementById('form-forgot');
-    const forgotEmail = document.getElementById('forgot-email');
-    const modalStatus = document.getElementById('modal-status');
-    const btnSendReset = document.getElementById('btn-send-reset');
 
     function notify(msg, isError = true) {
       statusBox.textContent = msg;
@@ -277,102 +212,20 @@
         : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
     });
 
-    linkForgot.addEventListener('click', () => {
-      forgotEmail.value = document.getElementById('email').value.trim();
-      modalStatus.style.display = 'none';
-      modalForgot.style.display = 'flex';
-    });
-
-    btnCloseModal.addEventListener('click', () => modalForgot.style.display = 'none');
-
-    formForgot.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = forgotEmail.value.trim();
-      btnSendReset.disabled = true;
-      modalStatus.style.display = 'none';
-
-      try {
-        await sendPasswordResetEmail(auth, email);
-        modalStatus.textContent = "Correo enviado. Revisa tu bandeja de entrada o spam.";
-        modalStatus.className = 'status-msg status-success';
-        modalStatus.style.display = 'block';
-        setTimeout(() => {
-          modalForgot.style.display = 'none';
-          btnSendReset.disabled = false;
-        }, 3000);
-      } catch (err) {
-        modalStatus.textContent = "Error al enviar: verifica que el correo esté registrado.";
-        modalStatus.className = 'status-msg status-error';
-        modalStatus.style.display = 'block';
-        btnSendReset.disabled = false;
-      }
-    });
-
-    // Auto-sembrado de gobernanza y módulos si es primera ejecución
-    async function sembrarEcosistemaSiEsNecesario(user) {
-      if (user.email.toLowerCase() === SUPERADMIN_ROOT.toLowerCase()) {
-        try {
-          const userRef = doc(db, "usuarios", user.uid);
-          const snap = await getDoc(userRef);
-
-          if (!snap.exists() || !snap.data().is_superadmin) {
-            await setDoc(userRef, {
-              uid: user.uid,
-              email: user.email,
-              nombre: "Jose Antonio Valladares Cid",
-              rol: "Super Administrador",
-              rol_id: "superadmin",
-              is_superadmin: true,
-              alcance: "global",
-              proyectos_asignados: ["*"],
-              activo: true,
-              creadoEn: new Date().toISOString()
-            }, { merge: true });
-          }
-
-          // Verificar si existen módulos
-          const modSnap = await getDocs(collection(db, "modulos"));
-          if (modSnap.empty) {
-            const modulosBase = [
-              { id: "proyectos", nombre: "Obras y Geocercas", ruta: "./proyectos.html", icono: "📍", descripcion: "Control de frentes de obra, ubicación GPS y catálogos." },
-              { id: "checador", nombre: "Checador Móvil", ruta: "./checador.html", icono: "⏱️", descripcion: "Pase de lista con validación perimetral y foto facial." },
-              { id: "bitacora", nombre: "Bitácora de Obra", ruta: "./bitacora.html", icono: "📓", descripcion: "Reportes diarios de avances, incidencias, clima y personal." },
-              { id: "estimaciones", nombre: "Estimaciones de Cobro", ruta: "./estimaciones.html", icono: "📊", descripcion: "Generación de partidas, amortizaciones e impuestos (IVA)." },
-              { id: "prenomina", nombre: "Prenómina de M.O.", ruta: "./prenomina.html", icono: "👥", descripcion: "Dispersión semanal cruzada con el checador móvil." }
-            ];
-
-            for (const m of modulosBase) {
-              await setDoc(doc(db, "modulos", m.id), {
-                id: m.id,
-                nombre: m.nombre,
-                ruta: m.ruta,
-                icono: m.icono,
-                descripcion: m.descripcion,
-                activo: true,
-                actualizadoEn: new Date().toISOString()
-              });
-            }
-          }
-        } catch (dbErr) {
-          console.warn("Sembrado omitido:", dbErr);
-        }
-      }
-    }
-
     async function redirigirSegunRol(user) {
       loading.style.display = 'block';
       btnSubmit.disabled = true;
 
-      if (user.email.toLowerCase() === SUPERADMIN_ROOT.toLowerCase()) {
-        await sembrarEcosistemaSiEsNecesario(user);
+      // Validación directa de la cuenta raíz
+      if (user.uid === SUPER_UID || user.email.toLowerCase() === SUPER_EMAIL.toLowerCase()) {
         window.location.href = './admin.html';
         return;
       }
 
       try {
-        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
+        const snap = await getDoc(doc(db, "usuarios", user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
           if (data.is_superadmin || data.rol_id === 'superadmin' || data.rol === 'superadmin') {
             window.location.href = './admin.html';
             return;
