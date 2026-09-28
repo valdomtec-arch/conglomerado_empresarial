@@ -176,15 +176,15 @@
       <span>Bitácora Diaria de Obra</span>
     </div>
     <div class="header-actions">
-      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando...</span>
-      <a href="./control_obra.html" class="btn-nav">Menú Principal</a>
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
+      <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
       <a href="./checador.html" class="btn-nav">Checador</a>
     </div>
   </header>
 
   <div class="container">
 
-    <!-- COLUMNA 1: Formulario de Nueva Entrada -->
+    <!-- COLUMNA 1: Formulario de Nuevo Asiento -->
     <div>
       <div class="card" id="card-formulario">
         <div class="card-title">
@@ -222,28 +222,28 @@
                 Personal en Sitio 
                 <small id="lbl-asistencias-sinc" style="color: var(--accent); font-weight: 600;"></small>
               </label>
-              <input type="number" id="input-personal" placeholder="Ej. 15 operarios" min="0" required>
+              <input type="number" id="input-personal" placeholder="Ej. 12 operarios" min="0" required>
             </div>
             <div class="form-group">
               <label for="input-maquinaria">Equipo / Maquinaria Activa</label>
-              <input type="text" id="input-maquinaria" placeholder="Ej. 1 Retro, 2 Camiones">
+              <input type="text" id="input-maquinaria" placeholder="Ej. 1 Retroexcavadora, 1 Camión">
             </div>
           </div>
 
           <div class="form-group">
             <label for="text-actividades">Actividades Ejecutadas y Avances Reales</label>
-            <textarea id="text-actividades" placeholder="Describe los frentes abordados, colados, excavaciones, armados..." required></textarea>
+            <textarea id="text-actividades" placeholder="Describe los trabajos realizados, colados, excavaciones, tramos abordados..." required></textarea>
           </div>
 
           <div class="form-group">
-            <label for="text-incidentes">Incidentes, Bloqueos o Notas Relevantes</label>
-            <textarea id="text-incidentes" placeholder="Falta de suministro, interferencias, accidentes, visitas de supervisión..."></textarea>
+            <label for="text-incidentes">Incidentes, Interferencias o Notas de Supervisión</label>
+            <textarea id="text-incidentes" placeholder="Falta de suministros, lluvias extraordinarias, visitas de supervisión..."></textarea>
           </div>
 
-          <!-- Evidencia Fotográfica Comprimida -->
+          <!-- Evidencia Fotográfica -->
           <div class="form-group">
-            <label for="input-foto">Fotografía de Evidencia (Cámara / Galería)</label>
-            <input type="file" id="input-foto" accept="image/*" capture="environment">
+            <label for="input-foto">Fotografía de Evidencia</label>
+            <input type="file" id="input-foto" accept="image/*">
             <div class="photo-preview-container" id="preview-container"></div>
           </div>
 
@@ -257,7 +257,7 @@
       <div class="card">
         <div class="feed-header">
           <div class="card-title" style="margin: 0;">Historial de Asientos</div>
-          <div style="display: flex; gap: 8px;">
+          <div>
             <select id="filtro-proyecto" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.85rem;">
               <option value="todos">Todos los frentes autorizados</option>
             </select>
@@ -319,17 +319,17 @@
           detalle
         });
       } catch (err) {
-        console.warn("Fallo log:", err);
+        console.warn("Fallo log auditoría:", err);
       }
     }
 
-    // 1. Proteger Vista (RBAC - Ver / Consultar)
+    // 1. Proteger Vista (RBAC - Ver / Consultar bitácora)
     protegerVista("bitacora", "r").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
       document.getElementById("user-display").textContent = perfil.nombre || user.email;
 
-      // Si no tiene permiso de creación ('c'), ocultar formulario
+      // Ocultar formulario si no tiene permiso de creación ('c')
       if (!tienePermiso(perfil, "bitacora", "c")) {
         document.getElementById("card-formulario").style.display = "none";
       }
@@ -356,12 +356,12 @@
 
             const optForm = document.createElement("option");
             optForm.value = p.id;
-            optForm.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            optForm.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
             selectProyecto.appendChild(optForm);
 
             const optFilter = document.createElement("option");
             optFilter.value = p.id;
-            optFilter.textContent = `${p.codigo || ''} - ${p.nombre}`;
+            optFilter.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
             filtroProyecto.appendChild(optFilter);
           }
         });
@@ -375,7 +375,7 @@
       });
     }
 
-    // 3. Cruce en Tiempo Real con Asistencias del Checador
+    // 3. Cruce en Tiempo Real con Asistencias de checador.html
     async function sincronizarAsistenciaChecador() {
       const pId = selectProyecto.value;
       const fSel = inputFecha.value;
@@ -393,22 +393,23 @@
         );
         const snap = await getDocs(qAsist);
 
-        // Contar colaboradores únicos que marcaron entrada
-        const personalIds = new Set();
+        const colaboradores = new Set();
         snap.forEach(d => {
           const a = d.data();
-          if (a.tipo === "entrada") personalIds.add(a.uid);
+          if (a.tipo === "entrada") {
+            colaboradores.add(a.uid);
+          }
         });
 
-        const totalChecados = personalIds.size;
-        if (totalChecados > 0) {
-          inputPersonal.value = totalChecados;
-          lblAsistenciasSinc.textContent = `(${totalChecados} checados hoy)`;
+        const totalEnSitio = colaboradores.size;
+        if (totalEnSitio > 0) {
+          inputPersonal.value = totalEnSitio;
+          lblAsistenciasSinc.textContent = `(${totalEnSitio} en checador hoy)`;
         } else {
-          lblAsistenciasSinc.textContent = "(0 en checador)";
+          lblAsistenciasSinc.textContent = "(0 en checador hoy)";
         }
       } catch (err) {
-        console.warn("No se pudo sincronizar con asistencias:", err);
+        console.warn("Fallo sincronización con checador:", err);
       }
     }
 
@@ -424,7 +425,7 @@
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          const maxDim = 1024;
+          const maxDim = 1000;
           let width = img.width;
           let height = img.height;
 
@@ -449,14 +450,14 @@
       reader.readAsDataURL(file);
     });
 
-    // 5. Inyección a Firestore
+    // 5. Inyección a Firestore (Colección 'bitacora')
     formBitacora.addEventListener("submit", async (e) => {
       e.preventDefault();
       const pId = selectProyecto.value;
       if (!pId) return alert("Selecciona una obra.");
 
       btnGuardar.disabled = true;
-      btnGuardar.textContent = "Registrando en Firestore...";
+      btnGuardar.textContent = "Guardando asiento...";
 
       const proyectoObj = proyectosDisponibles.find(p => p.id === pId);
 
@@ -464,8 +465,7 @@
         proyectoId: pId,
         proyectoNombre: proyectoObj ? proyectoObj.nombre : "Obra",
         proyectoCodigo: proyectoObj?.codigo || "",
-        empresaId: proyectoObj?.empresaId || perfilActual.empresaId || "sin_asignar",
-        empresaNombre: proyectoObj?.empresaNombre || "Empresa General",
+        cliente: proyectoObj?.cliente || "Sin Titular",
         fecha: inputFecha.value,
         clima: document.getElementById("select-clima").value,
         personalMO: Number(inputPersonal.value) || 0,
@@ -480,8 +480,8 @@
 
       try {
         await addDoc(collection(db, "bitacora"), payload);
-        await logEvento("registro_bitacora", `Asiento registrado en ${payload.proyectoNombre} (${payload.fecha})`);
-        showToast("Asiento guardado con éxito.");
+        await logEvento("registro_bitacora", `Asiento en ${payload.proyectoNombre} (${payload.fecha})`);
+        showToast("Asiento guardado con éxito");
 
         // Reset Parcial
         document.getElementById("text-actividades").value = "";
@@ -498,7 +498,7 @@
       }
     });
 
-    // 6. Feed Reactivo
+    // 6. Feed Reactivo de Asientos
     function escucharFeed() {
       if (unsubscribeFeed) unsubscribeFeed();
 
@@ -535,7 +535,7 @@
               <div>
                 <span class="badge">${entry.proyectoCodigo ? `[${entry.proyectoCodigo}] ` : ''}${entry.proyectoNombre}</span>
                 <span style="margin-left: 6px; font-weight: 700;">${entry.fecha}</span>
-                <small style="color: var(--text-muted); margin-left: 6px;">(${entry.empresaNombre || 'Matriz'})</small>
+                <small style="color: var(--text-muted); margin-left: 6px;">(${entry.cliente || 'Titular'})</small>
               </div>
               <div>Por: <b>${entry.creadoPorNombre}</b></div>
             </div>
