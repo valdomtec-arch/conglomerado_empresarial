@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Torre de Control Corporativo - Conglomerado Empresarial</title>
+  <title>Torre de Control Corporativa - Conglomerado Empresarial</title>
   <style>
     :root {
       --primary: #0f172a;
+      --primary-hover: #1e293b;
       --accent: #2563eb;
       --accent-hover: #1d4ed8;
       --bg: #f8fafc;
@@ -15,34 +16,67 @@
       --text: #0f172a;
       --text-muted: #64748b;
       --danger: #ef4444;
+      --danger-hover: #dc2626;
       --success: #10b981;
-      --radius: 10px;
-      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --warning: #f59e0b;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+
+    /* Header Ejecutivo */
     header {
       background: var(--primary);
       color: #fff;
-      padding: 1rem 1.75rem;
+      padding: 0.9rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: var(--shadow-md);
     }
-    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .badge-super { background: #dc2626; color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .badge-super {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
     .header-actions { display: flex; align-items: center; gap: 10px; }
-    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
-    .btn-nav:hover { background: #475569; }
+    .btn-nav {
+      background: #334155;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-nav:hover { background: #475569; transform: translateY(-1px); }
+    .btn-nav-primary { background: var(--accent); }
+    .btn-nav-primary:hover { background: var(--accent-hover); }
+
+    /* Navegación por Pestañas */
     .tabs-nav {
       background: #fff;
       border-bottom: 1px solid var(--border);
       padding: 0 1.5rem;
       display: flex;
-      gap: 1.5rem;
+      gap: 1.75rem;
       overflow-x: auto;
     }
     .tab-btn {
@@ -56,85 +90,106 @@
       border-bottom: 3px solid transparent;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       transition: all 0.2s;
       white-space: nowrap;
     }
     .tab-btn:hover { color: var(--accent); }
     .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .container { max-width: 1400px; margin: 1.5rem auto; padding: 0 1rem; }
+
+    /* Contenedor Principal */
+    .container { max-width: 1440px; margin: 1.75rem auto; padding: 0 1.25rem; }
     .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .grid-admin { display: grid; grid-template-columns: 440px 1fr; gap: 1.5rem; }
-    @media (max-width: 1024px) { .grid-admin { grid-template-columns: 1fr; } }
+    .tab-content.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .grid-admin { display: grid; grid-template-columns: 460px 1fr; gap: 1.5rem; }
+    @media (max-width: 1080px) { .grid-admin { grid-template-columns: 1fr; } }
+
+    /* Tarjetas y Formularios */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 1.5rem;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-sm);
       margin-bottom: 1.5rem;
     }
     .card-title {
       font-size: 1.05rem;
       font-weight: 700;
       color: var(--primary);
-      margin-bottom: 1rem;
+      margin-bottom: 1.15rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .form-group { margin-bottom: 0.9rem; }
-    label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+
+    .form-group { margin-bottom: 0.95rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
     input, select, textarea {
       width: 100%;
-      padding: 0.6rem 0.75rem;
+      padding: 0.65rem 0.8rem;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 0.9rem;
       outline: none;
       background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    /* Tablas Corporativas */
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .data-table th { background: #f1f5f9; padding: 0.65rem; text-align: left; border: 1px solid var(--border); color: #475569; }
-    .data-table td { padding: 0.65rem; border: 1px solid var(--border); vertical-align: middle; }
+    .data-table th { background: #f8fafc; padding: 0.75rem 0.65rem; text-align: left; border: 1px solid var(--border); color: #475569; font-weight: 700; }
+    .data-table td { padding: 0.7rem 0.65rem; border: 1px solid var(--border); vertical-align: middle; }
+    .data-table tbody tr:hover { background: #f8fafc; }
+
+    /* Botones */
     .btn {
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       border: none;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: background 0.2s;
+      transition: all 0.2s ease;
     }
     .btn-primary { background: var(--accent); color: #fff; width: 100%; }
-    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-sm); }
     .btn-secondary { background: #e2e8f0; color: #334155; }
     .btn-secondary:hover { background: #cbd5e1; }
     .btn-danger { background: #fee2e2; color: #b91c1c; }
     .btn-danger:hover { background: #fca5a5; }
-    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
-    .badge-status { font-size: 0.75rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.78rem; border-radius: 6px; }
+
+    /* Badges */
+    .badge-status { font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
     .badge-active { background: #dcfce7; color: #15803d; }
     .badge-inactive { background: #fee2e2; color: #b91c1c; }
+
+    /* Toast */
     #toast {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #1e293b;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
       color: #fff;
-      padding: 10px 18px;
-      border-radius: 6px;
-      font-size: 0.85rem;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.88rem;
       display: none;
       z-index: 999;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-lg);
+      border-left: 4px solid var(--accent);
     }
   </style>
 </head>
@@ -147,7 +202,8 @@
       <span class="badge-super">Super Administrador</span>
     </div>
     <div class="header-actions">
-      <span id="super-display" style="font-size: 0.85rem; color: #94a3b8;">Conectando con Firebase...</span>
+      <span id="super-display" style="font-size: 0.85rem; color: #94a3b8;">Conectando...</span>
+      <a href="./registro_usuarios.html" class="btn-nav btn-nav-primary">👤 Módulo Alta Usuarios</a>
       <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
       <button class="btn btn-secondary btn-sm" id="btn-logout">Salir</button>
     </div>
@@ -170,28 +226,28 @@
           <div class="card-title">Registrar Módulo en Firestore</div>
           <form id="form-modulo-dinamico">
             <div class="form-group">
-              <label>ID del Módulo (ej. proyectos, checador)</label>
-              <input type="text" id="mod-id" placeholder="almacen" required>
+              <label>ID del Módulo (ej. registro_usuarios, almacen)</label>
+              <input type="text" id="mod-id" placeholder="registro_usuarios" required>
             </div>
             <div class="form-group">
               <label>Nombre del Módulo</label>
-              <input type="text" id="mod-nombre" placeholder="Control de Almacén" required>
+              <input type="text" id="mod-nombre" placeholder="Alta de Colaboradores" required>
             </div>
             <div class="form-group">
               <label>Ruta URL del Archivo</label>
-              <input type="text" id="mod-ruta" placeholder="./almacen.html" required>
+              <input type="text" id="mod-ruta" placeholder="./registro_usuarios.html" required>
             </div>
-            <button type="submit" class="btn btn-primary">Guardar en Colección modulos</button>
+            <button type="submit" class="btn btn-primary">Guardar Módulo</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Catálogo de Módulos (Colección modulos)</div>
+          <div class="card-title">Módulos Dinámicos Registrados (Colección modulos)</div>
           <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID Documento</th>
+                  <th>ID</th>
                   <th>Nombre Visible</th>
                   <th>Ruta</th>
                   <th>Estatus</th>
@@ -199,7 +255,7 @@
                 </tr>
               </thead>
               <tbody id="modulos-table-body">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Consultando modulos en Firestore...</td></tr>
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Consultando catálogo...</td></tr>
               </tbody>
             </table>
           </div>
@@ -235,12 +291,12 @@
               <label>Representante Legal</label>
               <input type="text" id="emp-rep" placeholder="Ing. Miguel Pecina">
             </div>
-            <button type="submit" class="btn btn-primary">Guardar en Colección empresas</button>
+            <button type="submit" class="btn btn-primary">Guardar Empresa</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Empresas en Firestore</div>
+          <div class="card-title">Empresas en Firestore (Colección empresas)</div>
           <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
@@ -262,18 +318,18 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 3: ROLES Y PERMISOS 100% EN ESPAÑOL -->
+    <!-- PESTAÑA 3: ROLES Y PERMISOS (100% ESPAÑOL) -->
     <section id="tab-roles" class="tab-content">
       <div class="grid-admin">
         <div class="card">
-          <div class="card-title">Configurar Rol y Matriz de Permisos</div>
+          <div class="card-title">Configurar Rol y Matriz</div>
           <form id="form-rol-template">
             <div class="form-group">
               <label>ID del Rol (ej. administrador_rh, residente_obra, director)</label>
               <input type="text" id="role-id" placeholder="residente_obra" required>
             </div>
 
-            <label style="margin-top: 1rem;">Permisos por Módulo (Español)</label>
+            <label style="margin-top: 1rem;">Matriz de Permisos (Español)</label>
             <table class="data-table" style="margin-top: 0.5rem;">
               <thead>
                 <tr>
@@ -290,7 +346,7 @@
             </table>
 
             <div style="margin-top: 1rem;">
-              <button type="submit" class="btn btn-primary">Guardar Rol en Colección roles</button>
+              <button type="submit" class="btn btn-primary">Guardar Rol en Firestore</button>
             </div>
           </form>
         </div>
@@ -304,28 +360,33 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 4: USUARIOS -->
+    <!-- PESTAÑA 4: COLABORADORES (SIN UID VISIBLE - GESTIÓN ERGONÓMICA) -->
     <section id="tab-usuarios" class="tab-content">
       <div class="grid-admin">
         <div class="card">
           <div class="card-title">
-            <span id="user-form-title">Vincular Colaborador</span>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-user" style="display: none;">Nuevo</button>
+            <span id="user-form-title">Registrar Nuevo Colaborador</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-user" style="display: none;">Cancelar</button>
           </div>
           <form id="form-gestionar-usuario">
-            <div class="form-group">
-              <label>UID de Firebase Auth</label>
-              <input type="text" id="usr-uid" placeholder="UID oficial del colaborador" required>
-            </div>
+            <!-- UID técnico oculto para enlace interno al editar -->
+            <input type="hidden" id="usr-uid" value="">
+
             <div class="grid-2">
               <div class="form-group">
                 <label>Nombre Completo</label>
-                <input type="text" id="usr-nombre" placeholder="Nombre del colaborador" required>
+                <input type="text" id="usr-nombre" placeholder="Ej. Ing. Carlos Mendoza" required>
               </div>
               <div class="form-group">
                 <label>Correo Electrónico</label>
                 <input type="email" id="usr-email" placeholder="usuario@conglomerado.com" required>
               </div>
+            </div>
+
+            <!-- Contraseña solo visible en modo Alta Nueva -->
+            <div class="form-group" id="container-password">
+              <label>Contraseña Temporal de Acceso</label>
+              <input type="password" id="usr-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
             </div>
 
             <div class="grid-2">
@@ -344,28 +405,28 @@
                 <label>Alcance Territorial</label>
                 <select id="usr-alcance">
                   <option value="global">Global (Todas las Obras)</option>
-                  <option value="asignado">Obras Asignadas Específicas</option>
+                  <option value="asignado">Obras Específicas Asignadas</option>
                 </select>
               </div>
               <div class="form-group" id="container-user-obras" style="display: none;">
-                <label>Obras Asignadas</label>
+                <label>Obras Asignadas (Ctrl para varias)</label>
                 <select id="usr-obras" multiple style="height: 80px;"></select>
               </div>
             </div>
 
-            <div class="form-group" style="background: #f1f5f9; padding: 0.75rem; border-radius: 6px;">
+            <div class="form-group" style="background: #f8fafc; border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px;">
               <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
                 <input type="checkbox" id="usr-superadmin" style="width: 17px; height: 17px;">
-                <span><b>Super Administrador</b> (Acceso global total)</span>
+                <span><b>Super Administrador</b> (Privilegios globales totales)</span>
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="btn-save-usr">Actualizar en Colección usuarios</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-usr">Crear Colaborador en el Sistema</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-title">Padrón de Colaboradores</div>
+          <div class="card-title">Padrón de Colaboradores (Colección usuarios)</div>
           <div id="usuarios-list-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
             <div style="text-align: center; color: var(--text-muted);">Consultando usuarios...</div>
           </div>
@@ -389,7 +450,7 @@
               </tr>
             </thead>
             <tbody id="auditoria-body">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Cargando registros...</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Cargando bitácora...</td></tr>
             </tbody>
           </table>
         </div>
@@ -401,6 +462,8 @@
   <div id="toast"></div>
 
   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signOut as signOutSecondary } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { 
       db, 
       auth, 
@@ -413,6 +476,16 @@
       updateDoc 
     } from "./js/firebase-config.js";
 
+    // Configuración para el motor de alta directa
+    const secondaryConfig = {
+      apiKey: "AIzaSyC4jinx3kH6Mo9LYD_KAM-3tpxKevrofFk",
+      authDomain: "conglomerado-empresarial.firebaseapp.com",
+      projectId: "conglomerado-empresarial",
+      storageBucket: "conglomerado-empresarial.firebasestorage.app",
+      messagingSenderId: "36848994870",
+      appId: "1:36848994870:web:2fa267a5e1d35ce1baa697"
+    };
+
     const toast = document.getElementById("toast");
     function showToast(msg) {
       toast.textContent = msg;
@@ -420,7 +493,7 @@
       setTimeout(() => toast.style.display = "none", 3200);
     }
 
-    // Manejo de pestañas
+    // Pestañas
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -449,16 +522,14 @@
       }
     }
 
-    // 1. Conexión Directa de Autenticación sin Bloqueos de RBAC
+    // Autenticación Directa
     auth.onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "./index.html";
         return;
       }
       usuarioActual = user;
-      document.getElementById("super-display").textContent = `${user.email} (Conectado)`;
-
-      // Arrancar inmediatamente los listeners de Firestore
+      document.getElementById("super-display").textContent = `${user.email} (En Línea)`;
       iniciarSubscripciones();
     });
 
@@ -471,7 +542,7 @@
       escucharAuditoria();
     }
 
-    // 2. Módulos Dinámicos (Colección 'modulos': activo, nombre, ruta)
+    // 1. Módulos
     document.getElementById("form-modulo-dinamico").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("mod-id").value.trim().toLowerCase();
@@ -484,7 +555,7 @@
       try {
         await setDoc(doc(db, "modulos", id), payload);
         await logEvento("modulos", "alta", `Módulo ${payload.nombre} (${id})`);
-        showToast("Módulo guardado en Firestore");
+        showToast("Módulo registrado exitosamente");
         document.getElementById("form-modulo-dinamico").reset();
       } catch (err) {
         alert("Error al guardar módulo: " + err.message);
@@ -498,7 +569,7 @@
         modulosActivos = [];
 
         if (snap.empty) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Colección "modulos" vacía en Firestore.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Sin módulos registrados.</td></tr>';
           return;
         }
 
@@ -523,9 +594,7 @@
         });
 
         renderRoleMatrix();
-      }, (err) => {
-        console.error("Error al escuchar modulos:", err);
-      });
+      }, (err) => console.error("Error modulos:", err));
     }
 
     window.conmutarModulo = async (modId, activoActual) => {
@@ -534,7 +603,6 @@
       showToast("Estatus de módulo actualizado");
     };
 
-    // Render de matriz de roles con permisos en español
     function renderRoleMatrix() {
       const tbody = document.getElementById("role-matrix-body");
       tbody.innerHTML = "";
@@ -556,7 +624,7 @@
       });
     }
 
-    // 3. Empresas Matriz (Colección 'empresas')
+    // 2. Empresas
     document.getElementById("form-empresa").addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("emp-id").value.trim().toLowerCase().replace(/\s+/g, '_');
@@ -591,9 +659,9 @@
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td><code>${d.id}</code></td>
-            <td><strong>${emp.razonSocial}</strong></td>
-            <td>${emp.rfc}</td>
-            <td>${emp.ivaDefault}%</td>
+            <td><strong>${emp.razonSocial || d.id}</strong></td>
+            <td>${emp.rfc || '-'}</td>
+            <td>${emp.ivaDefault ?? 16}%</td>
             <td>${emp.representante || '-'}</td>
             <td><span class="badge-status ${emp.activo !== false ? 'badge-active' : 'badge-inactive'}">${emp.activo !== false ? 'Activa' : 'Inactiva'}</span></td>
           `;
@@ -601,13 +669,13 @@
 
           const opt = document.createElement("option");
           opt.value = emp.razonSocial || d.id;
-          opt.textContent = `${emp.razonSocial} (${emp.rfc || d.id})`;
+          opt.textContent = `${emp.razonSocial || d.id} (${emp.rfc || d.id})`;
           selectUserEmp.appendChild(opt);
         });
       });
     }
 
-    // 4. Roles y Permisos (100% Español compatible)
+    // 3. Roles
     document.getElementById("form-rol-template").addEventListener("submit", async (e) => {
       e.preventDefault();
       const roleId = document.getElementById("role-id").value.trim().toLowerCase().replace(/\s+/g, '_');
@@ -624,7 +692,6 @@
           ver: v,
           editar: ed,
           eliminar: el,
-          // Compatibilidad interna por si hay scripts previos
           c, r: v, u: ed, d: el
         };
       });
@@ -688,9 +755,14 @@
       }, 50);
     };
 
-    // 5. Gestión de Colaboradores (Colección 'usuarios')
+    // 4. Gestión de Colaboradores (Cero UID visible, alta y edición transparente)
     const usrAlcance = document.getElementById("usr-alcance");
     const containerObras = document.getElementById("container-user-obras");
+    const containerPassword = document.getElementById("container-password");
+    const inputPassword = document.getElementById("usr-password");
+    const inputEmail = document.getElementById("usr-email");
+    const inputUidHidden = document.getElementById("usr-uid");
+
     usrAlcance.addEventListener("change", () => {
       containerObras.style.display = usrAlcance.value === "asignado" ? "block" : "none";
     });
@@ -711,41 +783,93 @@
 
     document.getElementById("form-gestionar-usuario").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const uid = document.getElementById("usr-uid").value.trim();
+      const btnSave = document.getElementById("btn-save-usr");
+      btnSave.disabled = true;
+
+      const editUid = inputUidHidden.value;
       const isSuper = document.getElementById("usr-superadmin").checked;
       const rolSeleccionadoId = document.getElementById("usr-rol-template").value;
+      const nombre = document.getElementById("usr-nombre").value.trim();
+      const email = inputEmail.value.trim();
+      const empresaId = document.getElementById("usr-empresa").value;
 
       const proyectos = isSuper || usrAlcance.value === "global"
         ? ["*"]
         : Array.from(document.getElementById("usr-obras").selectedOptions).map(o => o.value);
 
-      const payload = {
-        uid,
-        nombre: document.getElementById("usr-nombre").value.trim(),
-        email: document.getElementById("usr-email").value.trim(),
-        empresaId: document.getElementById("usr-empresa").value,
-        rol_id: isSuper ? "superadmin" : rolSeleccionadoId,
-        rol: isSuper ? "Super Administrador" : rolSeleccionadoId,
-        is_superadmin: isSuper,
-        alcance: usrAlcance.value,
-        proyectos_asignados: proyectos,
-        activo: true
-      };
-
       try {
-        await setDoc(doc(db, "usuarios", uid), payload, { merge: true });
-        await logEvento("usuarios", "actualizar", `Colaborador: ${payload.nombre}`);
-        showToast("Colaborador guardado con éxito");
+        if (editUid) {
+          // Edición de colaborador existente (sin tocar contraseñas ni pedir UID)
+          btnSave.textContent = "Actualizando...";
+          const payloadUpdate = {
+            nombre,
+            email,
+            empresaId,
+            empresa: empresaId,
+            rol_id: isSuper ? "superadmin" : rolSeleccionadoId,
+            rol: isSuper ? "Super Administrador" : rolSeleccionadoId,
+            is_superadmin: isSuper,
+            alcance: isSuper ? "global" : usrAlcance.value,
+            proyectos_asignados: proyectos
+          };
+          await updateDoc(doc(db, "usuarios", editUid), payloadUpdate);
+          await logEvento("usuarios", "actualizar", `Colaborador: ${nombre}`);
+          showToast("Colaborador actualizado con éxito");
+        } else {
+          // Alta directa de credenciales en Auth + documento en Firestore
+          btnSave.textContent = "Creando credenciales...";
+          const password = inputPassword.value;
+          if (!password || password.length < 6) {
+            alert("La contraseña debe tener al menos 6 caracteres.");
+            btnSave.disabled = false;
+            return;
+          }
+
+          const secondaryApp = initializeApp(secondaryConfig, "SecAuthAdmin-" + Date.now());
+          const secondaryAuth = getAuth(secondaryApp);
+
+          const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+          const newUid = cred.user.uid;
+
+          const nuevoUsuarioPayload = {
+            uid: newUid,
+            nombre,
+            email,
+            empresaId,
+            empresa: empresaId,
+            rol_id: isSuper ? "superadmin" : rolSeleccionadoId,
+            rol: isSuper ? "Super Administrador" : rolSeleccionadoId,
+            is_superadmin: isSuper,
+            alcance: isSuper ? "global" : usrAlcance.value,
+            proyectos_asignados: proyectos,
+            activo: true,
+            creadoEn: new Date().toISOString()
+          };
+
+          await setDoc(doc(db, "usuarios", newUid), nuevoUsuarioPayload);
+          await logEvento("usuarios", "alta", `Colaborador creado: ${nombre} (${email})`);
+          await signOutSecondary(secondaryAuth);
+          showToast(`¡Colaborador ${nombre} registrado con éxito!`);
+        }
+
         resetUserForm();
       } catch (err) {
-        alert("Error: " + err.message);
+        console.error("Error al procesar colaborador:", err);
+        alert("Fallo al guardar: " + err.message);
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = "Crear Colaborador en el Sistema";
       }
     });
 
     function resetUserForm() {
       document.getElementById("form-gestionar-usuario").reset();
-      document.getElementById("usr-uid").removeAttribute("readonly");
-      document.getElementById("user-form-title").textContent = "Vincular Colaborador";
+      inputUidHidden.value = "";
+      inputEmail.removeAttribute("readonly");
+      containerPassword.style.display = "block";
+      inputPassword.setAttribute("required", "required");
+      document.getElementById("user-form-title").textContent = "Registrar Nuevo Colaborador";
+      document.getElementById("btn-save-usr").textContent = "Crear Colaborador en el Sistema";
       document.getElementById("btn-reset-user").style.display = "none";
       containerObras.style.display = "none";
     }
@@ -755,6 +879,11 @@
       onSnapshot(collection(db, "usuarios"), (snap) => {
         const container = document.getElementById("usuarios-list-container");
         container.innerHTML = "";
+
+        if (snap.empty) {
+          container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:1rem 0;">Sin usuarios registrados en Firestore.</div>';
+          return;
+        }
 
         snap.forEach(d => {
           const u = d.data();
@@ -786,10 +915,15 @@
       onSnapshot(doc(db, "usuarios", uid), (d) => {
         if (!d.exists()) return;
         const u = d.data();
-        document.getElementById("usr-uid").value = uid;
-        document.getElementById("usr-uid").setAttribute("readonly", true);
+        inputUidHidden.value = uid;
         document.getElementById("usr-nombre").value = u.nombre || "";
-        document.getElementById("usr-email").value = u.email || "";
+        inputEmail.value = u.email || "";
+        inputEmail.setAttribute("readonly", "readonly");
+        
+        // Al editar no se exige contraseña
+        containerPassword.style.display = "none";
+        inputPassword.removeAttribute("required");
+
         document.getElementById("usr-empresa").value = u.empresaId || "";
         document.getElementById("usr-rol-template").value = u.rol_id || "";
         document.getElementById("usr-alcance").value = u.alcance || "global";
@@ -802,7 +936,9 @@
         });
 
         document.getElementById("user-form-title").textContent = `Editando: ${u.nombre}`;
+        document.getElementById("btn-save-usr").textContent = "Guardar Cambios del Colaborador";
         document.getElementById("btn-reset-user").style.display = "inline-flex";
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
     };
 
@@ -812,11 +948,16 @@
       showToast("Estatus actualizado");
     };
 
-    // 6. Auditoría
+    // 5. Auditoría
     function escucharAuditoria() {
       onSnapshot(collection(db, "auditoria"), (snap) => {
         const tbody = document.getElementById("auditoria-body");
         tbody.innerHTML = "";
+
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Sin eventos en auditoria.</td></tr>';
+          return;
+        }
 
         let logs = [];
         snap.forEach(d => logs.push({ id: d.id, ...d.data() }));
