@@ -60,7 +60,7 @@
       margin-bottom: 0.85rem;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
     }
 
     .form-group { margin-bottom: 0.85rem; }
@@ -90,11 +90,39 @@
       cursor: pointer;
       font-size: 0.88rem;
       font-weight: 600;
+      transition: all 0.2s;
     }
     .radio-card.selected {
       background: #eff6ff;
       border-color: var(--accent);
       color: var(--accent);
+    }
+
+    .selector-metodo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .metodo-card {
+      border: 1.5px solid var(--border);
+      padding: 0.75rem 0.5rem;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .metodo-card.active {
+      background: #f0fdf4;
+      border-color: var(--success);
+      color: #166534;
     }
 
     .geo-status {
@@ -121,10 +149,45 @@
     .badge-fail { background: #fee2e2; color: #b91c1c; }
     .badge-checking { background: #fef3c7; color: #b45309; }
 
+    /* Área de Huella */
+    .biometric-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      margin-bottom: 0.85rem;
+      background: #f8fafc;
+    }
+    .fingerprint-icon-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #eff6ff;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 0.5rem;
+    }
+    .fingerprint-icon-btn:hover {
+      background: var(--accent);
+      color: #fff;
+      transform: scale(1.05);
+    }
+    .fingerprint-icon-btn.verified {
+      background: #dcfce7;
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    /* Área de Cámara Facial */
     .camera-container {
       position: relative;
       width: 100%;
-      height: 240px;
+      height: 220px;
       background: #000;
       border-radius: 8px;
       overflow: hidden;
@@ -139,7 +202,6 @@
       object-fit: cover;
     }
     #captured-preview { display: none; }
-    
     .camera-actions {
       display: flex;
       gap: 0.5rem;
@@ -163,8 +225,31 @@
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #059669; }
     .btn-secondary { background: #e2e8f0; color: #334155; }
     .btn-secondary:hover { background: #cbd5e1; }
+
+    /* Modal de Vinculación Biométrica */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25);
+    }
 
     .history-item {
       display: flex;
@@ -187,7 +272,7 @@
       border-radius: 6px;
       font-size: 0.85rem;
       display: none;
-      z-index: 999;
+      z-index: 1100;
       box-shadow: var(--shadow);
     }
   </style>
@@ -204,6 +289,20 @@
 
   <div class="main-container">
 
+    <!-- Tarjeta de Estado del Dispositivo / Huella -->
+    <div class="card" id="card-bio-status" style="border-left: 4px solid var(--accent);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 700;" id="bio-status-title">Vinculación Biométrica</div>
+          <small id="bio-status-desc" style="color: var(--text-muted);">Comprobando hardware biométrico...</small>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-open-vinculacion" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.78rem;">
+          Vincular
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta Principal de Marcaje -->
     <div class="card">
       <div class="card-title">
         <span>Registro de Presencia</span>
@@ -233,16 +332,48 @@
         <span class="status-badge badge-checking" id="geo-badge">Obteniendo GPS...</span>
       </div>
 
-      <!-- Cámara para Evidencia Facial -->
-      <label>Evidencia Fotográfica Facial</label>
-      <div class="camera-container">
-        <video id="camera-stream" autoplay playsinline></video>
-        <img id="captured-preview" alt="Foto Asistencia">
+      <!-- Selección del Método de Marcado -->
+      <label>Método de Identificación</label>
+      <div class="selector-metodo">
+        <div class="metodo-card active" id="tab-metodo-huella">
+          <span style="font-size: 1.25rem;">👆</span>
+          <span>Huella Digital</span>
+        </div>
+        <div class="metodo-card" id="tab-metodo-facial">
+          <span style="font-size: 1.25rem;">📸</span>
+          <span>Foto Facial</span>
+        </div>
       </div>
 
-      <div class="camera-actions">
-        <button type="button" class="btn btn-secondary" id="btn-capturar-foto">📸 Tomar Foto</button>
-        <button type="button" class="btn btn-secondary" id="btn-retomar-foto" style="display: none;">🔄 Reintentar</button>
+      <!-- ZONA 1: Huella Digital (WebAuthn) -->
+      <div id="seccion-huella">
+        <div class="biometric-box">
+          <button type="button" class="fingerprint-icon-btn" id="btn-activar-huella" title="Tocar para verificar huella">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path>
+              <path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path>
+              <path d="M2 12a10 10 0 0 1 18-6"></path>
+              <path d="M2 16a10 10 0 0 0 16.5 5.5"></path>
+              <path d="M6 12a6 6 0 0 1 11-3"></path>
+              <path d="M8 17.5a6 6 0 0 0 4 .5"></path>
+            </svg>
+          </button>
+          <div style="font-size: 0.88rem; font-weight: 700; margin-top: 4px;" id="label-huella-status">Toca para poner tu huella</div>
+          <small style="color: var(--text-muted); display: block;" id="sublabel-huella">Utiliza el sensor biométrico del teléfono</small>
+        </div>
+      </div>
+
+      <!-- ZONA 2: Foto Facial -->
+      <div id="seccion-facial" style="display: none;">
+        <div class="camera-container">
+          <video id="camera-stream" autoplay playsinline></video>
+          <img id="captured-preview" alt="Foto Asistencia">
+        </div>
+
+        <div class="camera-actions">
+          <button type="button" class="btn btn-secondary" id="btn-capturar-foto">📸 Tomar Foto</button>
+          <button type="button" class="btn btn-secondary" id="btn-retomar-foto" style="display: none;">🔄 Reintentar</button>
+        </div>
       </div>
 
       <button type="button" class="btn btn-primary" id="btn-registrar" disabled style="margin-top: 0.5rem;">
@@ -262,16 +393,49 @@
 
   </div>
 
+  <!-- Modal de Vinculación Biométrica Inicial -->
+  <div class="modal-overlay" id="modal-vinculacion">
+    <div class="modal-content">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">Alta de Huella en este Teléfono</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Ingresa tu <b>contraseña de acceso al sistema</b> para autenticar tu identidad y vincular el lector de huellas o código de tu móvil.
+      </p>
+
+      <form id="form-alta-biometria">
+        <div class="form-group">
+          <label>Contraseña del Sistema</label>
+          <input type="password" id="modal-pwd-input" required placeholder="Tu contraseña corporativa" autocomplete="current-password">
+        </div>
+        <div id="modal-error-msg" style="color: var(--danger); font-size: 0.8rem; margin-bottom: 0.75rem; display: none;"></div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-confirm-modal">Autenticar y Vincular</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <canvas id="hidden-canvas" style="display: none;"></canvas>
   <div id="toast"></div>
 
   <script type="module">
-    import { db, collection, addDoc, onSnapshot, query, where } from "./js/firebase-config.js";
+    import { auth, db, collection, addDoc, onSnapshot, query, where, doc, getDoc, updateDoc } from "./js/firebase-config.js";
     import { protegerVista } from "./js/rbac.js";
+    import { EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    // Elementos Interfaz
     const selectProyecto = document.getElementById("select-proyecto");
     const geoBadge = document.getElementById("geo-badge");
     const geoDistanciaLabel = document.getElementById("geo-distancia-label");
+    const btnEntrada = document.getElementById("btn-tipo-entrada");
+    const btnSalida = document.getElementById("btn-tipo-salida");
+    const tabMetodoHuella = document.getElementById("tab-metodo-huella");
+    const tabMetodoFacial = document.getElementById("tab-metodo-facial");
+    const seccionHuella = document.getElementById("seccion-huella");
+    const seccionFacial = document.getElementById("seccion-facial");
+    const btnActivarHuella = document.getElementById("btn-activar-huella");
+    const labelHuellaStatus = document.getElementById("label-huella-status");
+    const sublabelHuella = document.getElementById("sublabel-huella");
     const btnCapturarFoto = document.getElementById("btn-capturar-foto");
     const btnRetomarFoto = document.getElementById("btn-retomar-foto");
     const cameraStream = document.getElementById("camera-stream");
@@ -279,9 +443,18 @@
     const canvas = document.getElementById("hidden-canvas");
     const btnRegistrar = document.getElementById("btn-registrar");
     const historyContainer = document.getElementById("history-container");
-    const btnEntrada = document.getElementById("btn-tipo-entrada");
-    const btnSalida = document.getElementById("btn-tipo-salida");
     const toast = document.getElementById("toast");
+
+    // Modal Vinculación
+    const cardBioStatus = document.getElementById("card-bio-status");
+    const bioStatusTitle = document.getElementById("bio-status-title");
+    const bioStatusDesc = document.getElementById("bio-status-desc");
+    const btnOpenVinculacion = document.getElementById("btn-open-vinculacion");
+    const modalVinculacion = document.getElementById("modal-vinculacion");
+    const btnCancelModal = document.getElementById("btn-cancel-modal");
+    const formAltaBio = document.getElementById("form-alta-biometria");
+    const modalPwdInput = document.getElementById("modal-pwd-input");
+    const modalErrorMsg = document.getElementById("modal-error-msg");
 
     let usuarioActual = null;
     let perfilActual = null;
@@ -289,6 +462,8 @@
     let mediaStreamObj = null;
     let fotoBase64 = null;
     let tipoMarcaje = "entrada";
+    let metodoActual = "huella"; // "huella" | "facial"
+    let huellaAutenticada = false;
 
     let gpsValido = false;
     let distanciaActualMts = null;
@@ -297,10 +472,10 @@
     function showToast(msg) {
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 3200);
+      setTimeout(() => toast.style.display = "none", 3400);
     }
 
-    // 1. Proteger Vista (RBAC - Acción Crear / Registrar)
+    // 1. Proteger Vista (RBAC)
     protegerVista("checador", "c").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
@@ -309,11 +484,182 @@
 
     async function iniciarModulo() {
       await cargarProyectos();
-      iniciarCamara();
+      evaluarEstadoBiometria();
       escucharHistorialHoy();
     }
 
-    // 2. Conmutar Entrada / Salida
+    // 2. Estado de Biometría del Usuario en Firestore
+    function evaluarEstadoBiometria() {
+      const bio = perfilActual.biometria;
+      if (bio && bio.credentialId) {
+        bioStatusTitle.textContent = "Huella Vinculada ✅";
+        bioStatusDesc.textContent = `Registrada en este móvil (${bio.nombreDispositivo || 'Teléfono'})`;
+        btnOpenVinculacion.textContent = "Actualizar";
+        cardBioStatus.style.borderLeftColor = "var(--success)";
+      } else {
+        bioStatusTitle.textContent = "Sin Huella Registrada ⚠️";
+        bioStatusDesc.textContent = "Vincula tu móvil con tu contraseña para marcar con huella";
+        btnOpenVinculacion.textContent = "Vincular Ahora";
+        cardBioStatus.style.borderLeftColor = "var(--warning)";
+      }
+    }
+
+    btnOpenVinculacion.addEventListener("click", () => {
+      modalErrorMsg.style.display = "none";
+      modalPwdInput.value = "";
+      modalVinculacion.style.display = "flex";
+    });
+
+    btnCancelModal.addEventListener("click", () => {
+      modalVinculacion.style.display = "none";
+    });
+
+    // 3. Flujo de Alta Biométrica (Contraseña + Sensor del Móvil)
+    formAltaBio.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      modalErrorMsg.style.display = "none";
+      const pwd = modalPwdInput.value;
+      const btnConfirm = document.getElementById("btn-confirm-modal");
+      btnConfirm.disabled = true;
+      btnConfirm.textContent = "Verificando clave...";
+
+      try {
+        // Re-autenticación con contraseña corporativa
+        const cred = EmailAuthProvider.credential(usuarioActual.email, pwd);
+        await reauthenticateWithCredential(usuarioActual, cred);
+
+        btnConfirm.textContent = "Coloca tu huella...";
+
+        // Invoca sensor del teléfono vía WebAuthn
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+
+        const publicKeyCredentialCreationOptions = {
+          challenge: challenge,
+          rp: { name: "Conglomerado Empresarial", id: window.location.hostname },
+          user: {
+            id: Uint8Array.from(usuarioActual.uid, c => c.charCodeAt(0)),
+            name: usuarioActual.email,
+            displayName: perfilActual.nombre || usuarioActual.email
+          },
+          pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform", // Sensor propio del teléfono
+            userVerification: "required"
+          },
+          timeout: 60000,
+          attestation: "none"
+        };
+
+        const credential = await navigator.credentials.create({
+          publicKey: publicKeyCredentialCreationOptions
+        });
+
+        // Conversión a Base64 para guardarlo en Firestore
+        const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+
+        const biometriaPayload = {
+          credentialId: rawIdBase64,
+          nombreDispositivo: navigator.userAgentData?.platform || navigator.platform || "Móvil",
+          fechaAlta: new Date().toISOString(),
+          vinculadoPor: usuarioActual.email
+        };
+
+        await updateDoc(doc(db, "usuarios", usuarioActual.uid), {
+          biometria: biometriaPayload
+        });
+
+        perfilActual.biometria = biometriaPayload;
+        evaluarEstadoBiometria();
+        modalVinculacion.style.display = "none";
+        showToast("¡Huella y móvil vinculados exitosamente!");
+      } catch (err) {
+        console.error("Fallo alta biométrica:", err);
+        modalErrorMsg.style.display = "block";
+        if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+          modalErrorMsg.textContent = "Contraseña corporativa incorrecta.";
+        } else if (err.name === "NotAllowedError") {
+          modalErrorMsg.textContent = "Operación cancelada o sensor de huella no reconocido.";
+        } else {
+          modalErrorMsg.textContent = "Error al vincular: " + (err.message || err);
+        }
+      } finally {
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = "Autenticar y Vincular";
+      }
+    });
+
+    // 4. Marcaje con Huella Digital
+    btnActivarHuella.addEventListener("click", async () => {
+      if (!perfilActual.biometria?.credentialId) {
+        showToast("Primero debes vincular tu huella con el botón superior.");
+        btnOpenVinculacion.click();
+        return;
+      }
+
+      labelHuellaStatus.textContent = "Escaneando huella...";
+      sublabelHuella.textContent = "Coloca tu dedo sobre el lector del teléfono";
+
+      try {
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+
+        const rawCredId = Uint8Array.from(atob(perfilActual.biometria.credentialId), c => c.charCodeAt(0));
+
+        const assertion = await navigator.credentials.get({
+          publicKey: {
+            challenge: challenge,
+            allowCredentials: [{
+              id: rawCredId,
+              type: 'public-key',
+              transports: ['internal']
+            }],
+            userVerification: "required",
+            timeout: 60000
+          }
+        });
+
+        if (assertion) {
+          huellaAutenticada = true;
+          btnActivarHuella.classList.add("verified");
+          labelHuellaStatus.textContent = "¡Huella Verificada! ✅";
+          sublabelHuella.textContent = "Identidad validada con el sensor de este teléfono";
+          verificarHabilitacionEnvio();
+        }
+      } catch (err) {
+        console.warn("Fallo lectura de huella:", err);
+        huellaAutenticada = false;
+        btnActivarHuella.classList.remove("verified");
+        labelHuellaStatus.textContent = "Lectura Cancelada o Fallida";
+        sublabelHuella.textContent = "Vuelve a tocar para reintentar";
+        verificarHabilitacionEnvio();
+      }
+    });
+
+    // 5. Conmutador de Método (Huella vs Facial)
+    tabMetodoHuella.addEventListener("click", () => {
+      metodoActual = "huella";
+      tabMetodoHuella.classList.add("active");
+      tabMetodoFacial.classList.remove("active");
+      seccionHuella.style.display = "block";
+      seccionFacial.style.display = "none";
+      if (mediaStreamObj) {
+        mediaStreamObj.getTracks().forEach(t => t.stop());
+      }
+      verificarHabilitacionEnvio();
+    });
+
+    tabMetodoFacial.addEventListener("click", () => {
+      metodoActual = "facial";
+      tabMetodoFacial.classList.add("active");
+      tabMetodoHuella.classList.remove("active");
+      seccionFacial.style.display = "block";
+      seccionHuella.style.display = "none";
+      iniciarCamara();
+      verificarHabilitacionEnvio();
+    });
+
+    // 6. Conmutar Entrada / Salida
     btnEntrada.addEventListener("click", () => {
       tipoMarcaje = "entrada";
       btnEntrada.classList.add("selected");
@@ -325,7 +671,7 @@
       btnEntrada.classList.remove("selected");
     });
 
-    // 3. Cargar Proyectos Autorizados desde Firestore
+    // 7. Cargar Proyectos Autorizados
     function cargarProyectos() {
       return new Promise((resolve) => {
         onSnapshot(collection(db, "proyectos"), (snap) => {
@@ -359,7 +705,7 @@
 
     selectProyecto.addEventListener("change", evaluarGeocerca);
 
-    // 4. Fórmula de Haversine para Distancia Perimetral
+    // 8. Distancia Haversine y Geocerca
     function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
       const rad = Math.PI / 180;
@@ -372,7 +718,6 @@
       return Math.round(R * c);
     }
 
-    // 5. Evaluación de Geocerca contra Campos Planos de Firestore
     function evaluarGeocerca() {
       const proyectoId = selectProyecto.value;
       if (!proyectoId) {
@@ -386,7 +731,6 @@
 
       const pSel = proyectosList.find(p => p.id === proyectoId);
 
-      // Lectura directa de los campos planos: lat, lng, radio_metros
       if (!pSel || pSel.lat == null || pSel.lng == null) {
         geoBadge.className = "status-badge badge-ok";
         geoBadge.textContent = "Geocerca Abierta";
@@ -452,7 +796,7 @@
       );
     }
 
-    // 6. Cámara y Compresión Facial
+    // 9. Manejo de Cámara
     async function iniciarCamara() {
       try {
         mediaStreamObj = await navigator.mediaDevices.getUserMedia({
@@ -499,13 +843,14 @@
       verificarHabilitacionEnvio();
     });
 
+    // 10. Validación Dinámica de Registro
     function verificarHabilitacionEnvio() {
       const proyectoSeleccionado = !!selectProyecto.value;
-      const fotoCapturada = !!fotoBase64;
-      btnRegistrar.disabled = !(proyectoSeleccionado && fotoCapturada && gpsValido);
+      const validacionBiometrica = metodoActual === "huella" ? huellaAutenticada : !!fotoBase64;
+      btnRegistrar.disabled = !(proyectoSeleccionado && gpsValido && validacionBiometrica);
     }
 
-    // 7. Registro de Asistencia en Firestore
+    // 11. Envío a Firestore (Colección asistencias)
     btnRegistrar.addEventListener("click", async () => {
       btnRegistrar.disabled = true;
       btnRegistrar.textContent = "Registrando...";
@@ -523,18 +868,30 @@
         proyectoCodigo: pSel?.codigo || "",
         cliente: pSel?.cliente || "Sin Titular",
         tipo: tipoMarcaje,
+        metodo: metodoActual === "huella" ? "huella_movil" : "foto_facial",
+        biometriaVerificada: metodoActual === "huella",
+        dispositivo: perfilActual.biometria?.nombreDispositivo || navigator.platform || "Web",
         distanciaMts: distanciaActualMts ?? 0,
         coordenadas: userCoords || { lat: 0, lng: 0 },
-        foto: fotoBase64,
+        foto: metodoActual === "facial" ? fotoBase64 : null,
         timestamp: new Date().toISOString(),
         fechaCorta: new Date().toISOString().split("T")[0]
       };
 
       try {
         await addDoc(collection(db, "asistencias"), payload);
-        showToast(`¡Marcaje de ${tipoMarcaje.toUpperCase()} guardado!`);
+        showToast(`¡Marcaje de ${tipoMarcaje.toUpperCase()} por ${metodoActual === "huella" ? "HUELLA" : "FOTO"} guardado!`);
 
-        btnRetomarFoto.click();
+        // Reinicio del estado
+        if (metodoActual === "huella") {
+          huellaAutenticada = false;
+          btnActivarHuella.classList.remove("verified");
+          labelHuellaStatus.textContent = "Toca para poner tu huella";
+          sublabelHuella.textContent = "Utiliza el sensor biométrico del teléfono";
+        } else {
+          btnRetomarFoto.click();
+        }
+
         evaluarGeocerca();
       } catch (err) {
         console.error(err);
@@ -545,7 +902,7 @@
       }
     });
 
-    // 8. Historial Reactivo de Asistencias del Día
+    // 12. Historial Reactivo de Asistencias del Día
     function escucharHistorialHoy() {
       const hoy = new Date().toISOString().split("T")[0];
       const q = query(
@@ -569,10 +926,11 @@
           const hora = new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const item = document.createElement("div");
           item.className = "history-item";
+          const iconoMetodo = a.metodo === "huella_movil" ? "👆 Huella" : "📸 Foto";
           item.innerHTML = `
             <div>
               <strong>${a.proyectoNombre}</strong>
-              <div style="color: var(--text-muted); font-size: 0.75rem;">${a.cliente} (${a.distanciaMts}m)</div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">${a.cliente} (${a.distanciaMts}m) • <span style="color: var(--accent);">${iconoMetodo}</span></div>
             </div>
             <div style="text-align: right;">
               <span class="status-badge ${a.tipo === 'entrada' ? 'badge-ok' : 'badge-fail'}">
