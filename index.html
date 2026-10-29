@@ -20,7 +20,15 @@
       --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    body { 
+      background-color: var(--bg); 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column;
+      align-items: center; 
+      justify-content: center; 
+      padding: 1.5rem; 
+    }
     .login-card {
       background: var(--card-bg);
       border-radius: var(--radius);
@@ -115,6 +123,30 @@
     .forgot-link:hover {
       text-decoration: underline;
     }
+
+    /* Pie de página legal y derechos reservados */
+    .legal-footer {
+      margin-top: 1.75rem;
+      max-width: 440px;
+      text-align: center;
+      font-size: 0.73rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .legal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .legal-footer strong {
+      color: #cbd5e1;
+    }
   </style>
 </head>
 <body>
@@ -157,12 +189,29 @@
       <div id="loading" class="loading-spinner">Verificando credenciales...</div>
     </form>
 
-    <!-- Enlace para restablecimiento de contraseña -->
     <div class="forgot-link-wrapper">
       ¿Olvidaste tu contraseña? 
       <a href="javascript:void(0)" class="forgot-link" id="btn-forgot-password">Ingresa aquí para reponer tu clave</a>
     </div>
   </div>
+
+  <!-- Pie de página legal con la Opción 2 -->
+  <footer class="legal-footer">
+    <div class="legal-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <span>Software Empresarial Registrado</span>
+    </div>
+    <p>
+      Diseño, arquitectura y desarrollo tecnológico por: <strong>Ing. José Antonio Valladares Cid</strong>.<br>
+      Todos los derechos reservados. Prohibida su distribución, clonación o réplica total o parcial sin consentimiento previo del titular de la licencia.
+    </p>
+    <div style="margin-top: 5px; font-weight: 600; color: #475569;">
+      © 2026 Conglomerado Empresarial • Versión Corporativa Segura.
+    </div>
+  </footer>
 
   <script type="module">
     import { 
@@ -175,7 +224,6 @@
       setDoc
     } from "./js/firebase-config.js";
 
-    // Función nativa de Firebase Auth para restablecer contraseña
     import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const SUPER_UID = "zeVjo7RcQqRKjq1T7goO22SMHip1";
@@ -246,7 +294,6 @@
         const snap = await getDoc(refDoc);
 
         if (esRaiz && !snap.exists()) {
-          // Asegura la ficha técnica del Super Administrador si no existiera
           await setDoc(refDoc, {
             uid: user.uid,
             nombre: "Jose Antonio Valladares Cid",
@@ -260,7 +307,6 @@
           }, { merge: true });
         }
 
-        // Todos los usuarios son dirigidos directamente al Tablero Central
         window.location.href = './control_obra.html';
       } catch (err) {
         console.warn("Fallo lectura de perfil, redirigiendo al tablero central:", err);
