@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Bitácora Digital de Obra - Conglomerado Empresarial</title>
+  <title>Bitácora Digital de Obra y Control Gerencial - Conglomerado Empresarial</title>
+  
+  <!-- FontAwesome & QR Library -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <style>
     :root {
       --primary: #0f172a;
@@ -16,7 +21,8 @@
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
-      --radius: 10px;
+      --warning: #f59e0b;
+      --radius: 12px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
 
@@ -26,7 +32,7 @@
     header {
       background: var(--primary);
       color: #fff;
-      padding: 1rem 1.75rem;
+      padding: 0.9rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -34,17 +40,26 @@
       top: 0;
       z-index: 100;
     }
-    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .header-actions { display: flex; gap: 10px; align-items: center; }
-    .btn-nav { background: #334155; color: #fff; text-decoration: none; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+    .btn-nav { 
+      background: #334155; 
+      color: #fff; 
+      text-decoration: none; 
+      padding: 0.45rem 0.85rem; 
+      border-radius: 6px; 
+      font-size: 0.85rem; 
+      font-weight: 600; 
+      transition: background 0.2s;
+    }
     .btn-nav:hover { background: #475569; }
 
     .container {
-      max-width: 1400px;
+      max-width: 1440px;
       margin: 1.5rem auto;
       padding: 0 1rem;
       display: grid;
-      grid-template-columns: 480px 1fr;
+      grid-template-columns: 460px 1fr;
       gap: 1.5rem;
     }
     @media (max-width: 1024px) {
@@ -55,12 +70,12 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.5rem;
+      padding: 1.35rem;
       box-shadow: var(--shadow);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
     }
     .card-title {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--primary);
       margin-bottom: 1rem;
@@ -69,19 +84,34 @@
       justify-content: space-between;
     }
 
-    .form-group { margin-bottom: 0.9rem; }
-    label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+    /* Monitor Ejecutivo de Personal en Vivo */
+    .kpi-monitor {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .kpi-box { text-align: center; }
+    .kpi-label { font-size: 0.75rem; color: #1e40af; font-weight: 600; }
+    .kpi-value { font-size: 1.4rem; font-weight: 800; color: #1d4ed8; }
+
+    .form-group { margin-bottom: 0.85rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
     input, select, textarea {
       width: 100%;
-      padding: 0.6rem 0.75rem;
+      padding: 0.65rem 0.75rem;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.9rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
       outline: none;
       background: #fff;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-    textarea { resize: vertical; min-height: 80px; }
+    textarea { resize: vertical; min-height: 75px; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
@@ -100,8 +130,8 @@
     }
 
     .btn {
-      padding: 0.65rem 1.2rem;
-      border-radius: 6px;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       border: none;
@@ -115,6 +145,9 @@
     .btn-primary { background: var(--accent); color: #fff; width: 100%; }
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 6px; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
 
     /* Feed Asientos */
     .feed-header {
@@ -127,14 +160,19 @@
     }
     .entry-card {
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 1.1rem;
       background: #fff;
       margin-bottom: 1rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .entry-card:hover {
+      box-shadow: 0 6px 12px -2px rgba(0,0,0,0.06);
     }
     .entry-meta {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 0.82rem;
       color: var(--text-muted);
       border-bottom: 1px solid #f1f5f9;
@@ -144,14 +182,96 @@
     .badge {
       display: inline-block;
       font-size: 0.75rem;
-      padding: 2px 7px;
-      border-radius: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
       font-weight: 700;
-      background: #eff6ff;
-      color: var(--accent);
     }
-    .entry-section { margin-bottom: 0.6rem; font-size: 0.88rem; }
-    .entry-section strong { color: var(--primary); }
+    .badge-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-normal { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .badge-menor { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
+    .badge-critico { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+    .entry-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 0.85rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #f8fafc;
+    }
+
+    /* Modal Visor y QR */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* ===================================================
+       FORMATO DE ACUSE OFICIAL IMPRESO (@media print)
+       =================================================== */
+    #print-document { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      #print-document, #print-document * { visibility: visible; }
+      #print-document {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 2.5cm 2cm;
+        background: #fff;
+        color: #000;
+        font-size: 11pt;
+        line-height: 1.5;
+      }
+      .acuse-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+      }
+      .acuse-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 10pt;
+      }
+      .acuse-signatures {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-top: 50px;
+        text-align: center;
+      }
+      .signature-line {
+        border-top: 1px solid #000;
+        padding-top: 6px;
+        font-weight: bold;
+        font-size: 9pt;
+      }
+    }
 
     #toast {
       position: fixed;
@@ -173,7 +293,7 @@
   <header>
     <div class="brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-      <span>Bitácora Diaria de Obra</span>
+      <span>Bitácora Diaria y Control Gerencial</span>
     </div>
     <div class="header-actions">
       <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
@@ -184,11 +304,25 @@
 
   <div class="container">
 
-    <!-- COLUMNA 1: Formulario de Nuevo Asiento -->
+    <!-- COLUMNA 1: Formulario & Monitor Gerencial -->
     <div>
+
+      <!-- Monitor en Vivo del Personal en Sitio -->
+      <div class="kpi-monitor">
+        <div class="kpi-box">
+          <div class="kpi-label">PERSONAL EN SITIO (HOY)</div>
+          <div class="kpi-value" id="kpi-personal-hoy">0</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-label">CERTIFICACIÓN CHECADOR</div>
+          <div class="kpi-value" id="kpi-cobertura">100%</div>
+        </div>
+      </div>
+
       <div class="card" id="card-formulario">
         <div class="card-title">
           <span>Nuevo Asiento de Bitácora</span>
+          <span style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);" id="folio-preview">Folio Auto</span>
         </div>
 
         <form id="form-bitacora">
@@ -218,36 +352,47 @@
 
           <div class="grid-2">
             <div class="form-group">
-              <label for="input-personal">
-                Personal en Sitio 
-                <small id="lbl-asistencias-sinc" style="color: var(--accent); font-weight: 600;"></small>
-              </label>
-              <input type="number" id="input-personal" placeholder="Ej. 12 operarios" min="0" required>
+              <label for="input-personal">Personal en Sitio (Mano de Obra)</label>
+              <input type="number" id="input-personal" placeholder="Ej. 12" min="0" required>
             </div>
             <div class="form-group">
-              <label for="input-maquinaria">Equipo / Maquinaria Activa</label>
-              <input type="text" id="input-maquinaria" placeholder="Ej. 1 Retroexcavadora, 1 Camión">
+              <label for="input-avance">Avance Físico del Día (%)</label>
+              <input type="number" id="input-avance" placeholder="Ej. 2.5" step="0.1" min="0" max="100" value="0">
             </div>
           </div>
 
           <div class="form-group">
-            <label for="text-actividades">Actividades Ejecutadas y Avances Reales</label>
-            <textarea id="text-actividades" placeholder="Describe los trabajos realizados, colados, excavaciones, tramos abordados..." required></textarea>
+            <label for="input-maquinaria">Equipo / Maquinaria Activa</label>
+            <input type="text" id="input-maquinaria" placeholder="Ej. 1 Retroexcavadora, 1 Camión de volteo">
           </div>
 
           <div class="form-group">
-            <label for="text-incidentes">Incidentes, Interferencias o Notas de Supervisión</label>
-            <textarea id="text-incidentes" placeholder="Falta de suministros, lluvias extraordinarias, visitas de supervisión..."></textarea>
+            <label for="text-actividades">Actividades Ejecutadas y Cuadrillas</label>
+            <textarea id="text-actividades" placeholder="Describe los trabajos realizados, tramos abordados, colados..." required></textarea>
           </div>
 
-          <!-- Evidencia Fotográfica -->
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="select-severidad">Semáforo de Incidencias</label>
+              <select id="select-severidad">
+                <option value="Normal">🟢 Operación Normal</option>
+                <option value="Menor">🟡 Interferencia Menor</option>
+                <option value="Critico">🔴 Paro Técnico / Crítico</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="input-foto">Fotografía de Evidencia</label>
+              <input type="file" id="input-foto" accept="image/*">
+            </div>
+          </div>
+
           <div class="form-group">
-            <label for="input-foto">Fotografía de Evidencia</label>
-            <input type="file" id="input-foto" accept="image/*">
+            <label for="text-incidentes">Detalle de Incidentes, Interferencias o Supervisión</label>
+            <textarea id="text-incidentes" placeholder="Notas extraordinarias, falta de material, justificación de paro..."></textarea>
             <div class="photo-preview-container" id="preview-container"></div>
           </div>
 
-          <button type="submit" class="btn btn-primary" id="btn-guardar">Registrar en Bitácora</button>
+          <button type="submit" class="btn btn-primary" id="btn-guardar">Registrar y Foliar en Bitácora</button>
         </form>
       </div>
     </div>
@@ -256,7 +401,7 @@
     <div>
       <div class="card">
         <div class="feed-header">
-          <div class="card-title" style="margin: 0;">Historial de Asientos</div>
+          <div class="card-title" style="margin: 0;">Historial Oficial de Bitácora</div>
           <div>
             <select id="filtro-proyecto" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.85rem;">
               <option value="todos">Todos los frentes autorizados</option>
@@ -274,6 +419,78 @@
 
   </div>
 
+  <!-- MODAL: ENLACE COMPARTIBLE Y QR ONLINE -->
+  <div class="modal-overlay" id="modal-qr">
+    <div class="modal-box">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--primary);">Enlace de Consulta Online</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Comparte este enlace o escanea el QR para supervisión gerencial en vivo:
+      </p>
+      
+      <div id="qrcode-container" style="display: flex; justify-content: center; margin-bottom: 1rem;"></div>
+      
+      <div class="form-group">
+        <input type="text" id="input-share-url" readonly style="font-size: 0.78rem; text-align: center; background: #f8fafc;">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-secondary" style="flex: 1;" id="btn-copiar-url">Copiar Enlace</button>
+        <button type="button" class="btn btn-primary" style="flex: 1;" id="btn-cerrar-qr">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANTILLA DE ACUSE DIGITAL OFICIAL (EXCLUSIVA PARA IMPRESIÓN / PDF) -->
+  <div id="print-document">
+    <div class="acuse-header">
+      <div>
+        <h2 style="font-size: 16pt; font-weight: 800; margin-bottom: 2px;">CONGLOMERADO EMPRESARIAL</h2>
+        <span style="font-size: 10pt; color: #475569;">DIRECCIÓN DE INFRAESTRUCTURA Y CONTROL DE OBRA</span>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 12pt; font-weight: 800; color: #2563eb;" id="acuse-folio">FOLIO: #---</div>
+        <div style="font-size: 9pt; color: #64748b;" id="acuse-fecha-emision">Emisión: --/--/----</div>
+      </div>
+    </div>
+
+    <div class="acuse-grid">
+      <div><strong>Proyecto:</strong> <span id="acuse-proyecto">--</span></div>
+      <div><strong>Código de Obra:</strong> <span id="acuse-codigo">--</span></div>
+      <div><strong>Cliente / Titular:</strong> <span id="acuse-cliente">--</span></div>
+      <div><strong>Fecha de Ejecución:</strong> <span id="acuse-fecha">--</span></div>
+      <div><strong>Condición Climática:</strong> <span id="acuse-clima">--</span></div>
+      <div><strong>Mano de Obra en Sitio:</strong> <span id="acuse-personal">--</span></div>
+      <div><strong>Avance Físico Registrado:</strong> <span id="acuse-avance">--</span></div>
+      <div><strong>Maquinaria Activa:</strong> <span id="acuse-maquinaria">--</span></div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <h4 style="font-size: 11pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 6px;">1. ACTIVIDADES EJECUTADAS</h4>
+      <p id="acuse-actividades" style="white-space: pre-line; font-size: 10pt; text-align: justify;"></p>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <h4 style="font-size: 11pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 6px;">2. INCIDENTES, INTERFERENCIAS Y SUPERVISIÓN</h4>
+      <p id="acuse-incidentes" style="white-space: pre-line; font-size: 10pt; text-align: justify;"></p>
+    </div>
+
+    <div id="acuse-foto-container" style="margin-bottom: 20px;">
+      <h4 style="font-size: 11pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 6px;">3. EVIDENCIA FOTOGRÁFICA CERTIFICADA</h4>
+      <img id="acuse-foto" style="max-height: 240px; border-radius: 6px; border: 1px solid #cbd5e1; display: none;">
+    </div>
+
+    <div class="acuse-signatures">
+      <div>
+        <div class="signature-line" id="acuse-firma-residente">RESIDENTE DE OBRA RESPONSABLE</div>
+        <small style="color: #64748b;">Conglomerado Empresarial</small>
+      </div>
+      <div>
+        <div class="signature-line">SUPERVISIÓN TÉCNICA / CLIENTE</div>
+        <small style="color: #64748b;">Conformidad de Asiento</small>
+      </div>
+    </div>
+  </div>
+
   <canvas id="hidden-canvas" style="display: none;"></canvas>
   <div id="toast"></div>
 
@@ -281,11 +498,13 @@
     import { db, collection, addDoc, onSnapshot, query, where, getDocs } from "./js/firebase-config.js";
     import { protegerVista, tienePermiso } from "./js/rbac.js";
 
+    // Elementos DOM
     const selectProyecto = document.getElementById("select-proyecto");
     const filtroProyecto = document.getElementById("filtro-proyecto");
     const inputFecha = document.getElementById("input-fecha");
     const inputPersonal = document.getElementById("input-personal");
-    const lblAsistenciasSinc = document.getElementById("lbl-asistencias-sinc");
+    const inputAvance = document.getElementById("input-avance");
+    const kpiPersonalHoy = document.getElementById("kpi-personal-hoy");
     const formBitacora = document.getElementById("form-bitacora");
     const btnGuardar = document.getElementById("btn-guardar");
     const inputFoto = document.getElementById("input-foto");
@@ -294,11 +513,19 @@
     const entriesFeed = document.getElementById("entries-feed");
     const toast = document.getElementById("toast");
 
+    // Modal QR
+    const modalQr = document.getElementById("modal-qr");
+    const qrcodeContainer = document.getElementById("qrcode-container");
+    const inputShareUrl = document.getElementById("input-share-url");
+    const btnCopiarUrl = document.getElementById("btn-copiar-url");
+    const btnCerrarQr = document.getElementById("btn-cerrar-qr");
+
     let usuarioActual = null;
     let perfilActual = null;
     let proyectosDisponibles = [];
     let fotoBase64 = null;
     let unsubscribeFeed = null;
+    let bitacoraDataMap = {};
 
     inputFecha.value = new Date().toISOString().split("T")[0];
 
@@ -308,36 +535,21 @@
       setTimeout(() => toast.style.display = "none", 3200);
     }
 
-    async function logEvento(accion, detalle) {
-      try {
-        await addDoc(collection(db, "auditoria"), {
-          timestamp: new Date().toISOString(),
-          uid: usuarioActual?.uid || "root",
-          usuario: perfilActual?.nombre || usuarioActual?.email || "Admin",
-          modulo: "bitacora",
-          accion,
-          detalle
-        });
-      } catch (err) {
-        console.warn("Fallo log auditoría:", err);
-      }
-    }
-
-    // 1. Proteger Vista (RBAC - Ver / Consultar bitácora)
+    // 1. Proteger Vista (RBAC)[cite: 8]
     protegerVista("bitacora", "r").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
       document.getElementById("user-display").textContent = perfil.nombre || user.email;
 
-      // Ocultar formulario si no tiene permiso de creación ('c')
       if (!tienePermiso(perfil, "bitacora", "c")) {
         document.getElementById("card-formulario").style.display = "none";
       }
 
       cargarProyectos();
+      evaluarParametroURL();
     });
 
-    // 2. Cargar Obras Autorizadas
+    // 2. Cargar Obras Autorizadas[cite: 8]
     function cargarProyectos() {
       onSnapshot(collection(db, "proyectos"), (snap) => {
         selectProyecto.innerHTML = '<option value="">-- Selecciona una Obra --</option>';
@@ -368,20 +580,20 @@
 
         if (proyectosDisponibles.length > 0) {
           selectProyecto.selectedIndex = 1;
-          sincronizarAsistenciaChecador();
+          sincronizarAsistenciasEnVivo();
         }
 
         escucharFeed();
       });
     }
 
-    // 3. Cruce en Tiempo Real con Asistencias de checador.html
-    async function sincronizarAsistenciaChecador() {
+    // 3. Monitor Ejecutivo: Sincronización en Vivo de Personal desde 'asistencias'[cite: 3, 8]
+    async function sincronizarAsistenciasEnVivo() {
       const pId = selectProyecto.value;
       const fSel = inputFecha.value;
 
       if (!pId || !fSel) {
-        lblAsistenciasSinc.textContent = "";
+        kpiPersonalHoy.textContent = "0";
         return;
       }
 
@@ -396,27 +608,21 @@
         const colaboradores = new Set();
         snap.forEach(d => {
           const a = d.data();
-          if (a.tipo === "entrada") {
-            colaboradores.add(a.uid);
-          }
+          if (a.tipo === "entrada") colaboradores.add(a.uid);
         });
 
-        const totalEnSitio = colaboradores.size;
-        if (totalEnSitio > 0) {
-          inputPersonal.value = totalEnSitio;
-          lblAsistenciasSinc.textContent = `(${totalEnSitio} en checador hoy)`;
-        } else {
-          lblAsistenciasSinc.textContent = "(0 en checador hoy)";
-        }
+        const total = colaboradores.size;
+        kpiPersonalHoy.textContent = total;
+        inputPersonal.value = total;
       } catch (err) {
-        console.warn("Fallo sincronización con checador:", err);
+        console.warn("Fallo sincronización:", err);
       }
     }
 
-    selectProyecto.addEventListener("change", sincronizarAsistenciaChecador);
-    inputFecha.addEventListener("change", sincronizarAsistenciaChecador);
+    selectProyecto.addEventListener("change", sincronizarAsistenciasEnVivo);
+    inputFecha.addEventListener("change", sincronizarAsistenciasEnVivo);
 
-    // 4. Compresión de Imagen en Canvas
+    // 4. Compresión de Fotografía a Resolución Web (Canvas 72 DPI)[cite: 8]
     inputFoto.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -425,7 +631,7 @@
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          const maxDim = 1000;
+          const maxDim = 900;
           let width = img.width;
           let height = img.height;
 
@@ -442,7 +648,8 @@
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          fotoBase64 = canvas.toDataURL("image/jpeg", 0.7);
+          // Compresión optimizada para transporte rápido
+          fotoBase64 = canvas.toDataURL("image/jpeg", 0.65);
           previewContainer.innerHTML = `<img src="${fotoBase64}" class="photo-thumb" alt="Vista previa">`;
         };
         img.src = event.target.result;
@@ -450,18 +657,20 @@
       reader.readAsDataURL(file);
     });
 
-    // 5. Inyección a Firestore (Colección 'bitacora')
+    // 5. Inyección de Asiento Foliado a Firestore[cite: 8]
     formBitacora.addEventListener("submit", async (e) => {
       e.preventDefault();
       const pId = selectProyecto.value;
       if (!pId) return alert("Selecciona una obra.");
 
       btnGuardar.disabled = true;
-      btnGuardar.textContent = "Guardando asiento...";
+      btnGuardar.textContent = "Foliando y guardando...";
 
       const proyectoObj = proyectosDisponibles.find(p => p.id === pId);
+      const folioGen = `BIT-${Date.now().toString(36).toUpperCase()}`;
 
       const payload = {
+        folio: folioGen,
         proyectoId: pId,
         proyectoNombre: proyectoObj ? proyectoObj.nombre : "Obra",
         proyectoCodigo: proyectoObj?.codigo || "",
@@ -469,8 +678,10 @@
         fecha: inputFecha.value,
         clima: document.getElementById("select-clima").value,
         personalMO: Number(inputPersonal.value) || 0,
+        avanceDia: Number(inputAvance.value) || 0,
         maquinaria: document.getElementById("input-maquinaria").value.trim(),
         actividades: document.getElementById("text-actividades").value.trim(),
+        severidad: document.getElementById("select-severidad").value,
         incidentes: document.getElementById("text-incidentes").value.trim(),
         foto: fotoBase64 || null,
         creadoPorUid: usuarioActual.uid,
@@ -480,38 +691,41 @@
 
       try {
         await addDoc(collection(db, "bitacora"), payload);
-        await logEvento("registro_bitacora", `Asiento en ${payload.proyectoNombre} (${payload.fecha})`);
-        showToast("Asiento guardado con éxito");
+        showToast(`¡Asiento guardado con folio ${folioGen}!`);
 
-        // Reset Parcial
         document.getElementById("text-actividades").value = "";
         document.getElementById("text-incidentes").value = "";
         inputFoto.value = "";
         previewContainer.innerHTML = "";
         fotoBase64 = null;
       } catch (err) {
-        console.error("Error al guardar en bitacora:", err);
         alert("Fallo al guardar asiento: " + err.message);
       } finally {
         btnGuardar.disabled = false;
-        btnGuardar.textContent = "Registrar en Bitácora";
+        btnGuardar.textContent = "Registrar y Foliar en Bitácora";
       }
     });
 
-    // 6. Feed Reactivo de Asientos
+    // 6. Feed Reactivo con Botones de Acuse y Enlace Online[cite: 8]
     function escucharFeed() {
       if (unsubscribeFeed) unsubscribeFeed();
 
       const filtroId = filtroProyecto.value;
       unsubscribeFeed = onSnapshot(collection(db, "bitacora"), (snap) => {
         entriesFeed.innerHTML = "";
+        bitacoraDataMap = {};
+
         if (snap.empty) {
-          entriesFeed.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.9rem;">Sin asientos de bitácora registrados.</div>';
+          entriesFeed.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Sin asientos registrados.</div>';
           return;
         }
 
         let lista = [];
-        snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+        snap.forEach(d => {
+          const item = { id: d.id, ...d.data() };
+          lista.push(item);
+          bitacoraDataMap[item.id] = item;
+        });
 
         const permitidos = proyectosDisponibles.map(p => p.id);
         lista = lista.filter(item => permitidos.includes(item.proyectoId));
@@ -522,46 +736,57 @@
 
         lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-        if (lista.length === 0) {
-          entriesFeed.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.9rem;">No hay reportes para la obra seleccionada.</div>';
-          return;
-        }
-
         lista.forEach((entry) => {
           const card = document.createElement("div");
           card.className = "entry-card";
+          card.id = `entry-${entry.folio || entry.id}`;
+
+          let badgeSev = "badge-normal";
+          let textoSev = "Normal";
+          if (entry.severidad === "Menor") { badgeSev = "badge-menor"; textoSev = "Interferencia Menor"; }
+          if (entry.severidad === "Critico") { badgeSev = "badge-critico"; textoSev = "Paro Técnico / Crítico"; }
+
           card.innerHTML = `
             <div class="entry-meta">
               <div>
-                <span class="badge">${entry.proyectoCodigo ? `[${entry.proyectoCodigo}] ` : ''}${entry.proyectoNombre}</span>
-                <span style="margin-left: 6px; font-weight: 700;">${entry.fecha}</span>
-                <small style="color: var(--text-muted); margin-left: 6px;">(${entry.cliente || 'Titular'})</small>
+                <span class="badge badge-blue">${entry.folio || 'FOLIO-S/N'}</span>
+                <span style="font-weight: 700; margin-left: 6px;">${entry.proyectoNombre}</span>
+                <small style="color: var(--text-muted); margin-left: 4px;">(${entry.fecha})</small>
               </div>
-              <div>Por: <b>${entry.creadoPorNombre}</b></div>
+              <span class="badge ${badgeSev}">${textoSev}</span>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 0.6rem; font-size: 0.82rem; color: var(--text-muted);">
+            <div class="grid-2" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem;">
               <div>Clima: <b>${entry.clima}</b></div>
-              <div>Personal: <b>${entry.personalMO} pax</b> ${entry.maquinaria ? `| Eq: ${entry.maquinaria}` : ''}</div>
+              <div>Mano de Obra: <b>${entry.personalMO} operarios</b> ${entry.avanceDia ? `| Avance: <b>+${entry.avanceDia}%</b>` : ''}</div>
             </div>
 
-            <div class="entry-section">
+            <div style="font-size: 0.88rem; margin-bottom: 0.5rem;">
               <strong>Actividades:</strong>
               <p style="white-space: pre-line; margin-top: 3px;">${entry.actividades}</p>
             </div>
 
             ${entry.incidentes ? `
-              <div class="entry-section" style="color: #b91c1c;">
-                <strong>Incidentes / Notas:</strong>
-                <p style="white-space: pre-line; margin-top: 3px;">${entry.incidentes}</p>
+              <div style="font-size: 0.85rem; color: #b91c1c; margin-bottom: 0.5rem;">
+                <strong>Incidentes:</strong>
+                <p style="white-space: pre-line; margin-top: 2px;">${entry.incidentes}</p>
               </div>
             ` : ''}
 
             ${entry.foto ? `
-              <div style="margin-top: 0.65rem;">
-                <img src="${entry.foto}" style="max-height: 180px; border-radius: 6px; border: 1px solid var(--border);" alt="Evidencia en Obra">
+              <div style="margin-top: 0.5rem;">
+                <img src="${entry.foto}" style="max-height: 160px; border-radius: 6px; border: 1px solid var(--border);" alt="Evidencia">
               </div>
             ` : ''}
+
+            <div class="entry-actions">
+              <button class="btn btn-secondary btn-sm" onclick="window.imprimirAcuse('${entry.id}')">
+                <i class="fas fa-print"></i> Imprimir Acuse PDF
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="window.generarEnlaceOnline('${entry.id}')">
+                <i class="fas fa-qrcode"></i> Enlace Web / QR
+              </button>
+            </div>
           `;
           entriesFeed.appendChild(card);
         });
@@ -569,6 +794,83 @@
     }
 
     filtroProyecto.addEventListener("change", escucharFeed);
+
+    // 7. Generación de Acuse Oficial para Imprimir / Guardar como PDF
+    window.imprimirAcuse = (id) => {
+      const e = bitacoraDataMap[id];
+      if (!e) return;
+
+      document.getElementById("acuse-folio").textContent = `FOLIO: #${e.folio || e.id}`;
+      document.getElementById("acuse-fecha-emision").textContent = `Emisión: ${new Date().toLocaleDateString('es-MX')}`;
+      document.getElementById("acuse-proyecto").textContent = e.proyectoNombre || "-";
+      document.getElementById("acuse-codigo").textContent = e.proyectoCodigo || "-";
+      document.getElementById("acuse-cliente").textContent = e.cliente || "Sin Titular";
+      document.getElementById("acuse-fecha").textContent = e.fecha || "-";
+      document.getElementById("acuse-clima").textContent = e.clima || "-";
+      document.getElementById("acuse-personal").textContent = `${e.personalMO} personas en sitio`;
+      document.getElementById("acuse-avance").textContent = `${e.avanceDia || 0}%`;
+      document.getElementById("acuse-maquinaria").textContent = e.maquinaria || "Sin equipo pesado";
+      document.getElementById("acuse-actividades").textContent = e.actividades || "Sin registro";
+      document.getElementById("acuse-incidentes").textContent = e.incidentes || "Sin incidentes reportados";
+      document.getElementById("acuse-firma-residente").textContent = e.creadoPorNombre || "SUPERVISOR RESPONSABLE";
+
+      const fotoEl = document.getElementById("acuse-foto");
+      if (e.foto) {
+        fotoEl.src = e.foto;
+        fotoEl.style.display = "block";
+      } else {
+        fotoEl.style.display = "none";
+      }
+
+      window.print();
+    };
+
+    // 8. Visor Dinámico Online con Generación de QR y Enlace
+    window.generarEnlaceOnline = (id) => {
+      const e = bitacoraDataMap[id];
+      if (!e) return;
+
+      const urlVisor = `${window.location.origin}${window.location.pathname}?folio=${e.folio || e.id}`;
+      inputShareUrl.value = urlVisor;
+
+      qrcodeContainer.innerHTML = "";
+      new QRCode(qrcodeContainer, {
+        text: urlVisor,
+        width: 140,
+        height: 140,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      modalQr.style.display = "flex";
+    };
+
+    btnCopiarUrl.addEventListener("click", () => {
+      inputShareUrl.select();
+      navigator.clipboard.writeText(inputShareUrl.value);
+      showToast("¡Enlace copiado al portapapeles!");
+    });
+
+    btnCerrarQr.addEventListener("click", () => {
+      modalQr.style.display = "none";
+    });
+
+    // 9. Detección de Parámetro URL para Visor Remoto Directo
+    function evaluarParametroURL() {
+      const params = new URLSearchParams(window.location.search);
+      const folioBuscado = params.get("folio");
+      if (folioBuscado) {
+        setTimeout(() => {
+          const target = document.getElementById(`entry-${folioBuscado}`);
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "center" });
+            target.style.borderColor = "var(--accent)";
+            target.style.boxShadow = "0 0 15px rgba(37, 99, 235, 0.3)";
+          }
+        }, 1200);
+      }
+    }
   </script>
 </body>
 </html>
