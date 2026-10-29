@@ -246,7 +246,7 @@
     const kpiAsistencias = document.getElementById("kpi-asistencias");
     const kpiEstimaciones = document.getElementById("kpi-estimaciones");
 
-    // Catálogo con registro_usuarios integrado
+    // Catálogo con registro_usuarios y maquinaria integrados
     const ICONOS_DEFAULT = {
       proyectos: "📍",
       checador: "⏱️",
@@ -254,7 +254,8 @@
       estimaciones: "📊",
       prenomina: "👥",
       registro_usuarios: "👤",
-      usuarios: "⚙️"
+      usuarios: "⚙️",
+      maquinaria: "🚜"
     };
 
     const DESCRIPCIONES_DEFAULT = {
@@ -264,7 +265,8 @@
       estimaciones: "Carátulas de cobro financiero y retenciones de ley.",
       prenomina: "Liquidación semanal de mano de obra y exportación a CSV.",
       registro_usuarios: "Alta directa de colaboradores y credenciales de acceso.",
-      usuarios: "Directorio de colaboradores y matriz de gobernanza."
+      usuarios: "Directorio de colaboradores y matriz de gobernanza.",
+      maquinaria: "Control de horómetros, partes diarios, diésel y mantenimiento."
     };
 
     // 1. Verificación de sesión y resolución de perfil
@@ -295,9 +297,10 @@
         console.warn("Fallo lectura de usuario en Firestore:", err);
       }
 
-      // Si es Super Admin, garantizamos que el módulo registro_usuarios exista en Firestore
+      // Si es Super Admin, garantizamos que los módulos esenciales existan en Firestore
       if (esRaiz || perfil.is_superadmin) {
         asegurarModuloRegistroUsuarios();
+        asegurarModuloMaquinaria();
       }
 
       // Si es colaborador operativo, obtenemos la matriz del rol asignado
@@ -315,7 +318,7 @@
       iniciarInterfaz(user, perfil);
     });
 
-    // Auto-registro para que nunca falte la tarjeta en el tablero
+    // Auto-registro del módulo de usuarios
     async function asegurarModuloRegistroUsuarios() {
       try {
         const modRef = doc(db, "modulos", "registro_usuarios");
@@ -331,7 +334,27 @@
           }, { merge: true });
         }
       } catch (e) {
-        console.warn("Auto-registro del módulo:", e);
+        console.warn("Auto-registro del módulo usuarios:", e);
+      }
+    }
+
+    // Auto-registro del módulo de maquinaria
+    async function asegurarModuloMaquinaria() {
+      try {
+        const modRef = doc(db, "modulos", "maquinaria");
+        const modSnap = await getDoc(modRef);
+        if (!modSnap.exists()) {
+          await setDoc(modRef, {
+            id: "maquinaria",
+            nombre: "Control de Maquinaria y Equipo",
+            ruta: "./maquinaria.html",
+            activo: true,
+            icono: "🚜",
+            descripcion: "Control de horómetros, partes diarios, diésel y mantenimiento."
+          }, { merge: true });
+        }
+      } catch (e) {
+        console.warn("Auto-registro del módulo maquinaria:", e);
       }
     }
 
