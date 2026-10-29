@@ -3,31 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Checador Móvil de Asistencia - Conglomerado Empresarial</title>
+  <title>Estación de Control de Acceso y Checador - Conglomerado Empresarial</title>
   <style>
     :root {
       --primary: #0f172a;
+      --primary-light: #1e293b;
       --accent: #2563eb;
       --accent-hover: #1d4ed8;
-      --bg: #f8fafc;
+      --bg: #0b1120;
       --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --text-muted: #64748b;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --border-light: #e2e8f0;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #0f172a;
       --danger: #ef4444;
       --success: #10b981;
       --warning: #f59e0b;
-      --radius: 12px;
-      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --radius: 14px;
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 40px; min-height: 100vh; }
+    body { 
+      background: radial-gradient(circle at top, #1e293b 0%, #0b1120 100%); 
+      color: var(--text-main); 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column;
+    }
 
+    /* Header Ejecutivo */
     header {
-      background: var(--primary);
-      color: #fff;
-      padding: 1rem 1.25rem;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -35,245 +47,340 @@
       top: 0;
       z-index: 100;
     }
-    .brand { font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .btn-exit { background: #334155; color: #fff; text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+    .brand { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; letter-spacing: 0.5px; }
+    .badge-terminal {
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-exit { 
+      background: #334155; 
+      color: #fff; 
+      text-decoration: none; 
+      padding: 0.45rem 0.9rem; 
+      border-radius: 8px; 
+      font-size: 0.82rem; 
+      font-weight: 600; 
+      transition: background 0.2s;
+      border: 1px solid #475569;
+    }
+    .btn-exit:hover { background: #475569; }
 
-    .main-container {
-      max-width: 480px;
-      margin: 1.2rem auto;
-      padding: 0 1rem;
+    /* Layout Principal Responsivo (Consola de 2 Columnas en PC / 1 en Celulares) */
+    .dashboard-container {
+      max-width: 1380px;
+      margin: 1.5rem auto;
+      padding: 0 1.25rem;
+      width: 100%;
+      flex-grow: 1;
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 1024px) {
+      .dashboard-container { grid-template-columns: 1fr; max-width: 680px; }
     }
 
+    /* Tarjetas del Sistema */
     .card {
-      background: var(--surface);
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem;
-      box-shadow: var(--shadow);
-      margin-bottom: 1rem;
+      padding: 1.35rem;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 1.35rem;
     }
-
     .card-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 0.85rem;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .form-group { margin-bottom: 0.85rem; }
-    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+    /* Reloj Maestro Digital */
+    .master-clock-card {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 1px solid #3b82f6;
+      border-radius: var(--radius);
+      padding: 1.75rem 1.25rem;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(37, 99, 235, 0.15);
+      margin-bottom: 1.35rem;
+    }
+    .clock-time {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+      line-height: 1;
+    }
+    .clock-seconds { font-size: 1.8rem; color: #60a5fa; }
+    .clock-date {
+      margin-top: 0.65rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: capitalize;
+    }
+
+    /* Barra de Telemetría (IP y Red) */
+    .network-telemetry {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.35rem;
+    }
+    .telemetry-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+    }
+    .telemetry-label { color: var(--text-muted); font-weight: 600; margin-bottom: 2px; }
+    .telemetry-value { font-weight: 700; color: #38bdf8; font-family: monospace; }
+
+    /* Formulario y Selectores */
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; color: #cbd5e1; }
     select, input {
       width: 100%;
-      padding: 0.65rem 0.75rem;
+      padding: 0.75rem 0.85rem;
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 0.9rem;
       outline: none;
-      background: #fff;
+      background: #0f172a;
+      color: #fff;
+      transition: border-color 0.2s;
     }
     select:focus, input:focus { border-color: var(--accent); }
 
+    /* Conmutadores de Entrada/Salida */
     .tipo-marcado {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-bottom: 0.85rem;
+      gap: 0.65rem;
+      margin-bottom: 1rem;
     }
     .radio-card {
-      border: 1px solid var(--border);
-      padding: 0.65rem;
-      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--border);
+      padding: 0.85rem;
+      border-radius: 10px;
       text-align: center;
       cursor: pointer;
-      font-size: 0.88rem;
-      font-weight: 600;
+      font-size: 0.92rem;
+      font-weight: 700;
       transition: all 0.2s;
     }
-    .radio-card.selected {
-      background: #eff6ff;
-      border-color: var(--accent);
-      color: var(--accent);
+    .radio-card.selected-entrada {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--success);
+      color: #34d399;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+    }
+    .radio-card.selected-salida {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: var(--danger);
+      color: #f87171;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
     }
 
+    /* Pestañas de Método (Huella vs Facial) */
     .selector-metodo {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
     }
     .metodo-card {
+      background: rgba(15, 23, 42, 0.6);
       border: 1.5px solid var(--border);
-      padding: 0.75rem 0.5rem;
-      border-radius: 8px;
+      padding: 0.85rem;
+      border-radius: 10px;
       text-align: center;
       cursor: pointer;
-      font-size: 0.84rem;
-      font-weight: 600;
+      font-size: 0.88rem;
+      font-weight: 700;
       color: var(--text-muted);
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      gap: 8px;
       transition: all 0.2s;
     }
     .metodo-card.active {
-      background: #f0fdf4;
-      border-color: var(--success);
-      color: #166534;
+      background: rgba(37, 99, 235, 0.2);
+      border-color: var(--accent);
+      color: #60a5fa;
+      box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
     }
 
+    /* Zona Biométrica Huella */
+    .biometric-box {
+      border: 2px dashed #475569;
+      border-radius: 14px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.4);
+      margin-bottom: 1.25rem;
+    }
+    .fingerprint-btn {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.15);
+      border: 2px solid var(--accent);
+      color: #60a5fa;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 0.85rem;
+    }
+    .fingerprint-btn:hover {
+      transform: scale(1.08);
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 25px var(--accent);
+    }
+    .fingerprint-btn.verified {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--success);
+      color: #34d399;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Zona Cámara Facial */
+    .camera-container {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+    }
+    video, #captured-preview { width: 100%; height: 100%; object-fit: cover; }
+    #captured-preview { display: none; }
+    .camera-actions { display: flex; gap: 0.65rem; margin-bottom: 1.25rem; }
+
+    /* Estado Geocerca */
     .geo-status {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem;
-      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
       font-size: 0.82rem;
-      margin-bottom: 0.85rem;
+      margin-bottom: 1rem;
       font-weight: 600;
-      background: #f8fafc;
+      background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border);
     }
     .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 3px 8px;
-      border-radius: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
       font-size: 0.75rem;
+      font-weight: 700;
     }
-    .badge-ok { background: #dcfce7; color: #15803d; }
-    .badge-fail { background: #fee2e2; color: #b91c1c; }
-    .badge-checking { background: #fef3c7; color: #b45309; }
+    .badge-ok { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-fail { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .badge-checking { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
 
-    /* Área de Huella */
-    .biometric-box {
-      border: 2px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 1.5rem 1rem;
-      text-align: center;
-      margin-bottom: 0.85rem;
-      background: #f8fafc;
-    }
-    .fingerprint-icon-btn {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: #eff6ff;
-      border: 2px solid var(--accent);
-      color: var(--accent);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 0.5rem;
-    }
-    .fingerprint-icon-btn:hover {
-      background: var(--accent);
-      color: #fff;
-      transform: scale(1.05);
-    }
-    .fingerprint-icon-btn.verified {
-      background: #dcfce7;
-      border-color: var(--success);
-      color: var(--success);
-    }
-
-    /* Área de Cámara Facial */
-    .camera-container {
-      position: relative;
-      width: 100%;
-      height: 220px;
-      background: #000;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    video, #captured-preview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    #captured-preview { display: none; }
-    .camera-actions {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-
+    /* Botones */
     .btn {
       width: 100%;
-      padding: 0.8rem;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      padding: 0.95rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
       cursor: pointer;
       border: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: background 0.2s;
+      gap: 8px;
+      transition: all 0.2s;
     }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-success:hover { background: #059669; }
-    .btn-secondary { background: #e2e8f0; color: #334155; }
-    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-primary { 
+      background: linear-gradient(135deg, #2563eb, #1d4ed8); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .btn-primary:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); }
+    .btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; box-shadow: none; }
+    .btn-secondary { background: #334155; color: #fff; border: 1px solid #475569; }
+    .btn-secondary:hover { background: #475569; }
 
-    /* Modal de Vinculación Biométrica */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25);
-    }
-
+    /* Bitácora de Asistencias */
     .history-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.65rem 0;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 0.82rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
     }
     .history-item:last-child { border-bottom: none; }
 
+    /* Modal Vinculación */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 17, 32, 0.85);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow-lg);
+    }
+
     #toast {
       position: fixed;
-      bottom: 20px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      background: #1e293b;
+      background: #0f172a;
       color: #fff;
-      padding: 10px 18px;
-      border-radius: 6px;
-      font-size: 0.85rem;
+      border: 1px solid var(--accent);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
       display: none;
       z-index: 1100;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
     }
   </style>
 </head>
@@ -281,114 +388,150 @@
 
   <header>
     <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-      <span>Checador Móvil en Sitio</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span>CONGLOMERADO EMPRESARIAL</span>
+      <span class="badge-terminal">Terminal Checador v3.0</span>
     </div>
-    <a href="./control_obra.html" class="btn-exit">Menú</a>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span id="user-display" style="font-size: 0.82rem; color: #94a3b8;">Conectando...</span>
+      <a href="./control_obra.html" class="btn-exit">Tablero Central</a>
+    </div>
   </header>
 
-  <div class="main-container">
+  <div class="dashboard-container">
 
-    <!-- Tarjeta de Estado del Dispositivo / Huella -->
-    <div class="card" id="card-bio-status" style="border-left: 4px solid var(--accent);">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <div style="font-size: 0.85rem; font-weight: 700;" id="bio-status-title">Vinculación Biométrica</div>
-          <small id="bio-status-desc" style="color: var(--text-muted);">Comprobando hardware biométrico...</small>
+    <!-- COLUMNA IZQUIERDA: Reloj Maestro, Telemetría de Red y Perímetro -->
+    <div class="col-master">
+
+      <!-- Reloj Digital Maestro -->
+      <div class="master-clock-card">
+        <div class="clock-time" id="clock-display">00:00<span class="clock-seconds">:00</span></div>
+        <div class="clock-date" id="clock-date">Cargando fecha corporativa...</div>
+      </div>
+
+      <!-- Telemetría de IP y Conexión -->
+      <div class="network-telemetry">
+        <div class="telemetry-item">
+          <div class="telemetry-label">IP PÚBLICA CHECADOR</div>
+          <div class="telemetry-value" id="telemetry-ip">Detectando...</div>
         </div>
-        <button type="button" class="btn btn-secondary btn-sm" id="btn-open-vinculacion" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.78rem;">
-          Vincular
-        </button>
-      </div>
-    </div>
-
-    <!-- Tarjeta Principal de Marcaje -->
-    <div class="card">
-      <div class="card-title">
-        <span>Registro de Presencia</span>
-      </div>
-
-      <!-- Selección de Obra -->
-      <div class="form-group">
-        <label for="select-proyecto">Obra / Frente de Trabajo</label>
-        <select id="select-proyecto">
-          <option value="">Cargando obras autorizadas...</option>
-        </select>
-      </div>
-
-      <!-- Tipo de Evento -->
-      <label>Tipo de Evento</label>
-      <div class="tipo-marcado">
-        <div class="radio-card selected" data-tipo="entrada" id="btn-tipo-entrada">🟢 Entrada</div>
-        <div class="radio-card" data-tipo="salida" id="btn-tipo-salida">🔴 Salida</div>
+        <div class="telemetry-item">
+          <div class="telemetry-label">TELEMETRÍA RED / ISP</div>
+          <div class="telemetry-value" id="telemetry-isp">En línea</div>
+        </div>
       </div>
 
       <!-- Estado Geocerca GPS -->
-      <div class="geo-status" id="geo-box">
-        <div>
-          <div>Ubicación Geocerca:</div>
-          <small id="geo-distancia-label" style="color: var(--text-muted);">Calculando coordenadas...</small>
+      <div class="card">
+        <div class="card-title">
+          <span>Perímetro Operacional</span>
+          <span class="status-badge badge-checking" id="geo-badge">Obteniendo GPS...</span>
         </div>
-        <span class="status-badge badge-checking" id="geo-badge">Obteniendo GPS...</span>
+
+        <div class="form-group">
+          <label for="select-proyecto">Obra / Frente de Trabajo Asignado</label>
+          <select id="select-proyecto">
+            <option value="">Cargando frentes autorizados...</option>
+          </select>
+        </div>
+
+        <div class="geo-status" id="geo-box">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Tolerancia de Radio:</div>
+            <div id="geo-distancia-label" style="color: #cbd5e1; font-weight: 700; margin-top: 2px;">Calculando radio...</div>
+          </div>
+          <span style="font-size: 1.25rem;">📍</span>
+        </div>
       </div>
 
-      <!-- Selección del Método de Marcado -->
-      <label>Método de Identificación</label>
-      <div class="selector-metodo">
-        <div class="metodo-card active" id="tab-metodo-huella">
-          <span style="font-size: 1.25rem;">👆</span>
-          <span>Huella Digital</span>
-        </div>
-        <div class="metodo-card" id="tab-metodo-facial">
-          <span style="font-size: 1.25rem;">📸</span>
-          <span>Foto Facial</span>
-        </div>
-      </div>
-
-      <!-- ZONA 1: Huella Digital (WebAuthn) -->
-      <div id="seccion-huella">
-        <div class="biometric-box">
-          <button type="button" class="fingerprint-icon-btn" id="btn-activar-huella" title="Tocar para verificar huella">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path>
-              <path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path>
-              <path d="M2 12a10 10 0 0 1 18-6"></path>
-              <path d="M2 16a10 10 0 0 0 16.5 5.5"></path>
-              <path d="M6 12a6 6 0 0 1 11-3"></path>
-              <path d="M8 17.5a6 6 0 0 0 4 .5"></path>
-            </svg>
+      <!-- Estado Biométrico del Dispositivo -->
+      <div class="card" id="card-bio-status">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.88rem; font-weight: 700;" id="bio-status-title">Vinculación de Huella</div>
+            <small id="bio-status-desc" style="color: var(--text-muted);">Comprobando credencial dactilar...</small>
+          </div>
+          <button type="button" class="btn btn-secondary" id="btn-open-vinculacion" style="width: auto; padding: 0.45rem 0.9rem; font-size: 0.8rem;">
+            Vincular Móvil
           </button>
-          <div style="font-size: 0.88rem; font-weight: 700; margin-top: 4px;" id="label-huella-status">Toca para poner tu huella</div>
-          <small style="color: var(--text-muted); display: block;" id="sublabel-huella">Utiliza el sensor biométrico del teléfono</small>
         </div>
       </div>
 
-      <!-- ZONA 2: Foto Facial -->
-      <div id="seccion-facial" style="display: none;">
-        <div class="camera-container">
-          <video id="camera-stream" autoplay playsinline></video>
-          <img id="captured-preview" alt="Foto Asistencia">
-        </div>
-
-        <div class="camera-actions">
-          <button type="button" class="btn btn-secondary" id="btn-capturar-foto">📸 Tomar Foto</button>
-          <button type="button" class="btn btn-secondary" id="btn-retomar-foto" style="display: none;">🔄 Reintentar</button>
-        </div>
-      </div>
-
-      <button type="button" class="btn btn-primary" id="btn-registrar" disabled style="margin-top: 0.5rem;">
-        Registrar Asistencia en Obra
-      </button>
     </div>
 
-    <!-- Feed de Marcajes de Hoy -->
-    <div class="card">
-      <div class="card-title">
-        <span>Mis Marcajes de Hoy</span>
+    <!-- COLUMNA DERECHA: Consola de Identificación y Bitácora -->
+    <div class="col-action">
+
+      <div class="card">
+        <div class="card-title">
+          <span>Consola de Registro de Asistencia</span>
+        </div>
+
+        <!-- Tipo de Marcado -->
+        <label>Tipo de Evento</label>
+        <div class="tipo-marcado">
+          <div class="radio-card selected-entrada" data-tipo="entrada" id="btn-tipo-entrada">🟢 REGISTRAR ENTRADA</div>
+          <div class="radio-card" data-tipo="salida" id="btn-tipo-salida">🔴 REGISTRAR SALIDA</div>
+        </div>
+
+        <!-- Pestañas de Método -->
+        <label>Método de Verificación</label>
+        <div class="selector-metodo">
+          <div class="metodo-card active" id="tab-metodo-huella">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path><path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path><path d="M2 12a10 10 0 0 1 18-6"></path><path d="M2 16a10 10 0 0 0 16.5 5.5"></path><path d="M6 12a6 6 0 0 1 11-3"></path><path d="M8 17.5a6 6 0 0 0 4 .5"></path></svg>
+            <span>Huella Dactilar Móvil</span>
+          </div>
+          <div class="metodo-card" id="tab-metodo-facial">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            <span>Evidencia Fotográfica Facial</span>
+          </div>
+        </div>
+
+        <!-- ZONA 1: Huella Digital (WebAuthn) -->
+        <div id="seccion-huella">
+          <div class="biometric-box">
+            <button type="button" class="fingerprint-btn" id="btn-activar-huella" title="Tocar para verificar huella">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path>
+                <path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path>
+                <path d="M2 12a10 10 0 0 1 18-6"></path>
+                <path d="M2 16a10 10 0 0 0 16.5 5.5"></path>
+                <path d="M6 12a6 6 0 0 1 11-3"></path>
+                <path d="M8 17.5a6 6 0 0 0 4 .5"></path>
+              </svg>
+            </button>
+            <div style="font-size: 1.05rem; font-weight: 800; color: #f8fafc;" id="label-huella-status">Presiona para colocar huella</div>
+            <small style="color: var(--text-muted); display: block; margin-top: 4px;" id="sublabel-huella">El sensor biométrico validará tu identidad corporativa</small>
+          </div>
+        </div>
+
+        <!-- ZONA 2: Cámara Facial -->
+        <div id="seccion-facial" style="display: none;">
+          <div class="camera-container">
+            <video id="camera-stream" autoplay playsinline></video>
+            <img id="captured-preview" alt="Foto Asistencia">
+          </div>
+          <div class="camera-actions">
+            <button type="button" class="btn btn-secondary" id="btn-capturar-foto">📸 Capturar Fotografía</button>
+            <button type="button" class="btn btn-secondary" id="btn-retomar-foto" style="display: none;">🔄 Reintentar Captura</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-registrar" disabled>
+          COMPLETAR Y ASENTAR ASISTENCIA
+        </button>
       </div>
-      <div id="history-container">
-        <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">Cargando asistencias...</div>
+
+      <!-- Bitácora del Día -->
+      <div class="card">
+        <div class="card-title">
+          <span>Bitácora de Marcajes Personales de Hoy</span>
+        </div>
+        <div id="history-container">
+          <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">Consultando asistencias en servidor...</div>
+        </div>
       </div>
+
     </div>
 
   </div>
@@ -396,18 +539,18 @@
   <!-- Modal de Vinculación Biométrica Inicial -->
   <div class="modal-overlay" id="modal-vinculacion">
     <div class="modal-content">
-      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">Alta de Huella en este Teléfono</h3>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
-        Ingresa tu <b>contraseña de acceso al sistema</b> para autenticar tu identidad y vincular el lector de huellas o código de tu móvil.
+      <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">Alta Biométrica del Dispositivo</h3>
+      <p style="font-size: 0.84rem; color: #94a3b8; margin-bottom: 1.25rem;">
+        Para registrar la huella de este equipo, ingresa tu <b>contraseña de acceso al sistema</b> para garantizar tu identidad:
       </p>
 
       <form id="form-alta-biometria">
         <div class="form-group">
           <label>Contraseña del Sistema</label>
-          <input type="password" id="modal-pwd-input" required placeholder="Tu contraseña corporativa" autocomplete="current-password">
+          <input type="password" id="modal-pwd-input" required placeholder="••••••••" autocomplete="current-password">
         </div>
-        <div id="modal-error-msg" style="color: var(--danger); font-size: 0.8rem; margin-bottom: 0.75rem; display: none;"></div>
-        <div style="display: flex; gap: 0.5rem;">
+        <div id="modal-error-msg" style="color: #f87171; font-size: 0.82rem; margin-bottom: 0.85rem; display: none;"></div>
+        <div style="display: flex; gap: 0.75rem;">
           <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancelar</button>
           <button type="submit" class="btn btn-primary" id="btn-confirm-modal">Autenticar y Vincular</button>
         </div>
@@ -423,7 +566,13 @@
     import { protegerVista } from "./js/rbac.js";
     import { EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Elementos Interfaz
+    // Elementos del DOM
+    const clockDisplay = document.getElementById("clock-display");
+    const clockDate = document.getElementById("clock-date");
+    const telemetryIp = document.getElementById("telemetry-ip");
+    const telemetryIsp = document.getElementById("telemetry-isp");
+    const userDisplay = document.getElementById("user-display");
+
     const selectProyecto = document.getElementById("select-proyecto");
     const geoBadge = document.getElementById("geo-badge");
     const geoDistanciaLabel = document.getElementById("geo-distancia-label");
@@ -464,6 +613,7 @@
     let tipoMarcaje = "entrada";
     let metodoActual = "huella"; // "huella" | "facial"
     let huellaAutenticada = false;
+    let ipDetectada = "Local / Intranet";
 
     let gpsValido = false;
     let distanciaActualMts = null;
@@ -472,35 +622,67 @@
     function showToast(msg) {
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 3400);
+      setTimeout(() => toast.style.display = "none", 3600);
     }
 
-    // 1. Proteger Vista (RBAC)
+    // 1. Reloj Maestro en Tiempo Real
+    function iniciarReloj() {
+      const actualizarReloj = () => {
+        const ahora = new Date();
+        const horas = String(ahora.getHours()).padStart(2, '0');
+        const minutos = String(ahora.getMinutes()).padStart(2, '0');
+        const segundos = String(ahora.getSeconds()).padStart(2, '0');
+
+        clockDisplay.innerHTML = `${horas}:${minutos}<span class="clock-seconds">:${segundos}</span>`;
+
+        const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        clockDate.textContent = ahora.toLocaleDateString('es-ES', opcionesFecha);
+      };
+      actualizarReloj();
+      setInterval(actualizarReloj, 1000);
+    }
+
+    // 2. Telemetría de Red y Detección de IP
+    async function detectarIP() {
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        ipDetectada = data.ip;
+        telemetryIp.textContent = ipDetectada;
+        telemetryIsp.textContent = navigator.onLine ? "Conexión Activa" : "Sin Conexión";
+      } catch (err) {
+        telemetryIp.textContent = "127.0.0.1 (Local)";
+        ipDetectada = "127.0.0.1";
+      }
+    }
+
+    // 3. Proteger Vista (RBAC)[cite: 5]
     protegerVista("checador", "c").then(({ user, perfil }) => {
       usuarioActual = user;
       perfilActual = perfil;
+      userDisplay.textContent = perfil.nombre || user.email;
       iniciarModulo();
     });
 
     async function iniciarModulo() {
+      iniciarReloj();
+      detectarIP();
       await cargarProyectos();
       evaluarEstadoBiometria();
       escucharHistorialHoy();
     }
 
-    // 2. Estado de Biometría del Usuario en Firestore
+    // 4. Estado de Biometría
     function evaluarEstadoBiometria() {
       const bio = perfilActual.biometria;
       if (bio && bio.credentialId) {
         bioStatusTitle.textContent = "Huella Vinculada ✅";
-        bioStatusDesc.textContent = `Registrada en este móvil (${bio.nombreDispositivo || 'Teléfono'})`;
+        bioStatusDesc.textContent = `Registrada en este dispositivo (${bio.nombreDispositivo || 'Equipo'})`;
         btnOpenVinculacion.textContent = "Actualizar";
-        cardBioStatus.style.borderLeftColor = "var(--success)";
       } else {
         bioStatusTitle.textContent = "Sin Huella Registrada ⚠️";
-        bioStatusDesc.textContent = "Vincula tu móvil con tu contraseña para marcar con huella";
+        bioStatusDesc.textContent = "Vincula tu dispositivo con tu contraseña para checar con huella";
         btnOpenVinculacion.textContent = "Vincular Ahora";
-        cardBioStatus.style.borderLeftColor = "var(--warning)";
       }
     }
 
@@ -514,7 +696,7 @@
       modalVinculacion.style.display = "none";
     });
 
-    // 3. Flujo de Alta Biométrica (Contraseña + Sensor del Móvil)
+    // 5. Alta Biométrica con Contraseña de Sistema (WebAuthn)[cite: 1, 5]
     formAltaBio.addEventListener("submit", async (e) => {
       e.preventDefault();
       modalErrorMsg.style.display = "none";
@@ -524,13 +706,11 @@
       btnConfirm.textContent = "Verificando clave...";
 
       try {
-        // Re-autenticación con contraseña corporativa
         const cred = EmailAuthProvider.credential(usuarioActual.email, pwd);
         await reauthenticateWithCredential(usuarioActual, cred);
 
-        btnConfirm.textContent = "Coloca tu huella...";
+        btnConfirm.textContent = "Coloca tu huella en el lector...";
 
-        // Invoca sensor del teléfono vía WebAuthn
         const challenge = new Uint8Array(32);
         window.crypto.getRandomValues(challenge);
 
@@ -544,7 +724,7 @@
           },
           pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
           authenticatorSelection: {
-            authenticatorAttachment: "platform", // Sensor propio del teléfono
+            authenticatorAttachment: "platform",
             userVerification: "required"
           },
           timeout: 60000,
@@ -555,13 +735,13 @@
           publicKey: publicKeyCredentialCreationOptions
         });
 
-        // Conversión a Base64 para guardarlo en Firestore
         const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
 
         const biometriaPayload = {
           credentialId: rawIdBase64,
-          nombreDispositivo: navigator.userAgentData?.platform || navigator.platform || "Móvil",
+          nombreDispositivo: navigator.userAgentData?.platform || navigator.platform || "Dispositivo",
           fechaAlta: new Date().toISOString(),
+          ipRegistro: ipDetectada,
           vinculadoPor: usuarioActual.email
         };
 
@@ -572,7 +752,7 @@
         perfilActual.biometria = biometriaPayload;
         evaluarEstadoBiometria();
         modalVinculacion.style.display = "none";
-        showToast("¡Huella y móvil vinculados exitosamente!");
+        showToast("¡Huella dactilar dada de alta exitosamente!");
       } catch (err) {
         console.error("Fallo alta biométrica:", err);
         modalErrorMsg.style.display = "block";
@@ -589,16 +769,16 @@
       }
     });
 
-    // 4. Marcaje con Huella Digital
+    // 6. Verificación de Huella para Asistencia
     btnActivarHuella.addEventListener("click", async () => {
       if (!perfilActual.biometria?.credentialId) {
-        showToast("Primero debes vincular tu huella con el botón superior.");
+        showToast("Primero debes dar de alta tu huella con el botón de vinculación.");
         btnOpenVinculacion.click();
         return;
       }
 
-      labelHuellaStatus.textContent = "Escaneando huella...";
-      sublabelHuella.textContent = "Coloca tu dedo sobre el lector del teléfono";
+      labelHuellaStatus.textContent = "Escaneando huella dactilar...";
+      sublabelHuella.textContent = "Coloca tu dedo en el sensor biométrico del equipo";
 
       try {
         const challenge = new Uint8Array(32);
@@ -622,30 +802,28 @@
         if (assertion) {
           huellaAutenticada = true;
           btnActivarHuella.classList.add("verified");
-          labelHuellaStatus.textContent = "¡Huella Verificada! ✅";
-          sublabelHuella.textContent = "Identidad validada con el sensor de este teléfono";
+          labelHuellaStatus.textContent = "¡Huella Verificada con Éxito! ✅";
+          sublabelHuella.textContent = "Identidad dactilar certificada en esta terminal";
           verificarHabilitacionEnvio();
         }
       } catch (err) {
         console.warn("Fallo lectura de huella:", err);
         huellaAutenticada = false;
         btnActivarHuella.classList.remove("verified");
-        labelHuellaStatus.textContent = "Lectura Cancelada o Fallida";
-        sublabelHuella.textContent = "Vuelve a tocar para reintentar";
+        labelHuellaStatus.textContent = "Lectura Cancelada o No Reconocida";
+        sublabelHuella.textContent = "Presiona nuevamente para intentar de nuevo";
         verificarHabilitacionEnvio();
       }
     });
 
-    // 5. Conmutador de Método (Huella vs Facial)
+    // 7. Conmutador de Métodos y Tipo de Marcado
     tabMetodoHuella.addEventListener("click", () => {
       metodoActual = "huella";
       tabMetodoHuella.classList.add("active");
       tabMetodoFacial.classList.remove("active");
       seccionHuella.style.display = "block";
       seccionFacial.style.display = "none";
-      if (mediaStreamObj) {
-        mediaStreamObj.getTracks().forEach(t => t.stop());
-      }
+      if (mediaStreamObj) mediaStreamObj.getTracks().forEach(t => t.stop());
       verificarHabilitacionEnvio();
     });
 
@@ -659,19 +837,18 @@
       verificarHabilitacionEnvio();
     });
 
-    // 6. Conmutar Entrada / Salida
     btnEntrada.addEventListener("click", () => {
       tipoMarcaje = "entrada";
-      btnEntrada.classList.add("selected");
-      btnSalida.classList.remove("selected");
+      btnEntrada.className = "radio-card selected-entrada";
+      btnSalida.className = "radio-card";
     });
     btnSalida.addEventListener("click", () => {
       tipoMarcaje = "salida";
-      btnSalida.classList.add("selected");
-      btnEntrada.classList.remove("selected");
+      btnSalida.className = "radio-card selected-salida";
+      btnEntrada.className = "radio-card";
     });
 
-    // 7. Cargar Proyectos Autorizados
+    // 8. Cargar Proyectos Autorizados[cite: 5]
     function cargarProyectos() {
       return new Promise((resolve) => {
         onSnapshot(collection(db, "proyectos"), (snap) => {
@@ -705,7 +882,7 @@
 
     selectProyecto.addEventListener("change", evaluarGeocerca);
 
-    // 8. Distancia Haversine y Geocerca
+    // 9. Cálculo Geodésico Haversine[cite: 5]
     function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
       const rad = Math.PI / 180;
@@ -722,8 +899,8 @@
       const proyectoId = selectProyecto.value;
       if (!proyectoId) {
         geoBadge.className = "status-badge badge-checking";
-        geoBadge.textContent = "Elige una obra";
-        geoDistanciaLabel.textContent = "Selecciona una obra para calcular";
+        geoBadge.textContent = "Elige obra";
+        geoDistanciaLabel.textContent = "Selecciona un frente para calcular radio";
         gpsValido = false;
         verificarHabilitacionEnvio();
         return;
@@ -743,7 +920,7 @@
 
       geoBadge.className = "status-badge badge-checking";
       geoBadge.textContent = "Obteniendo GPS...";
-      geoDistanciaLabel.textContent = "Localizando dispositivo...";
+      geoDistanciaLabel.textContent = "Calculando distancia...";
 
       if (!navigator.geolocation) {
         geoBadge.className = "status-badge badge-fail";
@@ -775,20 +952,20 @@
             gpsValido = true;
             geoBadge.className = "status-badge badge-ok";
             geoBadge.textContent = `En Perímetro (${dist}m)`;
-            geoDistanciaLabel.textContent = `A ${dist}m de la obra (tolerancia: ${radioTolerancia}m)`;
+            geoDistanciaLabel.textContent = `A ${dist}m del centro (tolerancia máx. ${radioTolerancia}m)`;
           } else {
             gpsValido = false;
             geoBadge.className = "status-badge badge-fail";
-            geoBadge.textContent = `Fuera (${dist}m)`;
-            geoDistanciaLabel.textContent = `A ${dist}m del centro (máx. permitido ${radioTolerancia}m)`;
+            geoBadge.textContent = `Fuera de Zona (${dist}m)`;
+            geoDistanciaLabel.textContent = `A ${dist}m del centro (tolerancia máx. ${radioTolerancia}m)`;
           }
           verificarHabilitacionEnvio();
         },
         (err) => {
           console.warn("Fallo GPS:", err);
           geoBadge.className = "status-badge badge-fail";
-          geoBadge.textContent = "GPS Bloqueado";
-          geoDistanciaLabel.textContent = "Activa los permisos de ubicación en el navegador";
+          geoBadge.textContent = "GPS Inactivo";
+          geoDistanciaLabel.textContent = "Autoriza los permisos de ubicación en el navegador";
           gpsValido = false;
           verificarHabilitacionEnvio();
         },
@@ -796,7 +973,7 @@
       );
     }
 
-    // 9. Manejo de Cámara
+    // 10. Módulo de Cámara Facial
     async function iniciarCamara() {
       try {
         mediaStreamObj = await navigator.mediaDevices.getUserMedia({
@@ -808,19 +985,19 @@
         try {
           mediaStreamObj = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
           cameraStream.srcObject = mediaStreamObj;
-        } catch (innerErr) {
-          console.warn("Cámara no disponible:", innerErr);
+        } catch (e) {
+          console.warn("Cámara no accesible:", e);
         }
       }
     }
 
     btnCapturarFoto.addEventListener("click", () => {
-      canvas.width = cameraStream.videoWidth || 480;
-      canvas.height = cameraStream.videoHeight || 360;
+      canvas.width = cameraStream.videoWidth || 640;
+      canvas.height = cameraStream.videoHeight || 480;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(cameraStream, 0, 0, canvas.width, canvas.height);
 
-      fotoBase64 = canvas.toDataURL("image/jpeg", 0.65);
+      fotoBase64 = canvas.toDataURL("image/jpeg", 0.70);
 
       cameraStream.style.display = "none";
       capturedPreview.src = fotoBase64;
@@ -843,17 +1020,17 @@
       verificarHabilitacionEnvio();
     });
 
-    // 10. Validación Dinámica de Registro
+    // 11. Validación Dinámica de Registro
     function verificarHabilitacionEnvio() {
       const proyectoSeleccionado = !!selectProyecto.value;
       const validacionBiometrica = metodoActual === "huella" ? huellaAutenticada : !!fotoBase64;
       btnRegistrar.disabled = !(proyectoSeleccionado && gpsValido && validacionBiometrica);
     }
 
-    // 11. Envío a Firestore (Colección asistencias)
+    // 12. Asentar Marcaje en Firestore (Colección asistencias)[cite: 5]
     btnRegistrar.addEventListener("click", async () => {
       btnRegistrar.disabled = true;
-      btnRegistrar.textContent = "Registrando...";
+      btnRegistrar.textContent = "Transmitiendo asistencia...";
 
       const proyectoId = selectProyecto.value;
       const pSel = proyectosList.find(p => p.id === proyectoId);
@@ -870,7 +1047,8 @@
         tipo: tipoMarcaje,
         metodo: metodoActual === "huella" ? "huella_movil" : "foto_facial",
         biometriaVerificada: metodoActual === "huella",
-        dispositivo: perfilActual.biometria?.nombreDispositivo || navigator.platform || "Web",
+        dispositivo: perfilActual.biometria?.nombreDispositivo || navigator.platform || "Terminal Web",
+        ipOrigen: ipDetectada,
         distanciaMts: distanciaActualMts ?? 0,
         coordenadas: userCoords || { lat: 0, lng: 0 },
         foto: metodoActual === "facial" ? fotoBase64 : null,
@@ -880,14 +1058,13 @@
 
       try {
         await addDoc(collection(db, "asistencias"), payload);
-        showToast(`¡Marcaje de ${tipoMarcaje.toUpperCase()} por ${metodoActual === "huella" ? "HUELLA" : "FOTO"} guardado!`);
+        showToast(`¡Marcaje de ${tipoMarcaje.toUpperCase()} transmitido con éxito!`);
 
-        // Reinicio del estado
         if (metodoActual === "huella") {
           huellaAutenticada = false;
           btnActivarHuella.classList.remove("verified");
-          labelHuellaStatus.textContent = "Toca para poner tu huella";
-          sublabelHuella.textContent = "Utiliza el sensor biométrico del teléfono";
+          labelHuellaStatus.textContent = "Presiona para colocar huella";
+          sublabelHuella.textContent = "El sensor biométrico validará tu identidad corporativa";
         } else {
           btnRetomarFoto.click();
         }
@@ -895,14 +1072,14 @@
         evaluarGeocerca();
       } catch (err) {
         console.error(err);
-        alert("Error al registrar asistencia: " + err.message);
+        alert("Fallo al registrar asistencia: " + err.message);
       } finally {
         btnRegistrar.disabled = false;
-        btnRegistrar.textContent = "Registrar Asistencia en Obra";
+        btnRegistrar.textContent = "COMPLETAR Y ASENTAR ASISTENCIA";
       }
     });
 
-    // 12. Historial Reactivo de Asistencias del Día
+    // 13. Bitácora del Día[cite: 5]
     function escucharHistorialHoy() {
       const hoy = new Date().toISOString().split("T")[0];
       const q = query(
@@ -914,7 +1091,7 @@
       onSnapshot(q, (snap) => {
         historyContainer.innerHTML = "";
         if (snap.empty) {
-          historyContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">Sin marcajes registrados hoy.</div>';
+          historyContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.25rem 0;">Sin marcajes registrados el día de hoy.</div>';
           return;
         }
 
@@ -923,20 +1100,22 @@
         asistencias.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
         asistencias.forEach(a => {
-          const hora = new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const hora = new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           const item = document.createElement("div");
           item.className = "history-item";
-          const iconoMetodo = a.metodo === "huella_movil" ? "👆 Huella" : "📸 Foto";
+          const iconoMetodo = a.metodo === "huella_movil" ? "👆 Huella Dactilar" : "📸 Evidencia Facial";
           item.innerHTML = `
             <div>
               <strong>${a.proyectoNombre}</strong>
-              <div style="color: var(--text-muted); font-size: 0.75rem;">${a.cliente} (${a.distanciaMts}m) • <span style="color: var(--accent);">${iconoMetodo}</span></div>
+              <div style="color: var(--text-muted); font-size: 0.78rem; margin-top: 2px;">
+                ${a.cliente} (${a.distanciaMts}m) • <span style="color: #60a5fa;">${iconoMetodo}</span> • IP: <code style="color: #38bdf8;">${a.ipOrigen || 'N/A'}</code>
+              </div>
             </div>
             <div style="text-align: right;">
               <span class="status-badge ${a.tipo === 'entrada' ? 'badge-ok' : 'badge-fail'}">
                 ${a.tipo.toUpperCase()}
               </span>
-              <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">${hora}</div>
+              <div style="color: var(--text-muted); font-size: 0.78rem; margin-top: 3px; font-family: monospace;">${hora}</div>
             </div>
           `;
           historyContainer.appendChild(item);
