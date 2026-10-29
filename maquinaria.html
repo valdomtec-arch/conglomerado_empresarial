@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Control de Maquinaria y Equipo Pesado - Conglomerado Empresarial</title>
+
+  <!-- FontAwesome, QRCode & Chart.js CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --gold: #d97706;
+      --gold-light: #fef3c7;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 60px; min-height: 100vh; }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.9rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-md);
+    }
+    .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .badge-header {
+      background: rgba(217, 119, 6, 0.2);
+      border: 1px solid var(--gold);
+      color: #fde68a;
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-nav {
+      background: #334155;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-nav:hover { background: #475569; }
+
+    /* Barra de Navegación por Pestañas */
+    .tabs-nav {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 1rem 0.5rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--accent); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .container {
+      max-width: 1440px;
+      margin: 1.5rem auto;
+      padding: 0 1.25rem;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Grid Layout */
+    .grid-admin { display: grid; grid-template-columns: 460px 1fr; gap: 1.5rem; }
+    @media (max-width: 1080px) { .grid-admin { grid-template-columns: 1fr; } }
+
+    /* Tarjetas y Formularios */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group { margin-bottom: 0.85rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.65rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+
+    /* Botones */
+    .btn {
+      padding: 0.65rem 1.15rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.88rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.78rem; border-radius: 6px; }
+
+    /* Tablas Corporativas */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th { background: #f8fafc; padding: 0.75rem 0.65rem; text-align: left; border: 1px solid var(--border); color: #475569; font-weight: 700; }
+    .data-table td { padding: 0.7rem 0.65rem; border: 1px solid var(--border); vertical-align: middle; }
+    .data-table tbody tr:hover { background: #f8fafc; }
+
+    /* Badges de Estado */
+    .badge-status { font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-operacion { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-mantenimiento { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-paro { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-espera { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+    /* KPI Cards */
+    .kpi-deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .kpi-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      background: #eff6ff;
+      color: var(--accent);
+    }
+    .kpi-title { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+    .kpi-val { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
+
+    /* Modal QR */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      display: none;
+      z-index: 1100;
+      box-shadow: var(--shadow-lg);
+      border-left: 4px solid var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <i class="fas fa-truck-monster text-amber-500"></i>
+      <span>Control de Maquinaria y Equipo</span>
+      <span class="badge-header">Telemetría y Activos</span>
+    </div>
+    <div class="header-actions">
+      <span id="user-display" style="font-size: 0.85rem; color: #94a3b8;">Verificando credenciales...</span>
+      <a href="./control_obra.html" class="btn-nav">Tablero Central</a>
+      <a href="./bitacora.html" class="btn-nav">Bitácora</a>
+    </div>
+  </header>
+
+  <!-- Pestañas de Navegación -->
+  <nav class="tabs-nav">
+    <button class="tab-btn active" data-tab="tab-flota"><i class="fas fa-layer-group"></i> Flota y Padrón de Activos</button>
+    <button class="tab-btn" data-tab="tab-partes"><i class="fas fa-stopwatch"></i> Parte Diario y Horómetros</button>
+    <button class="tab-btn" data-tab="tab-combustible"><i class="fas fa-gas-pump"></i> Cargas y Diésel (L/h)</button>
+    <button class="tab-btn" data-tab="tab-mantenimiento"><i class="fas fa-wrench"></i> Mantenimiento y Servicios</button>
+  </nav>
+
+  <div class="container">
+
+    <!-- KPIs Superiores de la Flota -->
+    <div class="kpi-deck">
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fas fa-tractor"></i></div>
+        <div>
+          <div class="kpi-title">Total Activos Registrados</div>
+          <div class="kpi-val" id="kpi-total-equipos">0</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-play"></i></div>
+        <div>
+          <div class="kpi-title">Equipos en Operación Hoy</div>
+          <div class="kpi-val" id="kpi-en-operacion">0</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-oil-can"></i></div>
+        <div>
+          <div class="kpi-title">Diésel Suministrado (Mes)</div>
+          <div class="kpi-val" id="kpi-diesel-total">0 L</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-triangle-exclamation"></i></div>
+        <div>
+          <div class="kpi-title">Servicios Vencidos / Próximos</div>
+          <div class="kpi-val" id="kpi-servicios-alerta">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 1: PADRÓN DE ACTIVOS Y FLOTA -->
+    <section id="tab-flota" class="tab-content active">
+      <div class="grid-admin">
+        
+        <!-- Formulario Alta de Máquina -->
+        <div class="card">
+          <div class="card-title">Registrar Activo / Maquinaria</div>
+          <form id="form-alta-maquina">
+            <div class="grid-2">
+              <div class="form-group">
+                <label>No. Económico (ej. RETRO-01)</label>
+                <input type="text" id="maq-eco" placeholder="RETRO-01" required>
+              </div>
+              <div class="form-group">
+                <label>Tipo de Equipo</label>
+                <select id="maq-tipo" required>
+                  <option value="Retroexcavadora">Retroexcavadora</option>
+                  <option value="Excavadora">Excavadora de Oruga</option>
+                  <option value="Motoniveladora">Motoniveladora</option>
+                  <option value="Compactador">Compactador / Rodillo</option>
+                  <option value="Camión de Volteo">Camión de Volteo</option>
+                  <option value="Tractor Oruga">Tractor sobre Oruga (D6/D8)</option>
+                  <option value="Generador / Planta">Generador / Planta de Luz</option>
+                  <option value="Grúa Titán">Grúa Titán / Telescópica</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Marca y Modelo</label>
+                <input type="text" id="maq-modelo" placeholder="CAT 416F2" required>
+              </div>
+              <div class="form-group">
+                <label>Régimen de Posesión</label>
+                <select id="maq-propiedad">
+                  <option value="Propia">Propia (Activo Fijo)</option>
+                  <option value="Rentada">Rentada (Proveedor Externo)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Obra Asignada Inicial</label>
+                <select id="maq-obra" required></select>
+              </div>
+              <div class="form-group">
+                <label>Horómetro Inicial Acumulado</label>
+                <input type="number" id="maq-horometro" placeholder="1250.5" step="0.1" required>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Ciclo Servicio Preventivo (Horas)</label>
+                <input type="number" id="maq-ciclo-servicio" value="250" step="50" required>
+              </div>
+              <div class="form-group">
+                <label>Consumo Nominal Diésel (L/h)</label>
+                <input type="number" id="maq-nominal-diesel" placeholder="14" step="0.5" value="14">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-save-maq">Registrar Máquina en Catálogo</button>
+          </form>
+        </div>
+
+        <!-- Tabla de Flota -->
+        <div class="card">
+          <div class="card-title">Inventario Activo en Obras</div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Económico</th>
+                  <th>Tipo / Modelo</th>
+                  <th>Obra Actual</th>
+                  <th>Horómetro</th>
+                  <th>Estatus</th>
+                  <th style="text-align: center;">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-flota-body">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Cargando activos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PESTAÑA 2: PARTE DIARIO Y HORÓMETROS -->
+    <section id="tab-partes" class="tab-content">
+      <div class="grid-admin">
+        
+        <!-- Formulario Apertura y Cierre de Turno -->
+        <div class="card">
+          <div class="card-title">Asentar Turno Operativo</div>
+          <form id="form-parte-diario">
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Fecha de Operación</label>
+                <input type="date" id="parte-fecha" required>
+              </div>
+              <div class="form-group">
+                <label>Máquina / Activo</label>
+                <select id="parte-maquina" required></select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Operador en Cabina</label>
+              <input type="text" id="parte-operador" placeholder="Nombre completo del operador" required>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Horómetro Inicial</label>
+                <input type="number" id="parte-horo-ini" step="0.1" required>
+              </div>
+              <div class="form-group">
+                <label>Horómetro Final</label>
+                <input type="number" id="parte-horo-fin" step="0.1" required>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Horas en Espera (Standby / Lluvia)</label>
+                <input type="number" id="parte-espera" step="0.5" value="0">
+              </div>
+              <div class="form-group">
+                <label>Frente de Trabajo / Tarea</label>
+                <input type="text" id="parte-frente" placeholder="Ej. Zanja tramo km 12+400" required>
+              </div>
+            </div>
+
+            <!-- Checklist Rápido de 1 Minuto -->
+            <label style="margin-top: 0.5rem;">Checklist Pre-Operacional</label>
+            <div class="grid-3" style="font-size: 0.8rem; margin-bottom: 0.85rem; background: #f8fafc; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border);">
+              <label><input type="checkbox" id="chk-aceite" checked> Aceite Motor</label>
+              <label><input type="checkbox" id="chk-hidraulico" checked> Hidráulico</label>
+              <label><input type="checkbox" id="chk-refrigerante" checked> Refrigerante</label>
+              <label><input type="checkbox" id="chk-frenos" checked> Frenos / Orugas</label>
+              <label><input type="checkbox" id="chk-mangueras" checked> Mangueras</label>
+              <label><input type="checkbox" id="chk-luces" checked> Luces / Alarma</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-save-parte">Guardar Parte Diario de Maquinaria</button>
+          </form>
+        </div>
+
+        <!-- Historial de Partes -->
+        <div class="card">
+          <div class="card-title">Partes Diarios Registrados</div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Máquina</th>
+                  <th>Operador</th>
+                  <th>Horo. Inicial - Final</th>
+                  <th>Hrs Efectivas</th>
+                  <th>Standby</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-partes-body">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Cargando turnos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PESTAÑA 3: COMBUSTIBLE, RENDIMIENTOS Y GRÁFICA ACUMULADA -->
+    <section id="tab-combustible" class="tab-content">
+      <div class="grid-admin">
+
+        <!-- Formulario Carga de Diésel -->
+        <div class="card">
+          <div class="card-title">Suministro de Diésel en Obra</div>
+          <form id="form-carga-combustible">
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Fecha y Hora de Carga</label>
+                <input type="datetime-local" id="diesel-fecha" required>
+              </div>
+              <div class="form-group">
+                <label>Máquina Abastecida</label>
+                <select id="diesel-maquina" required></select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Litros Suministrados</label>
+                <input type="number" id="diesel-litros" step="0.5" placeholder="180" required>
+              </div>
+              <div class="form-group">
+                <label>Horómetro Exacto en la Carga</label>
+                <input type="number" id="diesel-horometro" step="0.1" required>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Precio por Litro ($ MXN)</label>
+                <input type="number" id="diesel-precio" step="0.1" value="24.50">
+              </div>
+              <div class="form-group">
+                <label>Proveedor / Pipa Suministradora</label>
+                <input type="text" id="diesel-pipa" placeholder="Pipa Móvil #1 / Pemex">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-save-diesel">Asentar Suministro de Combustible</button>
+          </form>
+        </div>
+
+        <!-- Gráfica de Consumo Acumulado y Tabla de Auditoría -->
+        <div>
+          <!-- Gráfica Chart.js -->
+          <div class="card">
+            <div class="card-title">
+              <span>Tendencia y Consumo Acumulado de Diésel</span>
+              <small id="lbl-total-litros-grafica" style="color: var(--accent); font-weight: 800;">0 Litros Acumulados</small>
+            </div>
+            <div style="position: relative; height: 260px; width: 100%;">
+              <canvas id="chartDieselAcumulado"></canvas>
+            </div>
+          </div>
+
+          <!-- Tabla de Auditoría -->
+          <div class="card">
+            <div class="card-title">Auditoría de Cargas y Rendimiento Real</div>
+            <div style="overflow-x: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Máquina</th>
+                    <th>Litros</th>
+                    <th>Horómetro</th>
+                    <th>Importe</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-diesel-body">
+                  <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Cargando bitácora de diésel...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PESTAÑA 4: MANTENIMIENTO PREVENTIVO Y CORRECTIVO -->
+    <section id="tab-mantenimiento" class="tab-content">
+      <div class="grid-admin">
+
+        <!-- Formulario Registro Mantenimiento -->
+        <div class="card">
+          <div class="card-title">Registrar Mantenimiento / Taller</div>
+          <form id="form-servicio-maq">
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Fecha de Servicio</label>
+                <input type="date" id="serv-fecha" required>
+              </div>
+              <div class="form-group">
+                <label>Máquina Atendida</label>
+                <select id="serv-maquina" required></select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Tipo de Mantenimiento</label>
+                <select id="serv-tipo">
+                  <option value="Preventivo (Aceite y Filtros)">Preventivo (Aceite y Filtros)</option>
+                  <option value="Correctivo (Reparación Mecánica)">Correctivo (Reparación Mecánica)</option>
+                  <option value="Cambio de Orugas / Neumáticos">Cambio de Orugas / Neumáticos</option>
+                  <option value="Sistema Hidráulico / Mangueras">Sistema Hidráulico / Mangueras</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Horómetro al Momento</label>
+                <input type="number" id="serv-horometro" step="0.1" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Descripción de Trabajos y Refacciones Usadas</label>
+              <textarea id="serv-detalle" placeholder="Cambio de aceite 15W40, filtro primario diésel, reparación cilindro de levante..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Costo Total Refacciones + Mano de Obra ($ MXN)</label>
+              <input type="number" id="serv-costo" step="0.1" placeholder="8500.00">
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-save-serv">Registrar Mantenimiento</button>
+          </form>
+        </div>
+
+        <!-- Semáforo Preventivo y Próximos Servicios -->
+        <div class="card">
+          <div class="card-title">Semáforo de Servicios Preventivos (Horas Restantes)</div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Económico</th>
+                  <th>Horómetro Actual</th>
+                  <th>Próximo Servicio</th>
+                  <th>Horas Restantes</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-semaforo-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Calculando semáforos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Modal Ficha y Código QR -->
+  <div class="modal-overlay" id="modal-qr">
+    <div class="modal-box">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary);" id="modal-qr-title">Código QR del Activo</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Imprime este código y colócalo en el parabrisas o cabina de la máquina:
+      </p>
+      <div id="qrcode-container" style="display: flex; justify-content: center; margin-bottom: 1.25rem;"></div>
+      <button type="button" class="btn btn-secondary" style="width: 100%;" id="btn-cerrar-qr">Cerrar</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- Motor Firebase y Lógica Operativa -->
+  <script type="module">
+    import { db, collection, addDoc, onSnapshot, query, where, doc, updateDoc, getDoc } from "./js/firebase-config.js";
+    import { protegerVista } from "./js/rbac.js";
+
+    let usuarioActual = null;
+    let perfilActual = null;
+    let maquinasList = [];
+    let proyectosList = [];
+    let chartDieselInstance = null;
+
+    const toast = document.getElementById("toast");
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3400);
+    }
+
+    // Pestañas
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    // Fechas actuales
+    document.getElementById("parte-fecha").value = new Date().toISOString().split("T")[0];
+    document.getElementById("serv-fecha").value = new Date().toISOString().split("T")[0];
+    document.getElementById("diesel-fecha").value = new Date().toISOString().slice(0, 16);
+
+    // 1. RBAC y Carga de Identidad
+    protegerVista("maquinaria", "r").then(({ user, perfil }) => {
+      usuarioActual = user;
+      perfilActual = perfil;
+      document.getElementById("user-display").textContent = perfil.nombre || user.email;
+      iniciarModulo();
+    });
+
+    function iniciarModulo() {
+      cargarProyectos();
+      escucharMaquinas();
+      escucharPartesDiarios();
+      escucharCombustible();
+    }
+
+    // 2. Cargar Proyectos Autorizados
+    function cargarProyectos() {
+      onSnapshot(collection(db, "proyectos"), (snap) => {
+        const selectObra = document.getElementById("maq-obra");
+        selectObra.innerHTML = '<option value="">-- Selecciona Obra --</option>';
+        proyectosList = [];
+
+        snap.forEach(d => {
+          const p = { id: d.id, ...d.data() };
+          proyectosList.push(p);
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
+          selectObra.appendChild(opt);
+        });
+      });
+    }
+
+    // 3. EJE 1: Alta de Maquinaria
+    document.getElementById("form-alta-maquina").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btn-save-maq");
+      btn.disabled = true;
+
+      const eco = document.getElementById("maq-eco").value.trim().toUpperCase();
+      const pId = document.getElementById("maq-obra").value;
+      const pSel = proyectosList.find(p => p.id === pId);
+      const horoIni = parseFloat(document.getElementById("maq-horometro").value) || 0;
+      const ciclo = parseFloat(document.getElementById("maq-ciclo-servicio").value) || 250;
+
+      const payload = {
+        economico: eco,
+        tipo: document.getElementById("maq-tipo").value,
+        modelo: document.getElementById("maq-modelo").value.trim(),
+        propiedad: document.getElementById("maq-propiedad").value,
+        proyectoId: pId,
+        proyectoNombre: pSel?.nombre || "Sin Asignar",
+        horometroActual: horoIni,
+        cicloServicioHoras: ciclo,
+        proximoServicioHorometro: horoIni + ciclo,
+        consumoNominalDiesel: parseFloat(document.getElementById("maq-nominal-diesel").value) || 14,
+        estatus: "operacion",
+        activo: true,
+        fechaAlta: new Date().toISOString()
+      };
+
+      try {
+        await addDoc(collection(db, "maquinas"), payload);
+        showToast(`¡Activo ${eco} registrado con éxito!`);
+        document.getElementById("form-alta-maquina").reset();
+      } catch (err) {
+        alert("Fallo al guardar máquina: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // 4. Escuchar Flota y Semáforo Preventivo
+    function escucharMaquinas() {
+      onSnapshot(collection(db, "maquinas"), (snap) => {
+        const tbody = document.getElementById("tabla-flota-body");
+        const semaforoBody = document.getElementById("tabla-semaforo-body");
+        const selectPartes = document.getElementById("parte-maquina");
+        const selectDiesel = document.getElementById("diesel-maquina");
+        const selectServ = document.getElementById("serv-maquina");
+
+        tbody.innerHTML = "";
+        semaforoBody.innerHTML = "";
+        selectPartes.innerHTML = '<option value="">-- Elige Máquina --</option>';
+        selectDiesel.innerHTML = '<option value="">-- Elige Máquina --</option>';
+        selectServ.innerHTML = '<option value="">-- Elige Máquina --</option>';
+        maquinasList = [];
+
+        let totalEq = 0;
+        let enOp = 0;
+        let alertasServicio = 0;
+
+        snap.forEach(d => {
+          const m = { id: d.id, ...d.data() };
+          maquinasList.push(m);
+          totalEq++;
+
+          if (m.estatus === "operacion") enOp++;
+
+          const optStr = `${m.economico} - ${m.tipo} (${m.modelo})`;
+          selectPartes.innerHTML += `<option value="${m.id}">${optStr}</option>`;
+          selectDiesel.innerHTML += `<option value="${m.id}">${optStr}</option>`;
+          selectServ.innerHTML += `<option value="${m.id}">${optStr}</option>`;
+
+          const tr = document.createElement("tr");
+          let badgeClass = "badge-operacion";
+          if (m.estatus === "mantenimiento") badgeClass = "badge-mantenimiento";
+          if (m.estatus === "paro") badgeClass = "badge-paro";
+          if (m.estatus === "espera") badgeClass = "badge-espera";
+
+          tr.innerHTML = `
+            <td><strong>${m.economico}</strong></td>
+            <td>${m.tipo} <small style="color:var(--text-muted);">(${m.modelo})</small></td>
+            <td>${m.proyectoNombre}</td>
+            <td><b>${m.horometroActual?.toFixed(1) || '0.0'} h</b></td>
+            <td><span class="badge-status ${badgeClass}">${m.estatus.toUpperCase()}</span></td>
+            <td style="text-align: center;">
+              <button class="btn btn-secondary btn-sm" onclick="window.generarQRMaquina('${m.id}')" title="Generar QR">
+                <i class="fas fa-qrcode"></i>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+
+          const prox = m.proximoServicioHorometro || (m.horometroActual + (m.cicloServicioHoras || 250));
+          const restantes = prox - m.horometroActual;
+          if (restantes <= 30) alertasServicio++;
+
+          let semaforoBadge = "badge-operacion";
+          let semaforoText = "OK";
+          if (restantes <= 0) {
+            semaforoBadge = "badge-paro";
+            semaforoText = "¡VENCIDO!";
+          } else if (restantes <= 30) {
+            semaforoBadge = "badge-mantenimiento";
+            semaforoText = "PRÓXIMO";
+          }
+
+          const trSem = document.createElement("tr");
+          trSem.innerHTML = `
+            <td><strong>${m.economico}</strong></td>
+            <td>${m.horometroActual?.toFixed(1)} h</td>
+            <td>${prox.toFixed(1)} h</td>
+            <td><b>${restantes.toFixed(1)} h</b></td>
+            <td><span class="badge-status ${semaforoBadge}">${semaforoText}</span></td>
+          `;
+          semaforoBody.appendChild(trSem);
+        });
+
+        document.getElementById("kpi-total-equipos").textContent = totalEq;
+        document.getElementById("kpi-en-operacion").textContent = enOp;
+        document.getElementById("kpi-servicios-alerta").textContent = alertasServicio;
+      });
+    }
+
+    document.getElementById("parte-maquina").addEventListener("change", (e) => {
+      const m = maquinasList.find(item => item.id === e.target.value);
+      if (m) document.getElementById("parte-horo-ini").value = m.horometroActual || 0;
+    });
+
+    document.getElementById("diesel-maquina").addEventListener("change", (e) => {
+      const m = maquinasList.find(item => item.id === e.target.value);
+      if (m) document.getElementById("diesel-horometro").value = m.horometroActual || 0;
+    });
+
+    document.getElementById("serv-maquina").addEventListener("change", (e) => {
+      const m = maquinasList.find(item => item.id === e.target.value);
+      if (m) document.getElementById("serv-horometro").value = m.horometroActual || 0;
+    });
+
+    // 5. EJE 2: Guardar Parte Diario
+    document.getElementById("form-parte-diario").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const mId = document.getElementById("parte-maquina").value;
+      const mSel = maquinasList.find(m => m.id === mId);
+      const hIni = parseFloat(document.getElementById("parte-horo-ini").value);
+      const hFin = parseFloat(document.getElementById("parte-horo-fin").value);
+
+      if (hFin < hIni) {
+        alert("El horómetro final no puede ser menor al horómetro inicial.");
+        return;
+      }
+
+      const standby = parseFloat(document.getElementById("parte-espera").value) || 0;
+      const hrsTotales = hFin - hIni;
+      const hrsEfectivas = Math.max(0, hrsTotales - standby);
+
+      const payload = {
+        maquinaId: mId,
+        maquinaEconomico: mSel?.economico || "",
+        fecha: document.getElementById("parte-fecha").value,
+        operador: document.getElementById("parte-operador").value.trim(),
+        horometroInicial: hIni,
+        horometroFinal: hFin,
+        horasEfectivas: hrsEfectivas,
+        horasStandby: standby,
+        frente: document.getElementById("parte-frente").value.trim(),
+        checklist: {
+          aceite: document.getElementById("chk-aceite").checked,
+          hidraulico: document.getElementById("chk-hidraulico").checked,
+          refrigerante: document.getElementById("chk-refrigerante").checked,
+          frenos: document.getElementById("chk-frenos").checked,
+          mangueras: document.getElementById("chk-mangueras").checked,
+          luces: document.getElementById("chk-luces").checked
+        },
+        registradoPor: usuarioActual.email,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        await addDoc(collection(db, "maquinaria_partes_diarios"), payload);
+        await updateDoc(doc(db, "maquinas", mId), { horometroActual: hFin });
+        showToast("¡Parte diario asentado con éxito!");
+        document.getElementById("form-parte-diario").reset();
+      } catch (err) {
+        alert("Fallo al asentar parte diario: " + err.message);
+      }
+    });
+
+    function escucharPartesDiarios() {
+      onSnapshot(collection(db, "maquinaria_partes_diarios"), (snap) => {
+        const tbody = document.getElementById("tabla-partes-body");
+        tbody.innerHTML = "";
+
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Sin partes registrados.</td></tr>';
+          return;
+        }
+
+        let lista = [];
+        snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        lista.slice(0, 30).forEach(p => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${p.fecha}</td>
+            <td><strong>${p.maquinaEconomico}</strong></td>
+            <td>${p.operador}</td>
+            <td>${p.horometroInicial} - ${p.horometroFinal}</td>
+            <td><b>${p.horasEfectivas?.toFixed(1)} h</b></td>
+            <td>${p.horasStandby > 0 ? `${p.horasStandby} h` : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    // 6. EJE 3: Cargas de Diésel y Gráfica Acumulada
+    document.getElementById("form-carga-combustible").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const mId = document.getElementById("diesel-maquina").value;
+      const mSel = maquinasList.find(m => m.id === mId);
+      const litros = parseFloat(document.getElementById("diesel-litros").value);
+      const horo = parseFloat(document.getElementById("diesel-horometro").value);
+      const precio = parseFloat(document.getElementById("diesel-precio").value) || 24.50;
+
+      const payload = {
+        maquinaId: mId,
+        maquinaEconomico: mSel?.economico || "",
+        fecha: document.getElementById("diesel-fecha").value,
+        litros: litros,
+        horometroCarga: horo,
+        precioLitro: precio,
+        importeTotal: litros * precio,
+        pipa: document.getElementById("diesel-pipa").value.trim(),
+        registradoPor: usuarioActual.email,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        await addDoc(collection(db, "maquinaria_combustible"), payload);
+        showToast("¡Carga de diésel registrada!");
+        document.getElementById("form-carga-combustible").reset();
+      } catch (err) {
+        alert("Fallo al registrar combustible: " + err.message);
+      }
+    });
+
+    function escucharCombustible() {
+      onSnapshot(collection(db, "maquinaria_combustible"), (snap) => {
+        const tbody = document.getElementById("tabla-diesel-body");
+        tbody.innerHTML = "";
+        let litrosMes = 0;
+
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Sin cargas de diésel.</td></tr>';
+          renderizarGraficaDiesel([], []);
+          return;
+        }
+
+        let lista = [];
+        snap.forEach(d => {
+          const item = { id: d.id, ...d.data() };
+          lista.push(item);
+          litrosMes += item.litros || 0;
+        });
+
+        document.getElementById("kpi-diesel-total").textContent = `${Math.round(litrosMes)} L`;
+        document.getElementById("lbl-total-litros-grafica").textContent = `${Math.round(litrosMes).toLocaleString()} Litros Acumulados`;
+
+        // Render de la tabla
+        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        lista.slice(0, 30).forEach(c => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${c.fecha.replace("T", " ")}</td>
+            <td><strong>${c.maquinaEconomico}</strong></td>
+            <td><b>${c.litros} L</b></td>
+            <td>${c.horometroCarga} h</td>
+            <td>$${c.importeTotal?.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Agrupación para la Gráfica Acumulada (orden cronológico ascendente)
+        const listaCronologica = [...lista].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        const fechasMap = {};
+        let acumulado = 0;
+
+        listaCronologica.forEach(item => {
+          const fCorta = item.fecha.split("T")[0];
+          acumulado += (item.litros || 0);
+          fechasMap[fCorta] = acumulado;
+        });
+
+        renderizarGraficaDiesel(Object.keys(fechasMap), Object.values(fechasMap));
+      });
+    }
+
+    function renderizarGraficaDiesel(labels, dataAcumulada) {
+      const ctx = document.getElementById("chartDieselAcumulado").getContext("2d");
+      if (chartDieselInstance) chartDieselInstance.destroy();
+
+      chartDieselInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Litros Acumulados",
+            data: dataAcumulada,
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37, 99, 235, 0.12)",
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointBackgroundColor: "#1d4ed8",
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => `Acumulado: ${context.parsed.y.toLocaleString()} L`
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              ticks: { callback: (val) => `${val} L` }
+            }
+          }
+        }
+      });
+    }
+
+    // 7. EJE 4: Mantenimiento y Servicios
+    document.getElementById("form-servicio-maq").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const mId = document.getElementById("serv-maquina").value;
+      const mSel = maquinasList.find(m => m.id === mId);
+      const horoServ = parseFloat(document.getElementById("serv-horometro").value);
+      const ciclo = mSel?.cicloServicioHoras || 250;
+
+      const payload = {
+        maquinaId: mId,
+        maquinaEconomico: mSel?.economico || "",
+        fecha: document.getElementById("serv-fecha").value,
+        tipo: document.getElementById("serv-tipo").value,
+        horometroServicio: horoServ,
+        detalle: document.getElementById("serv-detalle").value.trim(),
+        costo: parseFloat(document.getElementById("serv-costo").value) || 0,
+        registradoPor: usuarioActual.email,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        await addDoc(collection(db, "maquinaria_mantenimientos"), payload);
+        await updateDoc(doc(db, "maquinas", mId), {
+          proximoServicioHorometro: horoServ + ciclo,
+          estatus: "operacion"
+        });
+        showToast("¡Mantenimiento asentado y ciclo reiniciado!");
+        document.getElementById("form-servicio-maq").reset();
+      } catch (err) {
+        alert("Fallo al asentar mantenimiento: " + err.message);
+      }
+    });
+
+    // Modal Código QR
+    window.generarQRMaquina = (id) => {
+      const m = maquinasList.find(item => item.id === id);
+      if (!m) return;
+
+      document.getElementById("modal-qr-title").textContent = `QR: ${m.economico}`;
+      const qrBox = document.getElementById("qrcode-container");
+      qrBox.innerHTML = "";
+
+      const fichaURL = `${window.location.origin}${window.location.pathname}?activo=${m.economico}`;
+
+      new QRCode(qrBox, {
+        text: fichaURL,
+        width: 150,
+        height: 150,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      document.getElementById("modal-qr").style.display = "flex";
+    };
+
+    document.getElementById("btn-cerrar-qr").addEventListener("click", () => {
+      document.getElementById("modal-qr").style.display = "none";
+    });
+  </script>
+</body>
+</html>
