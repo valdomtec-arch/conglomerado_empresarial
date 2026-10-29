@@ -206,7 +206,7 @@
     .kpi-title { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
     .kpi-val { font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
 
-    /* Modal QR */
+    /* Modales */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -222,9 +222,8 @@
       background: #fff;
       border-radius: var(--radius);
       padding: 1.5rem;
-      max-width: 400px;
+      max-width: 420px;
       width: 100%;
-      text-align: center;
       box-shadow: var(--shadow-lg);
     }
 
@@ -307,7 +306,12 @@
         
         <!-- Formulario Alta de Máquina -->
         <div class="card">
-          <div class="card-title">Registrar Activo / Maquinaria</div>
+          <div class="card-title">
+            <span>Registrar Activo / Maquinaria</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-modal-nuevo-tipo">
+              <i class="fas fa-plus"></i> Tipo de Equipo
+            </button>
+          </div>
           <form id="form-alta-maquina">
             <div class="grid-2">
               <div class="form-group">
@@ -315,17 +319,8 @@
                 <input type="text" id="maq-eco" placeholder="RETRO-01" required>
               </div>
               <div class="form-group">
-                <label>Tipo de Equipo</label>
-                <select id="maq-tipo" required>
-                  <option value="Retroexcavadora">Retroexcavadora</option>
-                  <option value="Excavadora">Excavadora de Oruga</option>
-                  <option value="Motoniveladora">Motoniveladora</option>
-                  <option value="Compactador">Compactador / Rodillo</option>
-                  <option value="Camión de Volteo">Camión de Volteo</option>
-                  <option value="Tractor Oruga">Tractor sobre Oruga (D6/D8)</option>
-                  <option value="Generador / Planta">Generador / Planta de Luz</option>
-                  <option value="Grúa Titán">Grúa Titán / Telescópica</option>
-                </select>
+                <label>Tipo de Equipo (Dinámico)</label>
+                <select id="maq-tipo" required></select>
               </div>
             </div>
 
@@ -394,7 +389,7 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 2: PARTE DIARIO Y HORÓMETROS -->
+    <!-- PESTAÑA 2: PARTE DIARIO Y HORÓMETROS CON FILTRO EN CASCADA -->
     <section id="tab-partes" class="tab-content">
       <div class="grid-admin">
         
@@ -402,14 +397,26 @@
         <div class="card">
           <div class="card-title">Asentar Turno Operativo</div>
           <form id="form-parte-diario">
+            
+            <!-- Cascada Nivel 1: Obra -->
+            <div class="form-group">
+              <label>1. Frente de Obra</label>
+              <select id="cascada-obra-parte" required>
+                <option value="">-- Elige Obra para Filtrar Equipos --</option>
+              </select>
+            </div>
+
+            <!-- Cascada Nivel 2: Máquinas asignadas a esa obra -->
             <div class="grid-2">
+              <div class="form-group">
+                <label>2. Máquina Asignada</label>
+                <select id="parte-maquina" required disabled>
+                  <option value="">-- Selecciona Primero la Obra --</option>
+                </select>
+              </div>
               <div class="form-group">
                 <label>Fecha de Operación</label>
                 <input type="date" id="parte-fecha" required>
-              </div>
-              <div class="form-group">
-                <label>Máquina / Activo</label>
-                <select id="parte-maquina" required></select>
               </div>
             </div>
 
@@ -484,18 +491,28 @@
     <section id="tab-combustible" class="tab-content">
       <div class="grid-admin">
 
-        <!-- Formulario Carga de Diésel -->
+        <!-- Formulario Carga de Diésel con Cascada por Obra -->
         <div class="card">
           <div class="card-title">Suministro de Diésel en Obra</div>
           <form id="form-carga-combustible">
+            
+            <div class="form-group">
+              <label>1. Frente de Obra</label>
+              <select id="cascada-obra-diesel" required>
+                <option value="">-- Elige Obra para Filtrar Equipos --</option>
+              </select>
+            </div>
+
             <div class="grid-2">
               <div class="form-group">
-                <label>Fecha y Hora de Carga</label>
-                <input type="datetime-local" id="diesel-fecha" required>
+                <label>2. Máquina Abastecida</label>
+                <select id="diesel-maquina" required disabled>
+                  <option value="">-- Selecciona Primero la Obra --</option>
+                </select>
               </div>
               <div class="form-group">
-                <label>Máquina Abastecida</label>
-                <select id="diesel-maquina" required></select>
+                <label>Fecha y Hora</label>
+                <input type="datetime-local" id="diesel-fecha" required>
               </div>
             </div>
 
@@ -527,7 +544,6 @@
 
         <!-- Gráfica de Consumo Acumulado y Tabla de Auditoría -->
         <div>
-          <!-- Gráfica Chart.js -->
           <div class="card">
             <div class="card-title">
               <span>Tendencia y Consumo Acumulado de Diésel</span>
@@ -538,9 +554,8 @@
             </div>
           </div>
 
-          <!-- Tabla de Auditoría -->
           <div class="card">
-            <div class="card-title">Auditoría de Cargas y Rendimiento Real</div>
+            <div class="card-title">Auditoría de Cargas de Combustible</div>
             <div style="overflow-x: auto;">
               <table class="data-table">
                 <thead>
@@ -638,9 +653,50 @@
 
   </div>
 
-  <!-- Modal Ficha y Código QR -->
-  <div class="modal-overlay" id="modal-qr">
+  <!-- MODAL 1: ALTA RÁPIDA DE NUEVO TIPO DE EQUIPO -->
+  <div class="modal-overlay" id="modal-nuevo-tipo">
     <div class="modal-box">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">Alta de Tipo de Equipo</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Agrega una nueva categoría al catálogo corporativo de maquinaria:
+      </p>
+      <form id="form-nuevo-tipo">
+        <div class="form-group">
+          <label>Nombre del Tipo / Categoría</label>
+          <input type="text" id="input-nombre-tipo" placeholder="Ej. Pavimentadora, Pipa de Agua, Soldadora..." required>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" id="btn-cancelar-tipo">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1;" id="btn-guardar-tipo">Guardar Tipo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: REASIGNACIÓN DE OBRA (TRASLADO) -->
+  <div class="modal-overlay" id="modal-traslado">
+    <div class="modal-box">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">Traslado / Reasignar Obra</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Mueve la unidad <strong id="lbl-traslado-eco"></strong> al frente de trabajo donde operará:
+      </p>
+      <form id="form-traslado">
+        <input type="hidden" id="traslado-maq-id">
+        <div class="form-group">
+          <label>Nueva Obra de Destino</label>
+          <select id="traslado-nueva-obra" required></select>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" id="btn-cancelar-traslado">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Confirmar Traslado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: FICHA Y CÓDIGO QR -->
+  <div class="modal-overlay" id="modal-qr">
+    <div class="modal-box" style="text-align: center;">
       <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary);" id="modal-qr-title">Código QR del Activo</h3>
       <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
         Imprime este código y colócalo en el parabrisas o cabina de la máquina:
@@ -654,13 +710,14 @@
 
   <!-- Motor Firebase y Lógica Operativa -->
   <script type="module">
-    import { db, collection, addDoc, onSnapshot, query, where, doc, updateDoc, getDoc } from "./js/firebase-config.js";
+    import { db, collection, addDoc, onSnapshot, query, where, doc, updateDoc, getDoc, setDoc } from "./js/firebase-config.js";
     import { protegerVista } from "./js/rbac.js";
 
     let usuarioActual = null;
     let perfilActual = null;
     let maquinasList = [];
     let proyectosList = [];
+    let tiposMaquinariaList = [];
     let chartDieselInstance = null;
 
     const toast = document.getElementById("toast");
@@ -680,7 +737,7 @@
       });
     });
 
-    // Fechas actuales
+    // Fechas actuales automáticas
     document.getElementById("parte-fecha").value = new Date().toISOString().split("T")[0];
     document.getElementById("serv-fecha").value = new Date().toISOString().split("T")[0];
     document.getElementById("diesel-fecha").value = new Date().toISOString().slice(0, 16);
@@ -694,31 +751,142 @@
     });
 
     function iniciarModulo() {
+      cargarTiposMaquinaria();
       cargarProyectos();
       escucharMaquinas();
       escucharPartesDiarios();
       escucharCombustible();
     }
 
-    // 2. Cargar Proyectos Autorizados
+    // 2. CATÁLOGO DINÁMICO DE TIPOS DE EQUIPO (Colección tipos_maquinaria)
+    function cargarTiposMaquinaria() {
+      onSnapshot(collection(db, "tipos_maquinaria"), async (snap) => {
+        const selectTipo = document.getElementById("maq-tipo");
+        selectTipo.innerHTML = "";
+        tiposMaquinariaList = [];
+
+        // Si la colección está vacía, sembramos los tipos base esenciales
+        if (snap.empty) {
+          const tiposBase = [
+            "Retroexcavadora",
+            "Excavadora de Oruga",
+            "Motoniveladora",
+            "Compactador / Rodillo",
+            "Camión de Volteo",
+            "Tractor sobre Oruga (D6/D8)",
+            "Generador / Planta de Luz",
+            "Grúa Titán / Telescópica"
+          ];
+          for (const t of tiposBase) {
+            await addDoc(collection(db, "tipos_maquinaria"), { nombre: t, activo: true });
+          }
+          return;
+        }
+
+        snap.forEach(d => {
+          const item = { id: d.id, ...d.data() };
+          tiposMaquinariaList.push(item);
+          const opt = document.createElement("option");
+          opt.value = item.nombre;
+          opt.textContent = item.nombre;
+          selectTipo.appendChild(opt);
+        });
+      });
+    }
+
+    // Modal Alta Rápida de Tipo
+    const modalNuevoTipo = document.getElementById("modal-nuevo-tipo");
+    document.getElementById("btn-modal-nuevo-tipo").addEventListener("click", () => {
+      document.getElementById("input-nombre-tipo").value = "";
+      modalNuevoTipo.style.display = "flex";
+    });
+    document.getElementById("btn-cancelar-tipo").addEventListener("click", () => {
+      modalNuevoTipo.style.display = "none";
+    });
+
+    document.getElementById("form-nuevo-tipo").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById("input-nombre-tipo").value.trim();
+      if (!nombre) return;
+
+      const btn = document.getElementById("btn-guardar-tipo");
+      btn.disabled = true;
+
+      try {
+        await addDoc(collection(db, "tipos_maquinaria"), { nombre, activo: true });
+        showToast(`¡Categoría "${nombre}" agregada al catálogo!`);
+        modalNuevoTipo.style.display = "none";
+      } catch (err) {
+        alert("Fallo al guardar tipo: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // 3. CARGAR PROYECTOS AUTORIZADOS (Para Selectores de Obra y Cascadas)
     function cargarProyectos() {
       onSnapshot(collection(db, "proyectos"), (snap) => {
-        const selectObra = document.getElementById("maq-obra");
-        selectObra.innerHTML = '<option value="">-- Selecciona Obra --</option>';
+        const selectObraMaq = document.getElementById("maq-obra");
+        const cascadaParte = document.getElementById("cascada-obra-parte");
+        const cascadaDiesel = document.getElementById("cascada-obra-diesel");
+        const selectTraslado = document.getElementById("traslado-nueva-obra");
+
+        selectObraMaq.innerHTML = '<option value="">-- Selecciona Obra --</option>';
+        cascadaParte.innerHTML = '<option value="">-- Elige Obra para Filtrar Equipos --</option>';
+        cascadaDiesel.innerHTML = '<option value="">-- Elige Obra para Filtrar Equipos --</option>';
+        selectTraslado.innerHTML = '<option value="">-- Selecciona Obra Destino --</option>';
         proyectosList = [];
 
         snap.forEach(d => {
           const p = { id: d.id, ...d.data() };
           proyectosList.push(p);
-          const opt = document.createElement("option");
-          opt.value = p.id;
-          opt.textContent = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
-          selectObra.appendChild(opt);
+
+          const optStr = `${p.codigo ? `[${p.codigo}] ` : ''}${p.nombre}`;
+          selectObraMaq.innerHTML += `<option value="${p.id}">${optStr}</option>`;
+          cascadaParte.innerHTML += `<option value="${p.id}">${optStr}</option>`;
+          cascadaDiesel.innerHTML += `<option value="${p.id}">${optStr}</option>`;
+          selectTraslado.innerHTML += `<option value="${p.id}">${optStr}</option>`;
         });
       });
     }
 
-    // 3. EJE 1: Alta de Maquinaria
+    // 4. LÓGICA DE SELECTORES EN CASCADA (Obra -> Máquinas Asignadas)
+    function actualizarCascadaMaquinas(obraId, targetSelectId) {
+      const selectTarget = document.getElementById(targetSelectId);
+      selectTarget.innerHTML = "";
+
+      if (!obraId) {
+        selectTarget.disabled = true;
+        selectTarget.innerHTML = '<option value="">-- Selecciona Primero la Obra --</option>';
+        return;
+      }
+
+      const maquinasEnObra = maquinasList.filter(m => m.proyectoId === obraId);
+
+      if (maquinasEnObra.length === 0) {
+        selectTarget.disabled = true;
+        selectTarget.innerHTML = '<option value="">-- No hay equipos asignados a esta obra --</option>';
+        return;
+      }
+
+      selectTarget.disabled = false;
+      selectTarget.innerHTML = '<option value="">-- Selecciona la Máquina --</option>';
+      maquinasEnObra.forEach(m => {
+        selectTarget.innerHTML += `<option value="${m.id}">${m.economico} - ${m.tipo} (${m.modelo})</option>`;
+      });
+    }
+
+    document.getElementById("cascada-obra-parte").addEventListener("change", (e) => {
+      actualizarCascadaMaquinas(e.target.value, "parte-maquina");
+      document.getElementById("parte-horo-ini").value = "";
+    });
+
+    document.getElementById("cascada-obra-diesel").addEventListener("change", (e) => {
+      actualizarCascadaMaquinas(e.target.value, "diesel-maquina");
+      document.getElementById("diesel-horometro").value = "";
+    });
+
+    // 5. EJE 1: Alta de Maquinaria
     document.getElementById("form-alta-maquina").addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = document.getElementById("btn-save-maq");
@@ -757,19 +925,15 @@
       }
     });
 
-    // 4. Escuchar Flota y Semáforo Preventivo
+    // 6. Escuchar Flota y Semáforos Preventivos
     function escucharMaquinas() {
       onSnapshot(collection(db, "maquinas"), (snap) => {
         const tbody = document.getElementById("tabla-flota-body");
         const semaforoBody = document.getElementById("tabla-semaforo-body");
-        const selectPartes = document.getElementById("parte-maquina");
-        const selectDiesel = document.getElementById("diesel-maquina");
         const selectServ = document.getElementById("serv-maquina");
 
         tbody.innerHTML = "";
         semaforoBody.innerHTML = "";
-        selectPartes.innerHTML = '<option value="">-- Elige Máquina --</option>';
-        selectDiesel.innerHTML = '<option value="">-- Elige Máquina --</option>';
         selectServ.innerHTML = '<option value="">-- Elige Máquina --</option>';
         maquinasList = [];
 
@@ -784,10 +948,7 @@
 
           if (m.estatus === "operacion") enOp++;
 
-          const optStr = `${m.economico} - ${m.tipo} (${m.modelo})`;
-          selectPartes.innerHTML += `<option value="${m.id}">${optStr}</option>`;
-          selectDiesel.innerHTML += `<option value="${m.id}">${optStr}</option>`;
-          selectServ.innerHTML += `<option value="${m.id}">${optStr}</option>`;
+          selectServ.innerHTML += `<option value="${m.id}">${m.economico} - ${m.tipo} (${m.modelo})</option>`;
 
           const tr = document.createElement("tr");
           let badgeClass = "badge-operacion";
@@ -801,7 +962,10 @@
             <td>${m.proyectoNombre}</td>
             <td><b>${m.horometroActual?.toFixed(1) || '0.0'} h</b></td>
             <td><span class="badge-status ${badgeClass}">${m.estatus.toUpperCase()}</span></td>
-            <td style="text-align: center;">
+            <td style="text-align: center; display: flex; gap: 4px; justify-content: center;">
+              <button class="btn btn-secondary btn-sm" onclick="window.abrirModalTraslado('${m.id}')" title="Reasignar Obra / Traslado">
+                <i class="fas fa-arrow-right-arrow-left"></i>
+              </button>
               <button class="btn btn-secondary btn-sm" onclick="window.generarQRMaquina('${m.id}')" title="Generar QR">
                 <i class="fas fa-qrcode"></i>
               </button>
@@ -837,6 +1001,13 @@
         document.getElementById("kpi-total-equipos").textContent = totalEq;
         document.getElementById("kpi-en-operacion").textContent = enOp;
         document.getElementById("kpi-servicios-alerta").textContent = alertasServicio;
+
+        // Actualizar cascadas si ya había obras seleccionadas
+        const obraParteSel = document.getElementById("cascada-obra-parte").value;
+        if (obraParteSel) actualizarCascadaMaquinas(obraParteSel, "parte-maquina");
+
+        const obraDieselSel = document.getElementById("cascada-obra-diesel").value;
+        if (obraDieselSel) actualizarCascadaMaquinas(obraDieselSel, "diesel-maquina");
       });
     }
 
@@ -855,7 +1026,41 @@
       if (m) document.getElementById("serv-horometro").value = m.horometroActual || 0;
     });
 
-    // 5. EJE 2: Guardar Parte Diario
+    // 7. TRASLADO Y REASIGNACIÓN RÁPIDA DE OBRA
+    const modalTraslado = document.getElementById("modal-traslado");
+    window.abrirModalTraslado = (id) => {
+      const m = maquinasList.find(item => item.id === id);
+      if (!m) return;
+
+      document.getElementById("traslado-maq-id").value = m.id;
+      document.getElementById("lbl-traslado-eco").textContent = `${m.economico} (${m.tipo})`;
+      document.getElementById("traslado-nueva-obra").value = m.proyectoId || "";
+      modalTraslado.style.display = "flex";
+    };
+
+    document.getElementById("btn-cancelar-traslado").addEventListener("click", () => {
+      modalTraslado.style.display = "none";
+    });
+
+    document.getElementById("form-traslado").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const maqId = document.getElementById("traslado-maq-id").value;
+      const nuevaObraId = document.getElementById("traslado-nueva-obra").value;
+      const pSel = proyectosList.find(p => p.id === nuevaObraId);
+
+      try {
+        await updateDoc(doc(db, "maquinas", maqId), {
+          proyectoId: nuevaObraId,
+          proyectoNombre: pSel?.nombre || "Sin Asignar"
+        });
+        showToast("¡Unidad reasignada al nuevo frente de obra!");
+        modalTraslado.style.display = "none";
+      } catch (err) {
+        alert("Fallo al reasignar obra: " + err.message);
+      }
+    });
+
+    // 8. EJE 2: Guardar Parte Diario
     document.getElementById("form-parte-diario").addEventListener("submit", async (e) => {
       e.preventDefault();
       const mId = document.getElementById("parte-maquina").value;
@@ -875,6 +1080,8 @@
       const payload = {
         maquinaId: mId,
         maquinaEconomico: mSel?.economico || "",
+        proyectoId: mSel?.proyectoId || "",
+        proyectoNombre: mSel?.proyectoNombre || "",
         fecha: document.getElementById("parte-fecha").value,
         operador: document.getElementById("parte-operador").value.trim(),
         horometroInicial: hIni,
@@ -899,6 +1106,7 @@
         await updateDoc(doc(db, "maquinas", mId), { horometroActual: hFin });
         showToast("¡Parte diario asentado con éxito!");
         document.getElementById("form-parte-diario").reset();
+        document.getElementById("parte-maquina").disabled = true;
       } catch (err) {
         alert("Fallo al asentar parte diario: " + err.message);
       }
@@ -933,7 +1141,7 @@
       });
     }
 
-    // 6. EJE 3: Cargas de Diésel y Gráfica Acumulada
+    // 9. EJE 3: Cargas de Diésel y Gráfica Acumulada
     document.getElementById("form-carga-combustible").addEventListener("submit", async (e) => {
       e.preventDefault();
       const mId = document.getElementById("diesel-maquina").value;
@@ -945,6 +1153,8 @@
       const payload = {
         maquinaId: mId,
         maquinaEconomico: mSel?.economico || "",
+        proyectoId: mSel?.proyectoId || "",
+        proyectoNombre: mSel?.proyectoNombre || "",
         fecha: document.getElementById("diesel-fecha").value,
         litros: litros,
         horometroCarga: horo,
@@ -959,6 +1169,7 @@
         await addDoc(collection(db, "maquinaria_combustible"), payload);
         showToast("¡Carga de diésel registrada!");
         document.getElementById("form-carga-combustible").reset();
+        document.getElementById("diesel-maquina").disabled = true;
       } catch (err) {
         alert("Fallo al registrar combustible: " + err.message);
       }
@@ -986,7 +1197,6 @@
         document.getElementById("kpi-diesel-total").textContent = `${Math.round(litrosMes)} L`;
         document.getElementById("lbl-total-litros-grafica").textContent = `${Math.round(litrosMes).toLocaleString()} Litros Acumulados`;
 
-        // Render de la tabla
         lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         lista.slice(0, 30).forEach(c => {
           const tr = document.createElement("tr");
@@ -1000,7 +1210,6 @@
           tbody.appendChild(tr);
         });
 
-        // Agrupación para la Gráfica Acumulada (orden cronológico ascendente)
         const listaCronologica = [...lista].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
         const fechasMap = {};
         let acumulado = 0;
@@ -1057,7 +1266,7 @@
       });
     }
 
-    // 7. EJE 4: Mantenimiento y Servicios
+    // 10. EJE 4: Mantenimiento y Servicios
     document.getElementById("form-servicio-maq").addEventListener("submit", async (e) => {
       e.preventDefault();
       const mId = document.getElementById("serv-maquina").value;
@@ -1090,7 +1299,7 @@
       }
     });
 
-    // Modal Código QR
+    // 11. Modal Código QR
     window.generarQRMaquina = (id) => {
       const m = maquinasList.find(item => item.id === id);
       if (!m) return;
